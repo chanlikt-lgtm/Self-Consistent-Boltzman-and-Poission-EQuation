@@ -20,9 +20,15 @@ import bands
 import scattering as sc
 
 
-def solve_bulk(E_Vcm, eps_max=3.02, ne=1209):
+def solve_bulk(E_Vcm, eps_max=3.02, ne=1209, absorbing_top=True):
     """Solve the bulk energy BVP at field E_Vcm [V/cm]. Returns eps[eV], f0 (normalized).
-    ne=1209 -> deps=0.0025 eV (E_op=20 steps); moment Te converges to 309.7 K analytic."""
+    ne=1209 -> deps=0.0025 eV (E_op=20 steps); moment Te converges to 309.7 K analytic.
+
+    Boundary conditions (audit-3 Major #3): the two energy boundaries are physically
+    distinct and treated separately --
+      * eps=0   : physical band-edge turning point -> reflecting (natural zero-flux),
+      * eps_max : NUMERICAL cutoff -> absorbing (f0(eps_max)=0) when absorbing_top=True,
+        so hot carriers are not artificially retained. Validate by eps_max-convergence."""
     eps = np.linspace(1e-4, eps_max, ne)
     deps_eV = eps[1] - eps[0]
     deps_J = deps_eV * eV
@@ -59,6 +65,10 @@ def solve_bulk(E_Vcm, eps_max=3.02, ne=1209):
     ipin = 2
     M.rows[ipin] = [ipin]; M.data[ipin] = [1.0]
     b = np.zeros(ne); b[ipin] = 1.0
+    if absorbing_top:
+        # absorbing NUMERICAL cutoff at eps_max: f0(eps_max)=0 (not a reflecting turning point)
+        M.rows[ne - 1] = [ne - 1]; M.data[ne - 1] = [1.0]
+        b[ne - 1] = 0.0
     M = M.tocsr()
 
     f0 = spla.spsolve(M, b)

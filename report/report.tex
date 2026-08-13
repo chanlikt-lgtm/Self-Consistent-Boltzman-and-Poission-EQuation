@@ -1,0 +1,397 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\vecr}{\mathbf{r}}
+\newcommand{\veck}{\mathbf{k}}
+\newcommand{\vecE}{\mathbf{E}}
+\newcommand{\vecj}{\mathbf{j}}
+\newcommand{\Om}{\hat{\boldsymbol{\Omega}}}
+\newcommand{\gradr}{\nabla_{\!\vecr}}
+\newcommand{\honest}[1]{\medskip\noindent\colorbox{yellow!25}{\parbox{0.97\linewidth}{\small\textbf{Reconstruction note.} #1}}\medskip}
+\newcommand{\fix}[1]{\textcolor{green!45!black}{\small[\textbf{Rev.2 fix:} #1]}}
+
+\title{\textbf{Derivation and Numerical Reproduction of\\
+Liang, Goldsman, Mayergoyz \& Oldiges (1997):\\
+2-D MOSFET Modeling by Self-Consistent Solution of the\\
+Boltzmann, Poisson, and Hole-Continuity Equations}\\[4pt]
+\large\textit{Part~I --- Method derivation and documented solver foundation}\\
+\normalsize\textbf{Revision~2} (post-audit)}
+\author{Reproduction study}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+This document derives, from first principles, the deterministic spherical--harmonic (SHE)
+Boltzmann solver of Liang \emph{et al.}, \emph{IEEE Trans.\ Electron Devices} \textbf{44}(2),
+257--267 (1997), and reports a \emph{documented, benchmark--checked solver foundation}
+toward reproducing the paper's Figs.~2--8. \textbf{Scope discipline:} this is \emph{not yet}
+a validated reproduction of Liang \emph{et al.} The SHE core, scattering, impact ionization,
+the self--consistent SHE$\leftrightarrow$Poisson loop, and the figure set remain to be
+completed (Part~II); what is established here is (i) an internally consistent derivation and
+(ii) a Poisson / drift--diffusion / band foundation whose modules are checked against
+independent analytic benchmarks (tabulated in \S\ref{sec:bench}), not against the paper's
+own curves. Every substitution for unavailable paper inputs (doping profile, impact
+ionization table) is disclosed and, per \S\ref{sec:taxonomy}, classified as
+\emph{paper--specified}, \emph{physically--motivated reconstruction}, or \emph{calibrated
+surrogate}. Revision~2 responds point--by--point to an external audit
+(\S\ref{sec:audit}).
+\end{abstract}
+
+\tableofcontents
+
+\section{Revision-2 audit response}\label{sec:audit}
+An external audit assessed Revision~1 as ``promising Part~I; not reproduction--grade yet''
+and raised eight findings. All are addressed:
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt]
+\item[F1] Over--claim ``full momentum--space distribution'' $\to$ corrected to
+``energy--resolved distribution with first--order angular anisotropy'' (\S\ref{sec:she1}).
+\item[F2] Missing model/boundary specifications $\to$ new Appendix~\ref{sec:specs}
+documents every boundary condition, statistic, parameter, mesh, tolerance, and sign.
+\item[F3] Junction geometry mismatch ($0.24$ vs $0.17\,\si{\micro\meter}$) $\to$
+$x_j$ \emph{defined} as the metallurgical junction and the profile retuned to
+$0.170\,\si{\micro\meter}$; $V_{th}$ calibration and sensitivity documented
+(\S\ref{sec:device}, \S\ref{sec:taxonomy}).
+\item[F4] $H$--transform vs.\ discretization inconsistency $\to$ the device scheme is
+stated unambiguously in the $(\vecr,H)$ variables (\S\ref{sec:she2}, App.~\ref{sec:specs}).
+\item[F5] $N_c$ benchmark not auditable $\to$ $T=\SI{300}{K}$ now stated, a
+\emph{converged} energy grid used, the exact formula and convention given, and the DOS
+prefactor validated against the closed form to $0.09\%$ (\S\ref{sec:bench}).
+\item[F6] Impact--ionization electron bookkeeping $\to$ the electron BTE source/sink and
+the primary/secondary energy partition are now derived (\S\ref{sec:ii}).
+\item[F7] ``Validated'' overstated $\to$ modules relabelled \emph{sanity--checked} against
+the quantitative benchmark table (\S\ref{sec:bench}); the DD current is compared to a
+\emph{documented} estimate with the short--channel discrepancy explained.
+\item[F8] No references / provenance $\to$ References section and a code/version +
+parameter provenance block (App.~\ref{sec:provenance}) added.
+\end{enumerate}
+
+\section{The method being reproduced}\label{sec:method}
+Liang \emph{et al.} solve, self--consistently, on a 2-D MOSFET cross--section:
+\begin{align}
+\nabla\!\cdot(\epsilon\,\nabla\phi) &= -q\,(p-n+N_D^+-N_A^-), &&\text{(Poisson)}\\
+\tfrac{1}{\hbar}\nabla_{\!\veck}\eps\!\cdot\!\gradr f
++\tfrac{q}{\hbar}\gradr\phi\!\cdot\!\nabla_{\!\veck} f
+&= \left[\tfrac{\partial f}{\partial t}\right]_{\text{coll}}, &&\text{(electron BTE)}\\
+\nabla\!\cdot\!\big(\mu_p p\,\nabla\phi + \mu_p V_t\nabla p\big) &= R_p - G_{p,\text{ii}}.
+&&\text{(hole continuity)}
+\end{align}
+The electron BTE is solved deterministically by a first--order spherical--harmonic
+expansion. The device is a \SI{0.35}{\micro\meter} effective--channel LDD N-MOSFET.
+
+\section{Derivation of the first-order SHE equation}\label{sec:derivation}
+
+\subsection{Spherical-harmonic expansion and first-order truncation}\label{sec:she1}
+With $\vecE=-\gradr\phi$ and electron force $-q\vecE$, the stationary BTE is
+$\mathbf{v}\cdot\gradr f-\tfrac{q\vecE}{\hbar}\cdot\nabla_{\!\veck}f=C[f]$. Expand to
+first order,
+\begin{equation}
+f(\vecr,\veck)=f_0(\vecr,\eps)+\Om\cdot\mathbf{f}_1(\vecr,\eps),\qquad
+\Om=\veck/|\veck|,\quad \mathbf{v}=v(\eps)\Om,\quad v=\hbar^{-1}d\eps/dk .
+\end{equation}
+This truncation retains the isotropic part $f_0$ and a single linear--in--angle drift
+term; \emph{all $\ell\ge2$ angular content is discarded.} Thus the method yields an
+\textbf{energy--resolved distribution with first--order angular anisotropy}
+\fix{F1: not the ``full momentum--space distribution''}, which is nonetheless sufficient
+for the density, current, energy, and generation moments below. Projection onto
+$\ell=1$ (momentum relaxation time $\tau_1$) gives the current relation
+\begin{equation}
+\boxed{\;\mathbf{f}_1=-\tau_1(\eps)\,v(\eps)\Big(\gradr f_0-q\vecE\,\partial_\eps f_0\Big),\;}
+\label{eq:f1}
+\end{equation}
+and projection onto $\ell=0$, weighted by the generalized DOS $Z(\eps)$, gives the
+conservative augmented--space balance
+\begin{equation}
+\boxed{\;\gradr\!\cdot\vecj_x+\partial_\eps j_\eps
+= Z(\eps)\,\mathcal{Q}[f_0]+Z(\eps)\,S_{\text{gen}},\;}\qquad
+\vecj_x=-Z D\big(\gradr f_0-q\vecE\,\partial_\eps f_0\big),\;\;
+j_\eps=-q\vecE\!\cdot\vecj_x,
+\label{eq:she}
+\end{equation}
+with $D(\eps)=\tfrac13 v^2\tau_1$. A displacement $d\vecr$ is accompanied by an energy
+change $d\eps=-q\vecE\!\cdot d\vecr$ (field heating); $\mathcal{Q}$ relaxes energy.
+
+\subsection{Total-energy form used for the 2-D solve}\label{sec:she2}
+Adopting total energy $H=\eps-q\phi$ (so $\eps=H+q\phi(\vecr)\ge0$): because $H$ is a
+constant of motion of the streaming operator, \eqref{eq:she} contains \emph{no}
+$\partial_H$ term and reduces to pure spatial diffusion at fixed $H$,
+\begin{equation}
+\gradr\!\cdot\!\big[\,Z(\eps)D(\eps)\,\gradr f_0|_H\,\big]
+= -Z(\eps)\mathcal{Q}[f_0]-Z(\eps)S_{\text{gen}},\qquad \eps=H+q\phi(\vecr).
+\label{eq:she_H}
+\end{equation}
+\fix{F4} The device solver discretizes \eqref{eq:she_H} \emph{entirely in the
+$(\vecr,H)$ variables}: for each $H$--plane a box--integrated spatial diffusion of
+$f_0(x,y;H)$ with position--dependent coefficient $Z(\eps)D(\eps)$, $\eps=H+q\phi(x,y)$;
+the optical operator $\mathcal{Q}$ couples planes $H\!\leftrightarrow\!H\pm E_{op}$ at the
+\emph{same} $(x,y)$; classically forbidden nodes ($\eps<0$) are excluded by a zero--flux
+turning--point boundary. There is \emph{no} energy--space cross--flux in this form --- the
+Scharfetter--Gummel--type stabilization of the paper is applied only to the \emph{spatial}
+diffusion flux where the coefficient varies strongly, not to an $(\vecr,\eps)$ coupling.
+The two formulations \eqref{eq:she} and \eqref{eq:she_H} are the same physics in different
+coordinates; the solver commits to \eqref{eq:she_H}, and the homogeneous--bulk validation
+(\S\ref{sec:bench}) uses the equivalent energy--space reduction of \eqref{eq:she}.
+
+\subsection{Scattering operators}
+Elastic, momentum--randomizing processes (acoustic phonons; ionized impurity,
+Brooks--Herring, screened by $n_{scr}$; surface acoustic; surface roughness) enter
+$1/\tau_1=\sum_i 1/\tau_i$ and hence $D(\eps)$. The inelastic optical/intervalley operator,
+with $\hbar\omega=E_{op}$, $N_{op}=[e^{E_{op}/k_BT}-1]^{-1}$, coupling $c_{op}\propto D_n^2$,
+is the number--conserving in/out form
+\begin{align}
+Z(\eps)\mathcal{Q}_{op}=c_{op}Z(\eps)\Big[&(N_{op}{+}1)Z(\eps{+}E_{op})f_0(\eps{+}E_{op})
++N_{op}Z(\eps{-}E_{op})f_0(\eps{-}E_{op})\notag\\[-1pt]
+&-\big((N_{op}{+}1)Z(\eps{-}E_{op})+N_{op}Z(\eps{+}E_{op})\big)f_0(\eps)\Big],
+\label{eq:Qop}
+\end{align}
+which vanishes for $f_0\propto e^{-\eps/k_BT}$ (detailed balance, using
+$(N_{op}{+}1)/N_{op}=e^{E_{op}/k_BT}$ and $Z(\eps<0)\equiv0$), and conserves particle
+number, $\sum_i (Z\mathcal{Q})_i=0$. Both properties are verified numerically
+(\S\ref{sec:bench}).
+
+\subsection{Impact ionization: full electron/hole bookkeeping}\label{sec:ii}
+\fix{F6} An impact--ionization event removes one primary electron above threshold
+$\eps_{th}$ and creates one electron--hole pair; the post--event kinetic energy is split
+equally between the two resulting electrons (Landsberg partition). The $\ell=0$ electron
+operator is therefore
+\begin{equation}
+Z(\eps)\mathcal{Q}_{ii}[f_0]=
+\underbrace{-\,\frac{Z(\eps)f_0(\eps)}{\tau_{ii}(\eps)}}_{\text{primary lost at }\eps}
+\;+\;\underbrace{2\!\int\! d\eps''\,\frac{Z(\eps'')f_0(\eps'')}{\tau_{ii}(\eps'')}\,
+\delta\!\Big(\eps-\tfrac{\eps''-\eps_{th}}{2}\Big)}_{\text{primary+secondary re-injected low}} ,
+\end{equation}
+so that the net electron gain equals the hole generation,
+\begin{equation}
+\int Z\,\mathcal{Q}_{ii}\,d\eps
+=\int \frac{Z(\eps)f_0(\eps)}{\tau_{ii}(\eps)}\,d\eps
+\equiv G_{n}=G_{p,\text{ii}},
+\label{eq:Gii}
+\end{equation}
+i.e.\ $\Delta n=\Delta p$ (charge conserved): one net electron and one hole per event.
+$G_{p,\text{ii}}$ is the paper's Eq.~(13), and $1/\tau_{ii}$ is the ionization rate.
+\honest{The paper takes $1/\tau_{ii}$ from ref.~[23] (Wu \& Goldsman, random-$k$), not in
+hand. Part~II uses a Keldysh--type $1/\tau_{ii}=P[(\eps-\eps_{th})/\eps_{th}]^2
+\Theta(\eps-\eps_{th})$, $\eps_{th}\!\approx\!\SI{1.1}{eV}$, calibrated to the measured Si
+$\alpha_n(E)$ --- a \emph{calibrated surrogate} (\S\ref{sec:taxonomy}).}
+
+\subsection{Moments}
+$n=\int Z f_0\,d\eps$, $\ \mathbf{J}_n=-\tfrac{q}{3}\int vZ\,\mathbf{f}_1\,d\eps$,
+$\ \langle\mathbf{v}\rangle=\mathbf{J}_n/(-qn)$,
+$\ T_e=\tfrac{2}{3k_B}n^{-1}\!\int\eps Z f_0\,d\eps$, and $G_{p,\text{ii}}$ from
+\eqref{eq:Gii}. These generate Figs.~2--7; the drain current for Fig.~8 is the contact
+surface integral of $\mathbf{J}_n$ (sign convention in App.~\ref{sec:specs}).
+
+\section{Reconstructed device and modelling taxonomy}\label{sec:device}\label{sec:taxonomy}
+The cross--section (lateral $x$: source$\to$drain; depth $y$: interface$\to$bulk) is built
+from smooth error--function junctions. \fix{F3} The junction depth $x_j$ is \emph{defined}
+as the metallurgical crossing $N_D(y)=N_A(y)$ under the S/D contact; the depth profile was
+retuned so that $x_j=\SI{0.170}{\micro\meter}$, matching the paper (verified numerically,
+\S\ref{sec:bench}). Threshold voltage is set by a shallow p channel implant
+($N_A^{\text{peak}}\!\approx\!4\times10^{17}$) plus a gate flat--band offset
+$\Phi_{\text{gate}}$; both are \emph{calibrated surrogates}, since the paper's exact
+profile (ref.~[25]) and gate work function are unavailable.
+
+\begin{table}[h]\centering\small
+\caption{Modelling taxonomy \fix{F3/F7, audit disposition}: which inputs are reproduced,
+reconstructed, or surrogate.}\label{tab:taxonomy}
+\begin{tabular}{p{5.4cm}p{3.0cm}p{6.0cm}}
+\toprule
+Element & Class & Basis \\
+\midrule
+Method equations, SHE reduction, moments & \textbf{paper--specified} & Liang \emph{et al.}; standard SHE \\
+Table~\ref{tab:tableI} transport params, $E_{op}$, $\eps_{max}$, spherical band & \textbf{paper--specified} & paper Table~I / Sec.~II \\
+$L_{\text{eff}}$, $t_{ox}$, $x_j$, $N_D^+/N_D^-$ magnitudes & \textbf{paper--specified} & paper text \\
+Analytic LDD doping \emph{shape} (erfc junctions), mesh & reconstruction & physically motivated; ref.~[25] unavailable \\
+Channel--implant peak $N_A$ (sets $V_{th}$), $\Phi_{\text{gate}}$ & \textbf{calibrated surrogate} & tuned to a realistic $V_{th}$; disclosed \\
+$\tau_1(\eps)$ magnitude, optical coupling $c_{op}$ & \textbf{calibrated surrogate} & tuned to $\mu$ / scattering time \\
+Impact--ionization rate $1/\tau_{ii}$ & \textbf{calibrated surrogate} & Keldysh form to Si $\alpha_n$; ref.~[23] unavailable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]\centering\small
+\caption{Transport parameters (paper Table~I).}\label{tab:tableI}
+\begin{tabular}{llll}
+\toprule
+Parameter & Value & Parameter & Value\\
+\midrule
+$D_{ac}$ & \SI{4.0}{eV} & $\Gamma$ & \SI{1.96}{cm^2/V^2/s}\\
+$D_n$ & \SI{5.0e8}{eV/cm} & $n_{scr}$ & \SI{1.45e15}{cm^{-3}}\\
+$E_{op}$ & \SI{0.05}{eV} & $D_{sa}$ & \SI{17.8}{eV}\\
+$v_s$ & \SI{9.0e6}{cm/s} & $\delta$ & 13.1\\
+$\eps_{max}$ & \SI{3.02}{eV} & bands of $\gamma(\eps)$ & 2 (Fiegna/Brunetti)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{../figures/device_doping.png}
+\caption{Reconstructed 0.35-\si{\micro\meter} LDD NMOS (retuned, $x_j=0.170\,\si{\micro
+\meter}$). Net doping, $\log_{10}|N|$, surface profile with LDD notches, and vertical cuts.}
+\end{figure}
+
+\section{Sanity-checked foundation and benchmark table}\label{sec:bench}
+\fix{F7} The foundation modules are \emph{sanity--checked} against independent analytic
+values (Table~\ref{tab:bench}) --- not against Liang's own maps or I--V curves, which is a
+Part~II task. Agreement is quantified, not asserted.
+
+\begin{table}[h]\centering\small
+\caption{Expected vs.\ computed benchmarks. All at $T=\SI{300}{K}$, Boltzmann statistics.}
+\label{tab:bench}
+\begin{tabular}{p{6.3cm}rrl}
+\toprule
+Quantity & Expected & Computed & Note\\
+\midrule
+$N_c$ nonparabolic ($\alpha{=}0.5$, $m^*{=}0.32m_0$, $g_v{=}6$) & $2.86\times10^{19}$ & $2.857\times10^{19}$ & auditor's indep.\ value; \fix{F5}\\
+$N_c$ parabolic limit ($\alpha{=}0$): code vs.\ closed form & $2.726\times10^{19}$ & $2.723\times10^{19}$ & DOS prefactor error $0.09\%$\\
+group velocity $v(0.1\,\mathrm{eV})$ & --- & $3.09\times10^{7}$ & cm/s; auditor--reproduced\\
+group velocity $v(1.0\,\mathrm{eV})$ & --- & $6.42\times10^{7}$ & cm/s; auditor--reproduced\\
+built--in potential $V_{bi}$ (n$^+$/$10^{16}$) & $0.933$ & $0.933$ & V; $V_t\ln(N_DN_A/n_i^2)$\\
+metallurgical junction depth $x_j$ & $0.17$ & $0.170$ & \si{\micro\meter}; retuned \fix{F3}\\
+n$^+$ contact potential & $0.586$ & $0.586$ & V; $V_t\ln(N_D/n_i)$\\
+depletion width (abrupt vs.\ graded Poisson) & $0.347$ & $0.269$ & \si{\micro\meter}; graded junction narrower\\
+Newton convergence & quadratic & quadratic & $\to10^{-11}$ in 6 steps\\
+optical operator detailed balance & $0$ & $2\times10^{-5}$ & relative; Maxwellian null\\
+optical operator number conservation & $0$ & $\sum(Z\mathcal Q)_i{=}0$ & by construction\\
+bulk $T_e$ vs.\ field (0/100/300 kV/cm) & monotone$\uparrow$ & 282/1847/4696 & K; hot--electron heating\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Drift-diffusion current \fix{F7}.} The long--channel saturation estimate
+$I_d/W=(1/L)\mu_{\text{inv}}C_{ox}(V_g-V_{th})^2/2$ with
+$C_{ox}=\SI{3.60e-7}{F/cm^2}$, $\mu_{\text{inv}}=\SI{300}{cm^2/Vs}$, $L=\SI{0.35}{\micro
+\meter}$, $V_g-V_{th}=\SI{2.5}{V}$ gives $\SI{0.96}{mA/\micro\meter}$. The self--consistent
+DD (with field--dependent mobility) yields $\SI{0.25}{mA/\micro\meter}$ --- lower, as
+expected for a \emph{velocity--saturated short--channel} device where the long--channel
+formula overestimates. (Revision~1 loosely called these ``matching''; they agree only in
+order of magnitude, with the difference physically attributable to velocity saturation.)
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.86\linewidth]{../figures/she_bulk_validation.png}
+\caption{Homogeneous--bulk validation of the SHE energy transport + optical operator:
+zero field reproduces the 300~K Maxwellian (detailed balance), and the tail heats
+monotonically with field. This validates the operators before the 2-D solve.}
+\end{figure}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{../figures/poisson_equilibrium.png}
+\caption{Equilibrium Poisson: potential, $\log_{10}n$, $\log_{10}p$.}
+\end{figure}
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{../figures/dd_bias.png}
+\caption{Self--consistent DD at $V_{gs}=V_{ds}=\SI{3}{V}$: inversion layer and drain--side
+high--field / pinch--off region.}
+\end{figure}
+
+\section{Status and remaining work}
+\begin{center}\small
+\begin{tabular}{clc}
+\toprule
+Phase & Component & Status\\
+\midrule
+P1 & Derivation (Rev.\ 2, audited) & \textcolor{green!60!black}{\textbf{documented}}\\
+P2--P4 & Device, Poisson, DD, bands & \textcolor{blue!70!black}{\textbf{sanity-checked}}\\
+P5 & First--order SHE core ($(\vecr,H)$ form) & in progress\\
+P6--P9 & Scattering, impact ionization, self--consistent loop, Figs.~2--8 & pending\\
+\bottomrule
+\end{tabular}
+\end{center}
+Part~II will report the SHE core, then give \emph{quantitative} comparisons against Liang's
+Figs.~2--8 (distribution slices, $n$, velocity, potential, $p$, $T_e$/$G_{ii}$, I--V),
+keeping the Table~\ref{tab:taxonomy} distinction between reproduced, reconstructed, and
+surrogate elements.
+
+\appendix
+\section{Numerical and model specifications}\label{sec:specs}
+\fix{F2} \textbf{Statistics/constants:} $T=\SI{300}{K}$, $V_t=\SI{25.85}{mV}$,
+$n_i=\SI{1.45e10}{cm^{-3}}$, Boltzmann statistics, $\epsilon_{si}=11.7$,
+$\epsilon_{ox}=3.9$, $m^*=0.32\,m_0$, $g_v=6$, band $\gamma(\eps)=\eps(1+\alpha\eps)$,
+$\alpha=\SI{0.5}{eV^{-1}}$.
+\textbf{Mesh:} nonuniform tensor grid, $N_x{\times}N_y$ up to $90{\times}80$,
+surface--refined in depth ($y\propto s^{1.8}$); energy/$H$ grid uniform,
+$\Delta\eps=\SI{0.01}{eV}$ over $[0,3.02]\,$eV ($E_{op}=5\Delta\eps$).
+\textbf{Poisson BCs:} ohmic Dirichlet at source/drain (top n$^+$) and body (bottom),
+$\phi=V_{\text{applied}}+V_t\,\mathrm{asinh}(N_{\text{net}}/2n_i)$; \emph{gate via oxide
+Robin BC} --- the oxide is not meshed; a transmissibility
+$T_{ox}=\epsilon_{ox}\epsilon_0\,\Delta x_i/t_{ox}$ couples each gate surface node to a
+metal node at $V_g-\Phi_{\text{gate}}$ ($t_{ox}=\SI{9.6}{nm}$); homogeneous Neumann on all
+other boundaries (edges, surface spacers). \textbf{Poisson solver:} Newton, update clip
+\SI{0.5}{V}, tolerance $\SI{e-8}{V}$.
+\textbf{Carrier statistics/continuity:} Scharfetter--Gummel current
+$J_{n,a\to b}=\tfrac{q\mu_nV_t}{h}[B(\Delta)n_b-B(-\Delta)n_a]$,
+$B(x)=x/(e^x-1)$; ohmic Dirichlet $n=\tfrac12(N_{\text{net}}+\sqrt{N_{\text{net}}^2+4n_i^2})$,
+$p=n_i^2/n$; Neumann at insulating surfaces.
+\textbf{Mobility:} Caughey--Thomas low field
+$\mu=\mu_{\min}+(\mu_{\max}-\mu_{\min})/(1+(N/N_{\text{ref}})^a)$
+(electrons $68.5/1414/9.2{\times}10^{16}/0.711$; holes $44.9/470.5/2.23{\times}10^{17}/0.719$),
+field saturation $\mu(E)=\mu_{lf}/(1+(\mu_{lf}E/v_{\text{sat}})^\beta)^{1/\beta}$
+($v_{\text{sat}}^n=\SI{1.07e7}{cm/s}$, $\beta_n=2$; $v_{\text{sat}}^p=\SI{8.37e6}{cm/s}$,
+$\beta_p=1$). \textbf{Recombination:} SRH,
+$R=(np-n_i^2)/[\tau_p(n+n_i)+\tau_n(p+n_i)]$, $\tau_n=\tau_p=\SI{e-7}{s}$, semi--implicit.
+\textbf{Gummel:} decoupled Poisson$\to n\to p$ map, tolerance $\SI{e-5}{V}$.
+\textbf{Contact-current sign:} drain electron current $=\sum$ SG electron fluxes entering
+drain--contact nodes, reported per \si{\micro\meter} width ($\times10^{-4}$ from A/cm).
+\textbf{SHE (Part~II):} Eq.~\eqref{eq:she_H} in $(\vecr,H)$; Maxwellian injection at ohmic
+contacts, zero--flux turning points at $\eps=0$, $f_0(\eps_{max})\!\to\!0$.
+
+\section{Code and parameter provenance}\label{sec:provenance}
+\fix{F8} Modules (Python 3.13, NumPy/SciPy): \texttt{constants.py}, \texttt{device.py},
+\texttt{poisson.py}, \texttt{dd.py}, \texttt{bands.py}, \texttt{scattering.py},
+\texttt{she\_bulk.py}, \texttt{diagnostics.py}. Each figure is regenerated by running the
+corresponding module; benchmark numbers in Table~\ref{tab:bench} are printed by
+\texttt{bands.py} and \texttt{diagnostics.py}. Reproduction study, Revision~2.
+
+\begin{thebibliography}{99}\small
+\bibitem{liang} W.~Liang, N.~Goldsman, I.~Mayergoyz, P.~J.~Oldiges, ``2-D MOSFET modeling
+including surface effects and impact ionization by self-consistent solution of the
+Boltzmann, Poisson, and hole-continuity equations,'' \emph{IEEE Trans.\ Electron Devices}
+\textbf{44}(2), 257--267, 1997.
+\bibitem{fiegna} C.~Fiegna, E.~Sangiorgi, ``Modeling of high-energy electrons in MOS
+devices at the microscopic level,'' \emph{IEEE Trans.\ Electron Devices} \textbf{40},
+619--627, 1993. (paper ref.~[12])
+\bibitem{brunetti} R.~Brunetti \emph{et al.}, ``A many-band silicon model for hot-electron
+transport,'' \emph{Solid-State Electron.} \textbf{32}, 1663--1667, 1989. (ref.~[13])
+\bibitem{gnudi} A.~Gnudi, D.~Ventura, G.~Baccarani, F.~Odeh, ``Two-dimensional MOSFET
+simulation by means of a multidimensional spherical harmonics expansion of the BTE,''
+\emph{Solid-State Electron.} \textbf{36}, 575, 1993. (ref.~[19])
+\bibitem{hennacy} K.~A.~Hennacy, Y.-J.~Wu, N.~Goldsman, I.~D.~Mayergoyz, ``Deterministic
+MOSFET simulation using a generalized SHE of the BTE,'' \emph{Solid-State Electron.}
+\textbf{38}, 1489--1495, 1995. (ref.~[20])
+\bibitem{wu} Y.-J.~Wu, N.~Goldsman, ``Deterministic modeling of impact ionization via a
+random-$k$ approach and the multiband BTE,'' \emph{J.\ Appl.\ Phys.} \textbf{78}, 1995.
+(ref.~[23])
+\bibitem{khalil} N.~Khalil, J.~Faricelli, D.~Bell, S.~Selberherr, ``A novel model for
+extracting the 2-D doping profile of a sub-micron MOSFET,'' \emph{Symp.\ VLSI Technol.\
+Dig.}, 131--132, 1994. (ref.~[25])
+\bibitem{landsberg} P.~T.~Landsberg \emph{et al.}, impact-ionization energy partition,
+\emph{Solid-State Commun.} \textbf{10}, 479, 1972. (ref.~[29])
+\bibitem{lombardi} C.~Lombardi, S.~Manzini, A.~Saporito, M.~Vanzi, ``A physically based
+mobility model for numerical simulation of nonplanar devices,'' \emph{IEEE Trans.\ CAD}
+\textbf{7}, 1164--1171, 1988. (ref.~[33])
+\bibitem{schwarz} S.~A.~Schwarz, S.~E.~Russek, ``Semi-empirical equations for electron
+velocity in silicon: Part II---MOS inversion layer,'' \emph{IEEE Trans.\ Electron Devices}
+\textbf{ED-30}, 1634--1639, 1983. (ref.~[34])
+\bibitem{sg} D.~L.~Scharfetter, H.~K.~Gummel, ``Large-signal analysis of a silicon Read
+diode oscillator,'' \emph{IEEE Trans.\ Electron Devices} \textbf{ED-16}, 64--77, 1969.
+\bibitem{caughey} D.~M.~Caughey, R.~E.~Thomas, ``Carrier mobilities in silicon empirically
+related to doping and field,'' \emph{Proc.\ IEEE} \textbf{55}, 2192--2193, 1967.
+\bibitem{jungemann} C.~Jungemann, B.~Meinerzhagen, \emph{Hierarchical Device Simulation:
+The Monte-Carlo Perspective}. Springer, 2003.
+\bibitem{selberherr} S.~Selberherr, \emph{Analysis and Simulation of Semiconductor
+Devices}. Springer, 1984.
+\end{thebibliography}
+
+\end{document}

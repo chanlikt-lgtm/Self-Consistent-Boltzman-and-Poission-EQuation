@@ -1,14 +1,12 @@
-\contentsline {section}{\numberline {1}Revision-2 audit response}{2}{section.1}%
-\contentsline {section}{\numberline {2}The method being reproduced}{2}{section.2}%
-\contentsline {section}{\numberline {3}Derivation of the first-order SHE equation}{2}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Spherical-harmonic expansion and first-order truncation}{2}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Total-energy form used for the 2-D solve}{3}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Scattering operators}{3}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Impact ionization: full electron/hole bookkeeping}{3}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Moments}{4}{subsection.3.5}%
-\contentsline {section}{\numberline {4}Reconstructed device and modelling taxonomy}{4}{section.4}%
-\contentsline {section}{\numberline {5}Sanity-checked foundation and benchmark table}{5}{section.5}%
-\contentsline {paragraph}{Drift-diffusion current \textcolor {green!45!black}{\small [\textbf {Rev.2 fix:} F7]}.}{5}{section*.6}%
-\contentsline {section}{\numberline {6}Status and remaining work}{5}{section.6}%
-\contentsline {section}{\numberline {A}Numerical and model specifications}{6}{appendix.A}%
-\contentsline {section}{\numberline {B}Code and parameter provenance}{7}{appendix.B}%
+\contentsline {section}{\numberline {1}Revision history and audit responses}{2}{section.1}%
+\contentsline {section}{\numberline {2}Derivation of the first-order SHE equation}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Total-energy form and the global $H$-grid}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Scattering operators}{3}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Impact ionization}{3}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Reconstructed device and modelling taxonomy}{3}{section.3}%
+\contentsline {section}{\numberline {4}Benchmarks, bulk validation, and threshold voltage}{3}{section.4}%
+\contentsline {paragraph}{Threshold voltage --- extracted, degeneracy resolved \textcolor {green!45!black}{\small [\textbf {Rev.3:} F3]}.}{4}{section*.5}%
+\contentsline {paragraph}{Drift-diffusion current, with the correct overdrive.}{4}{section*.6}%
+\contentsline {section}{\numberline {5}Status}{4}{section.5}%
+\contentsline {section}{\numberline {A}Numerical and model specifications}{5}{appendix.A}%
+\contentsline {section}{\numberline {B}Code and parameter provenance}{6}{appendix.B}%

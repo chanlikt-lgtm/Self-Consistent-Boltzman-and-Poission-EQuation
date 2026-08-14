@@ -1,8 +1,9 @@
 phi range -0.348..3.586 V
-H-grid: 284 points, dH=0.0250 eV, E_op=2 nodes; active DOF=100449
-assembled in 1.4s, nnz=838321, orphans pinned=0
-solved in 35.9s (info=0)
-n range 5.05e+03..1.12e+20 cm^-3
-Te range 269..3184 K (max near drain?)
-Gii max 2.17e+27 /cm^3/s
+H-grid: 562 points, dH=0.0125 eV, E_op=4 nodes; active DOF=328544
+assembled in 4.8s, nnz=2787919, orphans pinned=0
+solved in 32.8s (info=0)
+n range 0.00e+00..1.05e+20 cm^-3
+Te range 295..3236 K (max near drain?)
+Gii max 1.37e+27 /cm^3/s
+velocity |v| max 1.23e+07 cm/s (expect ~1e7 sat)
 saved data/she2d_result.npz

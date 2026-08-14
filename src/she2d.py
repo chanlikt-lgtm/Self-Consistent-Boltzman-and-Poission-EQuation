@@ -195,14 +195,13 @@ class SHE2D:
         D[np.abs(D) < 1e-300] = 1.0
         As = (sp.diags(1.0 / D) @ A).tocsc()
         bs = b / D
-        try:
-            f = spla.spsolve(As, bs)
-            info = 0
-        except Exception as e:
-            print("  spsolve failed (%s); trying lgmres+ILU" % e)
-            ilu = spla.spilu(As, drop_tol=1e-4, fill_factor=15)
+        if self.Ndof <= 130000:
+            f = spla.spsolve(As, bs); info = 0
+        else:
+            # large grid: ILU + lgmres on the well-conditioned (scaled) matrix
+            ilu = spla.spilu(As, drop_tol=1e-3, fill_factor=8)
             M = spla.LinearOperator(As.shape, ilu.solve)
-            f, info = spla.lgmres(As, bs, M=M, rtol=tol, maxiter=500)
+            f, info = spla.lgmres(As, bs, M=M, rtol=tol, maxiter=400)
         self.f = np.nan_to_num(np.maximum(f, 0.0))
         self.info = info
         return self.f
@@ -220,7 +219,9 @@ class SHE2D:
         n = np.trapezoid(Z * F, H, axis=2)                       # 1/m^3
         emean = np.zeros_like(n)
         num = np.trapezoid(eps * Z * F, H, axis=2)
-        good = n > 1e6
+        # Te / velocity are ill-defined where n is negligible: mask depleted regions
+        # (n < 1e13 cm^-3 = 1e19 m^-3), else numerical noise -> spurious hot/fast spots.
+        good = n > 1e19
         emean[good] = num[good] / n[good]
         Te = (2.0/3.0) * emean / kB                              # K
         Te[~good] = T
@@ -229,9 +230,21 @@ class SHE2D:
         P_ii = 2.0e13   # Keldysh prefactor [1/s] (surrogate; see report)
         tii_inv = np.where(eps > eth, P_ii * ((eps - eth)/eth)**2, 0.0)
         Gii = np.trapezoid(Z * F * tii_inv, H, axis=2)           # 1/(m^3 s)
+        # ---- average velocity field (Fig. 4): J = -int ZD grad_r f0|_H dH ; v = J/n ----
+        ZD = self.Z * self.D
+        xx, yy, HH = self.x, self.y, self.H
+        dFdx = np.zeros_like(F); dFdy = np.zeros_like(F)
+        dFdx[:, 1:-1, :] = (F[:, 2:, :] - F[:, :-2, :]) / (xx[2:] - xx[:-2])[None, :, None]
+        dFdy[1:-1, :, :] = (F[2:, :, :] - F[:-2, :, :]) / (yy[2:] - yy[:-2])[:, None, None]
+        Jx = -np.trapezoid(ZD * dFdx, HH, axis=2)               # 1/(m^2 s)
+        Jy = -np.trapezoid(ZD * dFdy, HH, axis=2)
+        vx = np.zeros_like(n); vy = np.zeros_like(n)
+        vx[good] = Jx[good] / n[good] * 100.0                    # cm/s
+        vy[good] = Jy[good] / n[good] * 100.0
         self.n = n * 1e-6                                        # cm^-3
         self.Te = Te
         self.Gii = Gii * 1e-6                                    # 1/(cm^3 s)
+        self.vx, self.vy = vx, vy
         self.F3d = F
         return self.n, self.Te, self.Gii
 
@@ -258,10 +271,10 @@ def get_phi(Nx, Ny, Vg, Vd, Phi_gate=0.30):
 
 if __name__ == "__main__":
     import time
-    Nx, Ny = 32, 26
+    Nx, Ny = 40, 34
     x, y, phi, ctype, neq = get_phi(Nx, Ny, 3.0, 3.0)
     print("phi range %.3f..%.3f V" % (phi.min(), phi.max()))
-    she = SHE2D(x, y, phi, ctype, neq, dHi_eV=0.025)
+    she = SHE2D(x, y, phi, ctype, neq, dHi_eV=0.0125)
     print("H-grid: %d points, dH=%.4f eV, E_op=%d nodes; active DOF=%d" %
           (she.NH, she.dH/eV, she.m_op, she.Ndof))
     t0 = time.time(); she.assemble()
@@ -271,6 +284,9 @@ if __name__ == "__main__":
     print("n range %.2e..%.2e cm^-3" % (n.min(), n.max()))
     print("Te range %.0f..%.0f K (max near drain?)" % (Te.min(), Te.max()))
     print("Gii max %.2e /cm^3/s" % Gii.max())
+    vmag = np.sqrt(she.vx**2 + she.vy**2)
+    print("velocity |v| max %.2e cm/s (expect ~1e7 sat)" % vmag.max())
     np.savez(os.path.join(os.path.dirname(__file__), "..", "data", "she2d_result.npz"),
-             x=x, y=y, phi=phi, n=n, Te=Te, Gii=Gii)
+             x=x, y=y, phi=phi, n=n, Te=Te, Gii=Gii, vx=she.vx, vy=she.vy,
+             F3d=she.F3d.astype(np.float32), H=she.H)
     print("saved data/she2d_result.npz")

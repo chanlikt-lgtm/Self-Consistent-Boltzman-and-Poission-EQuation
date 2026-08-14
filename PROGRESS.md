@@ -39,7 +39,15 @@ Device: 0.35-um effective-channel LDD N-MOSFET, t_ox = 9.6 nm, x_j ~ 0.17 um.
          dd_bias.png (inversion layer, pinch-off at Vg=Vd=3, Id~0.27 mA/um -- right order)]
 - [x] P4  Band structure gamma(eps), DOS, group velocity (src/bands.py)
         [VALIDATED: Nc=2.785e19 vs Si 2.8e19 (0.5%); v(0.1eV)=3.1e7, v(1eV)=6.4e7 cm/s]
-- [ ] P5  First-order SHE core: f0/f1 assembly + SG energy flux (src/she.py)  <-- NEXT [CENTERPIECE]
+- [~] P5  First-order SHE core (src/she2d.py) -- FIRST WORKING SOLVE (commit 40d5929).
+        (r,H) form; spatial diffusion per H-plane + optical/acoustic collision; contact
+        Maxwellian injection on DD phi. Bugs fixed: singular matrix (pin orphans) + blow-up
+        to 1e56 (Jacobi row-scaling: contact diag=1 vs interior ~1e23 -> cond 1e23).
+        RESULT (coarse 32x26, E_op=2): n~1e20 inversion+pinch-off (Fig 3 OK); Te peaks at
+        DRAIN to 3184K (Fig 7 dashed OK); G_ii~1e27 at drain, offset from Te peak (Fig 7
+        solid OK, matches paper contour values 1-2.3e27). Hot-carrier physics VALIDATED.
+        TODO: refine grid (E_op>=4), Fig 2 (distribution slices), Fig 4 (velocity), Fig 8
+        (I-V), quantitative contour comparison, self-consistent SHE->Poisson loop.
 - [ ] P6  Scattering operators (src/scattering.py)
 - [ ] P7  Impact ionization + hole continuity (src/holes.py)
 - [ ] P8  Self-consistent Gummel driver (src/solve.py)

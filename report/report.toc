@@ -1,12 +1,12 @@
 \contentsline {section}{\numberline {1}Revision history and audit responses}{2}{section.1}%
-\contentsline {section}{\numberline {2}Derivation of the first-order SHE equation}{2}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Total-energy form and the global $H$-grid}{2}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Scattering operators}{3}{subsection.2.2}%
+\contentsline {section}{\numberline {2}First-order SHE equation}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Boundaries: physical turning point vs.\ numerical cutoff}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Acoustic energy operator (derivation)}{2}{subsection.2.2}%
 \contentsline {subsection}{\numberline {2.3}Impact ionization}{3}{subsection.2.3}%
-\contentsline {section}{\numberline {3}Reconstructed device and modelling taxonomy}{3}{section.3}%
-\contentsline {section}{\numberline {4}Benchmarks, bulk validation, and threshold voltage}{3}{section.4}%
-\contentsline {paragraph}{Threshold voltage --- extracted, degeneracy resolved \textcolor {green!45!black}{\small [\textbf {Rev.3:} F3]}.}{4}{section*.5}%
-\contentsline {paragraph}{Drift-diffusion current, with the correct overdrive.}{4}{section*.6}%
+\contentsline {section}{\numberline {3}Reconstructed device, taxonomy, and transport parameters}{3}{section.3}%
+\contentsline {section}{\numberline {4}Benchmarks, bulk validation, threshold voltage}{3}{section.4}%
+\contentsline {paragraph}{Threshold voltage --- measured trend \textcolor {green!45!black}{\small [\textbf {Rev.4:} m3]}.}{3}{section*.6}%
+\contentsline {paragraph}{Drift-diffusion current.}{4}{section*.7}%
 \contentsline {section}{\numberline {5}Status}{4}{section.5}%
 \contentsline {section}{\numberline {A}Numerical and model specifications}{5}{appendix.A}%
-\contentsline {section}{\numberline {B}Code and parameter provenance}{6}{appendix.B}%
+\contentsline {section}{\numberline {B}Code and parameter provenance}{5}{appendix.B}%

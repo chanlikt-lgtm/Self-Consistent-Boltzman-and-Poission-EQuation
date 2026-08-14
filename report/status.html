@@ -122,9 +122,9 @@
     <h1>Liang, Goldsman, Mayergoyz &amp; Oldiges (1997)<br>SHE&ndash;BTE 2-D MOSFET &mdash; reproduction status</h1>
     <p class="sub">First-order spherical-harmonic solution of the electron Boltzmann equation, self-consistent with 2-D Poisson &amp; hole continuity. <span class="mono">IEEE&nbsp;TED&nbsp;44(2),&nbsp;257&ndash;267.</span></p>
     <div class="metabar">
-      <span class="chip rev">Part&nbsp;I &middot; Revision&nbsp;3 &middot; twice-audited</span>
-      <span class="chip">commit 2a12b62 &middot; NumPy/SciPy</span>
-      <span class="chip">7-page derivation report</span>
+      <span class="chip rev">Part&nbsp;I &middot; Revision&nbsp;4 &middot; thrice-audited</span>
+      <span class="chip">commit 7aa8aff &middot; NumPy/SciPy</span>
+      <span class="chip">6-page derivation report</span>
       <span class="chip">5 benchmark figures</span>
     </div>
   </header>
@@ -135,75 +135,59 @@
   </div>
 
   <section>
-    <h2>Second audit &rarr; response (Rev.&nbsp;2 &rarr; Rev.&nbsp;3)</h2>
-    <p class="lead">A re-audit of Revision&nbsp;2 rated it a &ldquo;strong technical draft, still not solver-reproduction-ready,&rdquo; and flagged <strong>two blocking items</strong> (B1, B2) as likely implementation errors, not prose. Both are now fixed, along with the remaining findings.</p>
+    <h2>Third audit &rarr; response (Rev.&nbsp;3 &rarr; Rev.&nbsp;4)</h2>
+    <p class="lead">The third audit <strong>passed</strong> both prior blockers and the junction/current arithmetic, and raised one new blocker (a contact-normalization typo) plus specification gaps. The audits have converged from solver errors to spec-completeness for the pending Part&nbsp;II.</p>
     <div class="verdict">
-      <div class="vcard"><div class="k">Two blockers (Te bug, H-grid)</div><div class="v">Resolved</div></div>
-      <div class="vcard prelim"><div class="k">Reproducibility (specs, provenance)</div><div class="v">Much improved</div></div>
-      <div class="vcard weak"><div class="k">Device V<sub>th</sub> calibration</div><div class="v">Extracted, recalibration TODO</div></div>
+      <div class="vcard"><div class="k">New blocker (contact Z<sup>&minus;1</sup>)</div><div class="v">Report typo; code correct</div></div>
+      <div class="vcard prelim"><div class="k">Acoustic op. &amp; &epsilon;<sub>max</sub> boundary</div><div class="v">Derived &amp; validated</div></div>
+      <div class="vcard weak"><div class="k">Device V<sub>th</sub> (0.6 V guess)</div><div class="v">Refuted &mdash; measured 1.03 V</div></div>
     </div>
     
       <div class="finding">
-        <div class="fid">B1</div>
+        <div class="fid">B</div>
         <div class="fbody">
-          <p class="fq"><strong>Blocking:</strong> zero-field electron temperature was 282&nbsp;K &mdash; inconsistent with the report&rsquo;s own moment definition (a real solver bug).</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Root cause: the optical operator only connects &epsilon;&nbsp;&plusmn;&nbsp;E<sub>op</sub>, splitting the energy grid into 5 decoupled sub-lattices &mdash; the operator was reducible with no field. <strong>Fixed</strong> by adding the omitted acoustic-phonon energy operator (Fokker&ndash;Planck, Maxwellian-null). Now recovers the Maxwellian to 3&times;10<sup>-4</sup>; T<sub>e</sub>&nbsp;=&nbsp;311&nbsp;K&nbsp;&rarr;&nbsp;309.7&nbsp;K analytic.</p>
+          <p class="fq"><strong>New blocker:</strong> the SHE contact Maxwellian had a spurious Z<sup>&minus;1</sup> &mdash; with n&nbsp;=&nbsp;&int;Zf<sub>0</sub>d&epsilon; that does not give n&nbsp;=&nbsp;n<sub>contact</sub>.</p>
+          <p class="fr"><span class="arrow">&rarr;</span> The audit is right &mdash; but it was a <strong>report typo</strong>, not a code bug. Corrected to f<sub>0</sub>&nbsp;=&nbsp;n<sub>contact</sub>e<sup>&minus;&epsilon;/kT</sup>/&int;Ze<sup>&minus;&epsilon;/kT</sup>d&epsilon;, and the bulk code was verified to already use the correct convention (she_bulk.py L66&ndash;68).</p>
         </div>
       </div>
 
       <div class="finding">
-        <div class="fid">B2</div>
+        <div class="fid">M1</div>
         <div class="fbody">
-          <p class="fq"><strong>Blocking:</strong> global H-grid written as [0,&nbsp;3.02]&nbsp;eV, but H&nbsp;=&nbsp;&epsilon;&minus;q&phi; needs negative extent (a thermal electron at +0.586&nbsp;V has H&nbsp;&asymp;&nbsp;&minus;0.586&nbsp;eV).</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Defined the global mesh &minus;q&phi;<sub>max</sub>&nbsp;&le;&nbsp;H&nbsp;&le;&nbsp;&epsilon;<sub>max</sub>&minus;q&phi;<sub>min</sub> with the physical mask 0&nbsp;&le;&nbsp;H+q&phi;&nbsp;&le;&nbsp;&epsilon;<sub>max</sub>, so thermal carriers at any contact potential are represented.</p>
+          <p class="fq">The acoustic energy operator (the B1 fix) was under-specified &mdash; &tau;<sub>ac</sub> never given; provenance unclear.</p>
+          <p class="fr"><span class="arrow">&rarr;</span> Stated &tau;<sub>ac</sub>&nbsp;=&nbsp;&tau;<sub>1</sub>; <strong>derived</strong> the Fokker&ndash;Planck form (A&nbsp;=&nbsp;4m*v<sub>s</sub><sup>2</sup>&epsilon;/&tau;<sub>ac</sub>) from quasi-elastic acoustic energy transfer; and labelled it a <em>reconstruction</em> (my addition for irreducibility, not Liang&rsquo;s treatment).</p>
         </div>
       </div>
 
       <div class="finding">
-        <div class="fid">F3</div>
+        <div class="fid">M2</div>
         <div class="fbody">
-          <p class="fq">Threshold voltage claimed but never shown; two calibration knobs against one target is non-unique.</p>
-          <p class="fr"><span class="arrow">&rarr;</span> V<sub>th</sub> now <strong>extracted&nbsp;=&nbsp;1.64&nbsp;V</strong> (max-gm). Honestly flagged as <em>too high</em> &mdash; the 4&times;10<sup>17</sup> implant was unverified. Both offsets held at fixed inputs so V<sub>th</sub> is <em>derived</em>, not fit; recalibration to ~0.6&nbsp;V flagged for Part&nbsp;II.</p>
+          <p class="fq">Upper &epsilon;<sub>max</sub> boundary mischaracterized as a reflecting turning point &mdash; artificially retains hot carriers (biases impact ionization).</p>
+          <p class="fr"><span class="arrow">&rarr;</span> Separated the two limits: &epsilon;=0 is the <em>physical</em> band edge (reflecting); &epsilon;<sub>max</sub> is a <em>numerical</em> cutoff (absorbing). Validated by convergence: T<sub>e</sub>(300&nbsp;kV/cm)&nbsp;=&nbsp;<strong>3392.4&nbsp;K identical</strong> at &epsilon;<sub>max</sub>&nbsp;=&nbsp;3.02/4.0/5.0&nbsp;eV.</p>
         </div>
       </div>
 
       <div class="finding">
-        <div class="fid">cite</div>
+        <div class="fid">m3</div>
         <div class="fbody">
-          <p class="fq">Equal energy split over-attributed to Landsberg; citation incomplete.</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Corrected the Landsberg&nbsp;1972 citation and relabelled the equal split a <em>disclosed modeling assumption</em>, not a cited result.</p>
+          <p class="fq">The V<sub>th</sub>&nbsp;&asymp;&nbsp;0.6&nbsp;V target (via N<sub>A</sub>~1.2&times;10<sup>17</sup>) was unsupported.</p>
+          <p class="fr"><span class="arrow">&rarr;</span> <strong>Tested and refuted</strong> by measurement: N<sub>A</sub>&nbsp;=&nbsp;1.2&times;10<sup>17</sup> gives V<sub>th</sub>&nbsp;=&nbsp;1.03&nbsp;V, not 0.6. Reported as a measured V<sub>th</sub>(N<sub>A</sub>) trend; 0.6&nbsp;V needs a lower implant (&lesssim;6&times;10<sup>16</sup>), to be demonstrated in the recalibration.</p>
         </div>
       </div>
 
       <div class="finding">
-        <div class="fid">table</div>
+        <div class="fid">m4</div>
         <div class="fbody">
-          <p class="fq">Benchmark table mixed genuine benchmarks with construction targets and sanity trends.</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Split into (A)&nbsp;analytic benchmarks, (B)&nbsp;construction targets, (C)&nbsp;qualitative sanity trends.</p>
+          <p class="fq">Production H-grid unspecified; Table-I transport parameters dropped in Rev 3.</p>
+          <p class="fr"><span class="arrow">&rarr;</span> Specified the H-grid: <em>fixed</em> global grid (no remapping), &Delta;H&nbsp;=&nbsp;2.5&nbsp;meV so E<sub>op</sub>/&Delta;H&nbsp;=&nbsp;20 is integer, from the a-priori bias envelope. Restored the full Table I (D<sub>ac</sub>, D<sub>n</sub>, n<sub>scr</sub>, D<sub>sa</sub>, &hellip;).</p>
         </div>
       </div>
 
       <div class="finding">
-        <div class="fid">band</div>
+        <div class="fid">pass</div>
         <div class="fbody">
-          <p class="fq">Ambiguous whether the band is 2-band Fiegna/Brunetti or 1-parameter Kane.</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Stated explicitly: the paper uses 2-band Fiegna/Brunetti; this reconstruction uses the 1-parameter Kane <em>surrogate</em> (flagged; biases the high-energy tail and impact ionization).</p>
-        </div>
-      </div>
-
-      <div class="finding">
-        <div class="fid">layout</div>
-        <div class="fbody">
-          <p class="fq">The yellow reconstruction-note box clipped past the right page margin (text unreadable).</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Rebuilt the note box as a minipage sized to the text width &mdash; no clipping.</p>
-        </div>
-      </div>
-
-      <div class="finding">
-        <div class="fid">prov</div>
-        <div class="fbody">
-          <p class="fq">Provenance only partial &mdash; no immutable code identifier.</p>
-          <p class="fr"><span class="arrow">&rarr;</span> Added git commit + exact dependency versions (Python&nbsp;3.13.14, NumPy&nbsp;2.5.1, SciPy&nbsp;1.18.0).</p>
+          <p class="fq">Passes carried forward.</p>
+          <p class="fr"><span class="arrow">&rarr;</span> The auditor independently reproduced x<sub>j</sub>&nbsp;=&nbsp;0.1707&nbsp;&micro;m and I<sub>d</sub>&nbsp;=&nbsp;0.285&nbsp;mA/&micro;m, and passed both prior blockers (H-grid, zero-field T<sub>e</sub>), the band-model disclosure, and provenance.</p>
         </div>
       </div>
   </section>
@@ -237,9 +221,11 @@
 
         <tr><td class="q">Maxwellian recovered at E=0</td><td class="num exp">exact</td><td class="num comp">3&times;10<sup>-4</sup></td><td class="note">max rel. dev. after acoustic-operator fix</td></tr>
 
+        <tr><td class="q"><strong>T<sub>e</sub>(300 kV/cm) vs &epsilon;<sub>max</sub></strong></td><td class="num exp">invariant</td><td class="num comp">3392.4</td><td class="note">K; identical at &epsilon;<sub>max</sub>=3.02/4/5 eV (cutoff validated)</td></tr>
+
         <tr><td class="q">bulk T<sub>e</sub> at 0 / 100 / 300 kV/cm</td><td class="num exp">monotone &uarr;</td><td class="num comp">311 / 1478 / 3392</td><td class="note">K; hot-electron heating</td></tr>
 
-        <tr><td class="q"><strong>threshold voltage V<sub>th</sub> (extracted)</strong></td><td class="num exp">~0.6 target</td><td class="num comp">1.64</td><td class="note">V; too high &mdash; recalibration flagged for Part II</td></tr>
+        <tr><td class="q"><strong>V<sub>th</sub> extracted (4e17 / 1.2e17 implant)</strong></td><td class="num exp">&mdash;</td><td class="num comp">1.64 / 1.03</td><td class="note">V; both too high &mdash; 0.6 V guess refuted, recalibration TODO</td></tr>
         </tbody>
       </table>
     </div>

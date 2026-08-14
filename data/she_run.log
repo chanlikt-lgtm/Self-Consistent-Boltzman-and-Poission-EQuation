@@ -1,0 +1,8 @@
+phi range -0.348..3.586 V
+H-grid: 284 points, dH=0.0250 eV, E_op=2 nodes; active DOF=100449
+assembled in 1.4s, nnz=838321, orphans pinned=0
+solved in 35.9s (info=0)
+n range 5.05e+03..1.12e+20 cm^-3
+Te range 269..3184 K (max near drain?)
+Gii max 2.17e+27 /cm^3/s
+saved data/she2d_result.npz

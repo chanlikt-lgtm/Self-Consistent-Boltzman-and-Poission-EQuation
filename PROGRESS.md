@@ -70,8 +70,23 @@ Patch changes (7 files + coupled_she.py, validate_patch.py, PATCH_NOTES.md):
 - coupled_she.py: NEW damped self-consistent SHE<->hole<->Poisson loop (recomputes n from SHE each step).
 - poisson.py: solve_fixed_charge()/solve_holes support. diagnostics.py: Vth=1.64 default.
   vth_extract.py: dVth/dPhi_gate sign +1. she2d_fig2.py: DOS-weighted (Zf0) tail fraction.
-Superseded my partial manual patches (same fixes). NEXT: run full 40x34 patched + coupled to converge;
-report revision (Eq.6 fix + self-consistency + II operator); grid convergence; device recalibration.
+Superseded my partial manual patches (same fixes).
+LARGE-GRID SOLVE FIX: II gain terms break M-matrix -> spilu singular on 40x34. Fixed via no-II
+preconditioner (run_she_clean.py / grid_refine.py): ILU on the clean transport matrix (no II),
+lgmres on the full system -> 0.9s, residual 1.5e-9, NO bulk artifacts. Commit 84e4065.
+**PATCHED DD->SHE BASELINE: PASS (visual+numerical), auditor-confirmed. LOCKED REF = commit f016e3c.**
+Numerical audit (audit_result.py, data/audit_result.log = regression benchmark):
+  n_max 1.0516e20 @source; Te_max 3232.9K @drain(0.595,0.005) [0.10% vs 3236]; Gii_max 1.3513e27
+  @drain(0.595,0.009) [1.4% vs 1.37e27]; |v|_max 9.732e6 cm/s (FV, below old postproc 1.23e7);
+  Isrc=-1.7044e-4/Idrn=+1.7071e-4 A/um (0.16% mismatch); continuity residual -5.7e-6 (relative);
+  0 orphans; f0 pre-clip min -3.3e-11 (46/328544 tiny negatives).
+HONEST: Te-Gii peaks 5nm apart = WITHIN one cell (mesh ~20nm) -> co-located at this resolution,
+NOT a resolved offset. Needs grid refinement to resolve Liang's offset.
+II STATUS: coupled to electron BTE (in collision operator, affects f0), NOT yet self-consistent
+with Poisson/holes.
+NEXT (auditor plan, one change at a time, compare vs f016e3c): (1) GRID REFINE 60x50 dH=12.5meV
+[IN PROGRESS] - check if Te/Gii peak separation persists; (2) then self-consistency (coupled_she.py
+damped); (3) energy check dH=6.25meV (E_op=8). Then report revision + target-figure overlays.
 
 ## AUDIT (Rev 1 -> Rev 2), 2026-08-14
 External audit verdict on report Rev 1: "promising Part I; NOT reproduction-grade yet."

@@ -1,0 +1,8 @@
+phi range -0.348..3.586 V
+assembled WITH-II: DOF=328544 nnz=3187123 orphans=0
+no-II ILU built in 31.7s
+lgmres info=0 in 0.9s
+scaled residual 1.50e-09
+n 0.00e+00..1.05e+20  Te 295..3233 K  |v|max 9.73e+06 cm/s  Gii max 1.35e+27
+Isrc=-1.704e-04 Idrn=1.707e-04 A/um  number-balance -5.70e-06
+saved data/she2d_result.npz

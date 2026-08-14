@@ -1,0 +1,9 @@
+\contentsline {section}{\numberline {1}Status and scope}{1}{section.1}%
+\contentsline {section}{\numberline {2}The 2-D SHE core}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Formulation ($(\mathbf {r},H)$ total-energy form)}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Discretization, assembly, and boundaries}{2}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Numerical challenges and fixes (engineering log)}{2}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Moments}{3}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Reproduced figures and validation}{3}{section.3}%
+\contentsline {section}{\numberline {4}Honest caveats}{4}{section.4}%
+\contentsline {section}{\numberline {5}Remaining work}{4}{section.5}%

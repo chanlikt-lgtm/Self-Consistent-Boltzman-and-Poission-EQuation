@@ -1,9 +1,13 @@
 phi range -0.348..3.586 V
-H-grid: 562 points, dH=0.0125 eV, E_op=4 nodes; active DOF=328544
-assembled in 4.8s, nnz=2787919, orphans pinned=0
-solved in 32.8s (info=0)
+H-grid: 565 points, dH=0.0125 eV, E_op=4 nodes; active DOF=328544
+assembled in 6.4s, nnz=3187123, orphans pinned=0
+  spilu shift=1e-03 failed (Factor is exactly singular)
+  spilu shift=1e-02 failed (Factor is exactly singular)
+  ILU shift=5e-02 -> lgmres info=0
+solved in 316.0s (info=0, scaled residual 1.11e-08)
 n range 0.00e+00..1.05e+20 cm^-3
-Te range 295..3236 K (max near drain?)
-Gii max 1.37e+27 /cm^3/s
-velocity |v| max 1.23e+07 cm/s (expect ~1e7 sat)
+Te range 288..9140 K
+Gii max 1.35e+27 /cm^3/s
+velocity |v| max 3.75e+07 cm/s
+conservation: {'contact_particle_injection_per_m_s': -1.0672006557981222e+18, 'ii_event_rate_per_m_s': 1.8316425750413066e+18, 'cutoff_loss_per_m_s': 495882.400426128, 'cutoff_spatial_per_m_s': 90086.81853174999, 'cutoff_acoustic_per_m_s': 383119.3309551566, 'cutoff_optical_per_m_s': 22676.250939221398, 'number_balance_per_m_s': 7.644419192426885e+17, 'relative_number_balance': 0.00035912069133011836, 'source_current_A_per_um': np.float64(-0.00017043809647721545), 'drain_current_A_per_um': np.float64(0.0001706065843778373), 'body_current_A_per_um': np.float64(2.4964948290572037e-09), 'scaled_linear_residual_inf': 1.1050849196833204e-08}
 saved data/she2d_result.npz

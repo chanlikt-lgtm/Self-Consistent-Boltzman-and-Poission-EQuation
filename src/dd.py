@@ -103,8 +103,8 @@ class DDSolver:
         muy = mobility_field(mu_lf_y, Ey, carrier)
         return mux, muy
 
-    def assemble_continuity(self, phi, n, p, carrier):
-        """Return sparse A and rhs b for the SG continuity of `carrier` given phi."""
+    def assemble_continuity(self, phi, n, p, carrier, generation=None):
+        """Return sparse A,b for SG continuity. generation is G [cm^-3 s^-1]."""
         Nx, Ny, N = self.Nx, self.Ny, self.N
         mux, muy = self._face_mobilities(phi, carrier)
         rows, cols, vals = [], [], []
@@ -114,8 +114,12 @@ class DDSolver:
         # SRH recomb denominator (semi-implicit), using current n,p
         Dsrh = self.tau_p * (n + ni) + self.tau_n * (p + ni)
         vol = self.vol
+        if generation is None:
+            generation = np.zeros((Ny, Nx))
+        generation = np.asarray(generation, dtype=float)
+        if generation.shape != (Ny, Nx):
+            raise ValueError("generation must have shape (Ny,Nx)")
 
-        sign = 1.0  # electrons; holes handled by swapped Bernoulli args below
         for j in range(Ny):
             for i in range(Nx):
                 k = self._idx(j, i)
@@ -154,6 +158,10 @@ class DDSolver:
                 else:
                     diag[k] += -q * V * n[j, i] / Dsrh[j, i]
                     b[k] += -q * V * ni ** 2 / Dsrh[j, i]
+
+                # External electron-hole pair generation enters continuity as
+                # div(current-like SG flux) - q R + q G = 0 -> A u = b - q G V.
+                b[k] += -q * V * generation[j, i]
 
         # Dirichlet rows
         for j in range(Ny):
@@ -203,6 +211,31 @@ class DDSolver:
 
         self.phi, self.n, self.p = phi, n, p
         return phi, n, p
+
+    def solve_holes(self, phi, n_fixed, p_init=None, generation=None,
+                    max_iter=30, tol=1e-5):
+        """
+        Solve only the hole continuity equation for fixed phi and electron density.
+        Used by the coupled SHE loop with impact-ionization generation G_ii.
+        """
+        n_fixed = np.asarray(n_fixed, dtype=float)
+        if p_init is None:
+            p = np.maximum(self.p_eq.copy(), 1e-3)
+        else:
+            p = np.maximum(np.asarray(p_init, dtype=float).copy(), 1e-3)
+        if generation is None:
+            generation = np.zeros_like(p)
+
+        for _ in range(max_iter):
+            A, b = self.assemble_continuity(phi, n_fixed, p, "p", generation=generation)
+            p_new = np.maximum(spla.spsolve(A, b).reshape(self.Ny, self.Nx), 1e-3)
+            # Log-density convergence is more meaningful over many decades.
+            err = np.max(np.abs(np.log(np.maximum(p_new, 1e-300))
+                                - np.log(np.maximum(p, 1e-300))))
+            p = p_new
+            if err < tol:
+                break
+        return p
 
     def drain_current(self):
         """Terminal electron current at the drain contact [A/um width]. Sum SG

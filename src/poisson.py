@@ -229,6 +229,38 @@ class Poisson2D:
         self.p_h = (ni * np.exp(np.clip((phi_p - self.phi) / Vt, -80, 80)))
         return self.phi
 
+    def solve_fixed_charge(self, n, p, Vs=0.0, Vd=0.0, Vg=0.0, Vb=0.0):
+        """
+        Raw fixed-charge (Picard) Poisson update for externally supplied carrier
+        densities [cm^-3].  This is useful as a diagnostic, but can be very poorly
+        conditioned in strongly inverted devices.  The coupled SHE driver therefore
+        uses the nonlinear Gummel solve with an effective quasi-Fermi Jacobian instead.
+        """
+        n = np.asarray(n, dtype=float)
+        p = np.asarray(p, dtype=float)
+        if n.shape != (self.Ny, self.Nx) or p.shape != (self.Ny, self.Nx):
+            raise ValueError("n and p must have shape (Ny,Nx)")
+
+        phi_bc = self.phi_eq.copy()
+        phi_bc[self.contact_type == 1] += Vs
+        phi_bc[self.contact_type == 2] += Vd
+        phi_bc[self.contact_type == 3] += Vb
+        dir_flat = self.dirichlet.ravel()
+
+        rhs = (self.b_gate * (Vg - self.Phi_gate)
+               + q * (p.ravel() - n.ravel() + self.Nnet.ravel()) * self.vol.ravel())
+        A = self.L.tolil(copy=True)
+        for k in np.where(dir_flat)[0]:
+            A.rows[k] = [k]
+            A.data[k] = [1.0]
+            rhs[k] = phi_bc.ravel()[k]
+        phi = spla.spsolve(A.tocsr(), rhs).reshape(self.Ny, self.Nx)
+        self.phi = phi
+        self.n = n.copy()
+        self.p_h = p.copy()
+        return phi
+
+
 
 if __name__ == "__main__":
     import matplotlib

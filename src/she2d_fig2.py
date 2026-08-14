@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import bands
 
 eV = 1.602176634e-19
 D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_result.npz")
@@ -30,7 +31,8 @@ for panel, (yl, lab) in enumerate(zip(depths, labels)):
     for i in range(Nx):
         H_need = (eps_axis - phi[j, i]) * eV           # J
         Fmap[i, :] = np.interp(H_need, H, F3d[j, i, :], left=0.0, right=0.0)
-    # normalize so the peak (low energy) is ~1; light smoothing in x tames grid noise
+    # Visualization only: each panel is independently normalized; light x-smoothing tames grid noise.
+# Quantitative tail metrics below use the UNSMOOTHED distribution and DOS weighting.
     Fmap = Fmap / (Fmap.max() + 1e-300)
     sm = Fmap.copy()
     sm[1:-1, :] = 0.25 * Fmap[:-2, :] + 0.5 * Fmap[1:-1, :] + 0.25 * Fmap[2:, :]
@@ -55,14 +57,20 @@ out = os.path.join(os.path.dirname(__file__), "..", "figures", "she2d_fig2_distr
 fig.savefig(out, dpi=135)
 print("wrote", out)
 
-# quick numeric sanity: the drain-side channel line should have a hotter (fatter) tail than
-# the deep-substrate line
+# Quantitative sanity: carrier fraction above 1 eV.  Number density is weighted by
+# Z(eps) f0, so this is the physically meaningful tail fraction.  The legacy unweighted
+# f0 metric is printed only for comparison with older report numbers.
 for yl in depths:
     j = int(np.argmin(np.abs(y - yl)))
     i_drain = int(np.argmin(np.abs(x - 0.6)))
-    col = F3d[j, i_drain, :]
+    col = F3d[j, i_drain, :].astype(float)
     if col.max() > 0:
-        # crude tail metric: fraction of f0 above eps_kin = 1 eV
         eps_k = H / eV + phi[j, i_drain]
-        hot = col[(eps_k > 1.0)].sum() / (col.sum() + 1e-300)
-        print("  y=%.3f um, x=0.6: hot-tail fraction (eps>1eV) = %.2e" % (yl, hot))
+        active = (eps_k >= 0.0) & (eps_k < 3.02)
+        hot = active & (eps_k > 1.0)
+        Z = np.zeros_like(eps_k)
+        Z[active] = bands.dos(eps_k[active])
+        carrier_fraction = (Z[hot] * col[hot]).sum() / ((Z[active] * col[active]).sum() + 1e-300)
+        legacy_fraction = col[hot].sum() / (col[active].sum() + 1e-300)
+        print("  y=%.3f um, x=0.6: DOS-weighted carrier tail (eps>1eV) = %.2e  "
+              "[legacy unweighted f0 metric %.2e]" % (yl, carrier_fraction, legacy_fraction))

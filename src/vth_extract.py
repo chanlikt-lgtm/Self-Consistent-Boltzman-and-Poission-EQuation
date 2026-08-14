@@ -37,6 +37,6 @@ if __name__ == "__main__":
     print("\nmax-gm at Vgs=%.2f (gm=%.3e S/um)" % (Vgs[kmax], gm[kmax]))
     print("Extracted linear Vth = %.3f V  (Vds=%.2f, N_A=4e17 fixed, Phi_gate=0.30 the single knob)" % (Vth, Vds))
 
-    # tiny sensitivity: dVth/dPhi_gate is ~ -1 by construction (rigid band shift); report it
-    print("Sensitivity: Vth shifts ~ -1 V per +1 V of Phi_gate (rigid electrostatic offset);")
+    # tiny sensitivity: dVth/dPhi_gate is ~ +1 by construction (rigid band shift); report it
+    print("Sensitivity: Vth shifts ~ +1 V per +1 V of Phi_gate (rigid electrostatic offset);")
     print("             N_A held fixed, so the calibration is unique given Phi_gate.")

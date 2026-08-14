@@ -54,6 +54,25 @@ Device: 0.35-um effective-channel LDD N-MOSFET, t_ox = 9.6 nm, x_j ~ 0.17 um.
 - [ ] P9  Moment extraction (n, v, Te, G_ii) + ALL figures (src/figures_*.py)
 - [ ] P10 LaTeX PDF report assembling derivation + reproduced figures + validation
 
+## AUDIT 4 (full 28-page source-level audit of combined report) + PATCH INTEGRATION, 2026-08-15
+Auditor ran the actual code (reproduced n=1.0516e20, Te=3235.95K, Gii=1.37085e27, orphans=0).
+BLOCKER (acoustic Eq.6 conservation) RESOLVED: code implements conservative Z-weighted form
+(-d/deps[ZA(d/deps+1/kT)f0]); only report Eq.6 dropped the Z (doc typo). Auditor then PROVIDED
+A PATCH (she_reproduction_patched.zip + audit_patch.diff), reviewed + integrated (validate_patch.py
+PASSES in-place: optical/acoustic conservation defects 2e-16, SHE number balance -1e-9).
+Patch changes (7 files + coupled_she.py, validate_patch.py, PATCH_NOTES.md):
+- scattering.py: documents conservative acoustic form; check_number_conservation(); impact_ionization_rate();
+  tau1 relabeled combined-surrogate.
+- she2d.py: TRUE absorbing eps_max cutoff (spatial+acoustic+optical, Dirichlet-to-zero); REAL impact-
+  ionization collision operator (primary loss + 2 secondaries at (eps-Eth)/2, net +1 e per event);
+  finite-volume face-flux velocity/current; terminal currents + conservation_diagnostics().
+- dd.py: solve_holes() with G_ii pair-generation source.
+- coupled_she.py: NEW damped self-consistent SHE<->hole<->Poisson loop (recomputes n from SHE each step).
+- poisson.py: solve_fixed_charge()/solve_holes support. diagnostics.py: Vth=1.64 default.
+  vth_extract.py: dVth/dPhi_gate sign +1. she2d_fig2.py: DOS-weighted (Zf0) tail fraction.
+Superseded my partial manual patches (same fixes). NEXT: run full 40x34 patched + coupled to converge;
+report revision (Eq.6 fix + self-consistency + II operator); grid convergence; device recalibration.
+
 ## AUDIT (Rev 1 -> Rev 2), 2026-08-14
 External audit verdict on report Rev 1: "promising Part I; NOT reproduction-grade yet."
 8 findings, ALL addressed in report.tex Rev 2 (report.pdf, 8 pages):

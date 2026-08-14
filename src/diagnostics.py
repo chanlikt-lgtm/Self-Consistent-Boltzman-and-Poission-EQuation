@@ -46,7 +46,7 @@ def extract_depletion_from_poisson(ps, x_probe_um=0.75):
     return y_junc, y_edge, (y_edge - y_junc)
 
 
-def saturation_current_estimate(Vg=3.0, Vth=0.5, L_um=0.35, mu_inv=300.0):
+def saturation_current_estimate(Vg=3.0, Vth=1.64, L_um=0.35, mu_inv=300.0):
     """Documented long-channel saturation estimate Id/W = (1/L) mu Cox (Vg-Vth)^2 / 2."""
     Cox = eps_ox * eps0 / (DeviceParams.tox * UM)     # F/cm^2
     L = L_um * UM                                     # cm
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     Idw, Cox = saturation_current_estimate()
     print("\n=== drift-diffusion saturation-current estimate ===")
-    print("  Cox = %.3e F/cm^2,  mu_inv=300 cm^2/Vs,  L=0.35 um,  Vg-Vth=2.5 V" % Cox)
+    print("  Cox = %.3e F/cm^2,  mu_inv=300 cm^2/Vs,  L=0.35 um,  Vg-Vth=1.36 V" % Cox)
     print("  Id/W (sat estimate)    : %.3e A/um   (DD extracted ~0.27 mA/um)" % Idw)

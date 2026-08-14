@@ -1,106 +1,163 @@
 """
-she2d.py -- First-order SHE Boltzmann solver in 2-D real space + total energy H (P5).
+she2d.py -- First-order SHE Boltzmann solver in 2-D real space + total energy H.
 
-Solves, for a GIVEN self-consistent potential phi(x,y) from drift-diffusion:
+For a supplied electrostatic potential phi(x,y), solve
 
-    grad_r . [ Z(eps) D(eps) grad_r f0|_H ]  +  Z(eps) Q[f0]  =  0,     eps = H + q*phi(r)
+    div_r[ Z(eps) D(eps) grad_r f0 |_H ] + Z(eps) Q[f0] = 0,
+    eps = H + q phi(r),
 
-in the total-energy (r,H) form: spatial diffusion at fixed H, the collision operator Q
-(optical in/out + acoustic Fokker-Planck) coupling H-planes at the SAME (x,y).  Driven by
-Maxwellian injection at the ohmic contacts.  Energy boundaries: eps=0 reflecting (physical
-band edge), eps=eps_max absorbing (numerical cutoff).
+with optical phonons, a DOS-weighted conservative acoustic Fokker-Planck term,
+and (optionally, default ON) the disclosed Keldysh-like impact-ionization model.
+The impact-ionization event removes one primary electron and deposits two electrons
+at equal post-threshold kinetic energy, so each event has net electron gain +1.
 
-From f0 we take moments: n, average velocity (current), electron temperature Te, and the
-impact-ionization generation rate G_ii.  Units: SI internally (eps in J, lengths in m).
+Energy boundaries:
+  * eps = 0       : reflecting physical turning point;
+  * eps = eps_max : absorbing numerical cutoff for spatial, acoustic, and optical
+                    fluxes.  The upper boundary itself is not an active unknown.
+
+Velocity/current moments are reconstructed from the SAME finite-volume face fluxes
+used by the spatial SHE operator, rather than from central differences through the
+masked 3-D array.
+
+Units: SI internally; device inputs use um / cm^-3 at the public boundary.
 """
 
+import os
+import sys
 import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
-import os, sys
+
 sys.path.insert(0, os.path.dirname(__file__))
 
-from constants import q, eV, kB, T, ni
+from constants import q, eV, kB, T
 import bands
 import scattering as sc
 
-KT = kB * T                      # J
-EPS_MAX = 3.02 * eV              # J
-E_OP_J = sc.E_OP * eV            # J
-UM = 1e-4                        # cm/um (device geometry helper)
+KT = kB * T
+EPS_MAX = 3.02 * eV
+E_OP_J = sc.E_OP * eV
+II_ETH_J = sc.II_ETH * eV
+UM = 1e-4                         # cm / um (device helper)
 
 
 class SHE2D:
-    def __init__(self, x_um, y_um, phi, contact_type, n_eq, dHi_eV=0.0125):
+    def __init__(self, x_um, y_um, phi, contact_type, n_eq, dHi_eV=0.0125,
+                 include_impact_ionization=True, absorbing_top=True):
         """
-        x_um,y_um : mesh [um];  phi[Ny,Nx] [V];  contact_type[Ny,Nx] (1 src,2 drn,3 body,0 none)
-        n_eq[Ny,Nx] : equilibrium majority density [cm^-3] (contact injection amplitude)
-        dHi_eV : H-grid spacing [eV] (chosen so E_op/dH is integer)
+        x_um,y_um : tensor mesh [um]
+        phi       : electrostatic potential [V], shape (Ny,Nx)
+        contact_type : 0 none, 1 source, 2 drain, 3 body
+        n_eq      : contact majority density [cm^-3]
+        dHi_eV    : uniform H spacing [eV], chosen so E_op/dH is integer
+        include_impact_ionization : assemble primary loss + equal-split secondary gain
+        absorbing_top : impose f0=0 at eps_max through finite-volume boundary fluxes
         """
-        self.x = np.asarray(x_um) * 1e-6      # m
-        self.y = np.asarray(y_um) * 1e-6      # m
+        self.x = np.asarray(x_um, dtype=float) * 1e-6
+        self.y = np.asarray(y_um, dtype=float) * 1e-6
         self.Nx, self.Ny = len(self.x), len(self.y)
-        self.phi = phi                        # V
-        self.ctype = contact_type
-        self.n_eq = n_eq * 1e6                # cm^-3 -> m^-3
+        self.phi = np.asarray(phi, dtype=float)
+        self.ctype = np.asarray(contact_type, dtype=int)
+        self.n_eq = np.asarray(n_eq, dtype=float) * 1e6
+        self.include_impact_ionization = bool(include_impact_ionization)
+        self.absorbing_top = bool(absorbing_top)
 
-        # ---- H grid covering the a-priori bias envelope ----
         self.dH = dHi_eV * eV
-        self.m_op = int(round(E_OP_J / self.dH))     # optical jump in nodes (integer)
-        phi_min, phi_max = phi.min(), phi.max()
-        H_lo = (-phi_max) * eV - 2 * self.dH
-        H_hi = (EPS_MAX + (-phi_min) * eV) + 2 * self.dH
-        self.H = np.arange(H_lo, H_hi + self.dH, self.dH)   # J
+        self.m_op = int(round(E_OP_J / self.dH))
+        if not np.isclose(self.m_op * self.dH, E_OP_J, rtol=0.0, atol=1e-12 * eV):
+            raise ValueError("E_OP/dH must be an integer for the optical jump stencil")
+
+        phi_min, phi_max = self.phi.min(), self.phi.max()
+        # Padding is not relied upon for absorption, but leaves room for diagnostics/interpolation.
+        H_lo = (-phi_max) * eV - max(2, self.m_op) * self.dH
+        H_hi = EPS_MAX + (-phi_min) * eV + max(2, self.m_op) * self.dH
+        self.H = np.arange(H_lo, H_hi + 0.5 * self.dH, self.dH)
         self.NH = len(self.H)
 
         self._geom()
         self._grid()
 
+    # ---------------------------------------------------------------- geometry
     def _geom(self):
         x, y = self.x, self.y
-        dxc = np.zeros(self.Nx); dyc = np.zeros(self.Ny)
-        dxc[1:-1] = 0.5 * (x[2:] - x[:-2]); dxc[0] = 0.5*(x[1]-x[0]); dxc[-1] = 0.5*(x[-1]-x[-2])
-        dyc[1:-1] = 0.5 * (y[2:] - y[:-2]); dyc[0] = 0.5*(y[1]-y[0]); dyc[-1] = 0.5*(y[-1]-y[-2])
+        dxc = np.zeros(self.Nx)
+        dyc = np.zeros(self.Ny)
+        dxc[1:-1] = 0.5 * (x[2:] - x[:-2])
+        dxc[0] = 0.5 * (x[1] - x[0])
+        dxc[-1] = 0.5 * (x[-1] - x[-2])
+        dyc[1:-1] = 0.5 * (y[2:] - y[:-2])
+        dyc[0] = 0.5 * (y[1] - y[0])
+        dyc[-1] = 0.5 * (y[-1] - y[-2])
         self.dxc, self.dyc = dxc, dyc
-        self.dxe = np.diff(x); self.dyn = np.diff(y)
-        self.area = np.outer(dyc, dxc)        # cell area A_ij [m^2]
+        self.dxe, self.dyn = np.diff(x), np.diff(y)
+        self.area = np.outer(dyc, dxc)       # m^2 per unit z-width
 
     def _grid(self):
-        """Precompute eps, active mask, DOS Z, diffusion D, acoustic A on the 3-D grid."""
-        # eps[j,i,k] = H[k] + q*phi[j,i]  (J);  q*phi in J = phi[V]*eV
-        self.eps = self.H[None, None, :] + (self.phi[:, :, None] * eV)   # (Ny,Nx,NH) J
-        self.active = (self.eps >= 0.0) & (self.eps <= EPS_MAX)
-        epsE = np.clip(self.eps / eV, 1e-6, 3.02)      # eV for band funcs
-        self.Z = np.where(self.active, bands.dos(epsE), 0.0)            # 1/(J m^3)
-        self.D = np.where(self.active, sc.Dcoef(epsE), 0.0)            # m^2/s
-        self.Aac = np.where(self.active, sc.acoustic_energy_coeff(epsE), 0.0)  # J^2/s
-        # global index map for active nodes
+        self.eps = self.H[None, None, :] + self.phi[:, :, None] * eV
+        # eps=0 may be an active reflecting node. eps=eps_max is a Dirichlet boundary,
+        # not an unknown, hence the strict upper inequality.
+        self.active = (self.eps >= 0.0) & (self.eps < EPS_MAX)
+        epsE = np.clip(self.eps / eV, 1e-8, EPS_MAX / eV)
+        self.Z = np.where(self.active, bands.dos(epsE), 0.0)
+        self.D = np.where(self.active, sc.Dcoef(epsE), 0.0)
+        self.Aac = np.where(self.active, sc.acoustic_energy_coeff(epsE), 0.0)
+        self.ii_rate = np.where(self.active, sc.impact_ionization_rate(epsE), 0.0)
+
         self.gid = -np.ones((self.Ny, self.Nx, self.NH), dtype=np.int64)
         self.gid[self.active] = np.arange(np.count_nonzero(self.active))
         self.Ndof = int(np.count_nonzero(self.active))
-        # contact injection normalization Zint = int Z e^{-eps/kT} deps (per contact phi)
-        self.Zint_grid = None
 
-    # ------------------------------------------------------------------ assembly
+        # Boundary values of kinetic-energy coefficients at eps_max.
+        emax_eV = EPS_MAX / eV
+        self._ZD_top = float(bands.dos(emax_eV) * sc.Dcoef(emax_eV))
+        self._ZA_top = float(bands.dos(emax_eV) * sc.acoustic_energy_coeff(emax_eV))
+
+    # ---------------------------------------------------------- helper mappings
+    def _ii_target_weights(self, j, i, k):
+        """Return [(target_k, weight), ...] for equal-split II secondaries."""
+        eps_src = self.eps[j, i, k]
+        eps_tgt = 0.5 * (eps_src - II_ETH_J)
+        if eps_tgt < 0.0:
+            return []
+        H_tgt = eps_tgt - self.phi[j, i] * eV
+        u = (H_tgt - self.H[0]) / self.dH
+        k0 = int(np.floor(u))
+        a = float(u - k0)
+        cand = [(k0, 1.0 - a), (k0 + 1, a)]
+        valid = [(kk, w) for kk, w in cand
+                 if w > 0.0 and 0 <= kk < self.NH and self.active[j, i, kk]]
+        sw = sum(w for _, w in valid)
+        if sw <= 0.0:
+            return []
+        return [(kk, w / sw) for kk, w in valid]
+
+    # ---------------------------------------------------------------- assembly
     def assemble(self):
         Ny, Nx, NH, m = self.Ny, self.Nx, self.NH, self.m_op
-        H, dH = self.H, self.dH
-        Z, D, Aac = self.Z, self.D, self.Aac
-        eps = self.eps
-        N_op = 1.0 / np.expm1(E_OP_J / KT)          # Bose
-        c_op = sc.COP
+        dH = self.dH
+        Z, D, Aac, eps = self.Z, self.D, self.Aac, self.eps
         gid = self.gid
+        N_op = 1.0 / np.expm1(E_OP_J / KT)
+        c_op = sc.COP
+
         rows, cols, vals = [], [], []
         b = np.zeros(self.Ndof)
 
-        # contact Maxwellian: f0 = n_c * exp(-eps/kT) / Zint(phi_contact)
-        # Zint depends only on phi at the contact node; precompute per spatial node lazily
+        # Per-DOF integrated coefficients [1/(m s)] for global balance diagnostics.
+        cutoff_spatial = np.zeros(self.Ndof)
+        cutoff_acoustic = np.zeros(self.Ndof)
+        cutoff_optical = np.zeros(self.Ndof)
+        ii_event_coeff = np.zeros(self.Ndof)
+        contact_links = []   # (contact_type, interior_dof, contact_dof, Tf), exact FV boundary links
+
         def zint(j, i):
             ee = eps[j, i, :]
             act = self.active[j, i, :]
             if not act.any():
                 return 1.0
-            return np.trapezoid(np.where(act, Z[j, i, :] * np.exp(-np.clip(ee/KT, 0, 200)), 0.0), H)
+            integrand = np.where(act, Z[j, i, :] * np.exp(-np.clip(ee / KT, 0, 200)), 0.0)
+            return np.trapezoid(integrand, self.H)
 
         delta = dH / KT
         Bp, Bm = sc._bern(delta), sc._bern(-delta)
@@ -113,150 +170,370 @@ class SHE2D:
                     p = gid[j, i, k]
                     if p < 0:
                         continue
-                    # ---- contact Dirichlet (Maxwellian injection) ----
+
+                    # Ohmic contacts: prescribed Maxwellian distribution.
                     if ct in (1, 2, 3):
                         if Zc is None:
                             Zc = zint(j, i)
                         rows.append(p); cols.append(p); vals.append(1.0)
-                        b[p] = self.n_eq[j, i] * np.exp(-min(eps[j, i, k]/KT, 200.0)) / (Zc + 1e-300)
+                        b[p] = (self.n_eq[j, i]
+                                * np.exp(-min(eps[j, i, k] / KT, 200.0))
+                                / (Zc + 1e-300))
                         continue
 
                     diag = 0.0
-                    # ---- spatial diffusion at fixed H_k (box-integrated * dH) ----
-                    for (nj, ni, hcell, wface) in (
-                        (j, i+1, self.dxe[i] if i+1 < Nx else 0, self.dyc[j]),
-                        (j, i-1, self.dxe[i-1] if i-1 >= 0 else 0, self.dyc[j]),
-                        (j+1, i, self.dyn[j] if j+1 < Ny else 0, self.dxc[i]),
-                        (j-1, i, self.dyn[j-1] if j-1 >= 0 else 0, self.dxc[i]),
-                    ):
-                        if hcell == 0 or nj < 0 or nj >= Ny or ni < 0 or ni >= Nx:
-                            continue
-                        q2 = gid[nj, ni, k]
-                        if q2 < 0:
-                            continue                     # inactive neighbor -> reflecting no-flux
-                        ZDf = 0.5 * (Z[j, i, k]*D[j, i, k] + Z[nj, ni, k]*D[nj, ni, k])
-                        Tf = dH * ZDf * wface / hcell     # * dH (H-box)
-                        diag += Tf
-                        rows.append(p); cols.append(q2); vals.append(-Tf)
-
-                    # ---- collision (fixed i,j), box-integrated over area A_ij ----
-                    Aij = self.area[j, i]
+                    eps_k = eps[j, i, k]
                     Zk = Z[j, i, k]
-                    # optical: emission k->k-m (down), absorption k->k+m (up)
+
+                    # ---------------- spatial diffusion at fixed H (box-integrated * dH)
+                    neighbors = (
+                        (j, i + 1, self.dxe[i] if i + 1 < Nx else 0.0, self.dyc[j]),
+                        (j, i - 1, self.dxe[i - 1] if i - 1 >= 0 else 0.0, self.dyc[j]),
+                        (j + 1, i, self.dyn[j] if j + 1 < Ny else 0.0, self.dxc[i]),
+                        (j - 1, i, self.dyn[j - 1] if j - 1 >= 0 else 0.0, self.dxc[i]),
+                    )
+                    for nj, ni, hcell, wface in neighbors:
+                        if hcell == 0.0 or nj < 0 or nj >= Ny or ni < 0 or ni >= Nx:
+                            continue                      # physical exterior: reflecting/natural
+                        q2 = gid[nj, ni, k]
+                        if q2 >= 0:
+                            ZDf = 0.5 * (Zk * D[j, i, k] + Z[nj, ni, k] * D[nj, ni, k])
+                            Tf = dH * ZDf * wface / hcell
+                            diag += Tf
+                            rows.append(p); cols.append(q2); vals.append(-Tf)
+                            ct_nb = int(self.ctype[nj, ni])
+                            if ct_nb in (1, 2, 3):
+                                contact_links.append((ct_nb, p, q2, Tf))
+                            continue
+
+                        # Inactive neighbor. Below the band edge is a reflecting turning point.
+                        # Above eps_max is the absorbing numerical boundary f(eps_max)=0.
+                        eps_nb = eps[nj, ni, k]
+                        if self.absorbing_top and eps_nb >= EPS_MAX and eps_k < EPS_MAX:
+                            de = eps_nb - eps_k
+                            if de > 0.0:
+                                frac = np.clip((EPS_MAX - eps_k) / de, 1e-8, 1.0)
+                                dist = frac * hcell
+                                Kcur = Zk * D[j, i, k]
+                                Kface = 0.5 * (Kcur + self._ZD_top)
+                                Tf = dH * Kface * wface / max(dist, 1e-12 * hcell)
+                                diag += Tf
+                                cutoff_spatial[p] += Tf
+
+                    # ---------------- local collision terms, integrated over spatial area
+                    Aij = self.area[j, i]
+
+                    # Optical phonons. Emission below eps=0 is forbidden; absorption beyond
+                    # eps_max is retained as a loss to the absorbing numerical reservoir.
                     kd, ku = k - m, k + m
                     ed_ok = kd >= 0 and self.active[j, i, kd]
-                    eu_ok = ku < NH and self.active[j, i, ku]
-                    # emission out (down): drop if target below band edge (reflecting)
                     if ed_ok:
                         Zd = Z[j, i, kd]
-                        diag += Aij * dH * c_op * Zk * (N_op + 1) * Zd     # out (emission)
-                        rows.append(p); cols.append(gid[j,i,kd]); vals.append(-Aij*dH*c_op*Zk*N_op*Zd)  # in via absorption from kd? -> handled at kd
-                    # absorption out (up): if target above eps_max -> absorbing loss (keep, no in)
-                    if ku < NH:
-                        Zu = Z[j, i, ku] if eu_ok else bands.dos(min(EPS_MAX/eV,3.02))
-                        diag += Aij * dH * c_op * Zk * N_op * Zu            # out (absorption)
-                        if eu_ok:
-                            rows.append(p); cols.append(gid[j,i,ku]); vals.append(-Aij*dH*c_op*Zk*(N_op+1)*Zu)  # in via emission from ku
-                    # ---- acoustic Fokker-Planck in H (adjacent nodes) ----
-                    for (kk, sgn) in ((k+1, +1), (k-1, -1)):
-                        if kk < 0 or kk >= NH or not self.active[j, i, kk]:
-                            continue
-                        ZAf = 0.5 * (Zk*Aac[j, i, k] + Z[j, i, kk]*Aac[j, i, kk]) / dH
-                        # SG flux coefficients (drift toward low energy)
-                        if sgn > 0:   # face to k+1
-                            diag += Aij * ZAf * Bp
-                            rows.append(p); cols.append(gid[j,i,kk]); vals.append(-Aij*ZAf*Bm)
-                        else:         # face to k-1
-                            diag += Aij * ZAf * Bm
-                            rows.append(p); cols.append(gid[j,i,kk]); vals.append(-Aij*ZAf*Bp)
+                        diag += Aij * dH * c_op * Zk * (N_op + 1.0) * Zd
+                        rows.append(p); cols.append(gid[j, i, kd])
+                        vals.append(-Aij * dH * c_op * Zk * N_op * Zd)
+
+                    eps_up = eps_k + E_OP_J
+                    if eps_up < EPS_MAX and ku < NH and self.active[j, i, ku]:
+                        Zu = Z[j, i, ku]
+                        diag += Aij * dH * c_op * Zk * N_op * Zu
+                        rows.append(p); cols.append(gid[j, i, ku])
+                        vals.append(-Aij * dH * c_op * Zk * (N_op + 1.0) * Zu)
+                    elif self.absorbing_top and eps_up >= EPS_MAX:
+                        Zu = float(bands.dos(eps_up / eV))
+                        ccut = Aij * dH * c_op * Zk * N_op * Zu
+                        diag += ccut
+                        cutoff_optical[p] += ccut
+
+                    # Conservative acoustic FP. Lower inactive face is reflecting; upper
+                    # inactive face gets a Dirichlet f=0 SG flux at the exact eps_max crossing.
+                    for kk, sgn in ((k + 1, +1), (k - 1, -1)):
+                        if 0 <= kk < NH and self.active[j, i, kk]:
+                            ZAf = 0.5 * (Zk * Aac[j, i, k]
+                                         + Z[j, i, kk] * Aac[j, i, kk]) / dH
+                            if sgn > 0:
+                                diag += Aij * ZAf * Bp
+                                rows.append(p); cols.append(gid[j, i, kk])
+                                vals.append(-Aij * ZAf * Bm)
+                            else:
+                                diag += Aij * ZAf * Bm
+                                rows.append(p); cols.append(gid[j, i, kk])
+                                vals.append(-Aij * ZAf * Bp)
+                        elif sgn > 0 and self.absorbing_top:
+                            # Only the upper-energy inactive neighbor is absorbing.
+                            eps_nb = eps[j, i, kk] if 0 <= kk < NH else eps_k + dH
+                            if eps_nb >= EPS_MAX:
+                                de_b = EPS_MAX - eps_k
+                                if de_b > 0.0:
+                                    ZAcur = Zk * Aac[j, i, k]
+                                    ZAface = 0.5 * (ZAcur + self._ZA_top)
+                                    db = max(de_b, 1e-12 * dH)
+                                    cb = ZAface / db
+                                    Bpb = sc._bern(db / KT)
+                                    ccut = Aij * cb * Bpb
+                                    diag += ccut
+                                    cutoff_acoustic[p] += ccut
+
+                    # Impact ionization: one primary is removed; two electrons are deposited
+                    # at eps'=(eps-Eth)/2.  Integrated source weights sum to exactly 2.
+                    if self.include_impact_ionization and self.ii_rate[j, i, k] > 0.0:
+                        targets = self._ii_target_weights(j, i, k)
+                        if targets:
+                            cii = Aij * dH * Zk * self.ii_rate[j, i, k]
+                            diag += cii
+                            ii_event_coeff[p] += cii
+                            for kt, wt in targets:
+                                pt = gid[j, i, kt]
+                                rows.append(pt); cols.append(p); vals.append(-2.0 * wt * cii)
 
                     rows.append(p); cols.append(p); vals.append(diag)
 
         A = sp.csr_matrix((vals, (rows, cols)), shape=(self.Ndof, self.Ndof))
-        # Pin "orphan" active nodes (no active spatial neighbor AND no active collision
-        # partner -> zero-diagonal, all-zero row) to f0=0, else the matrix is singular.
+
+        # Safety only: present validated grids should have zero orphan rows.
         dvec = A.diagonal()
         orphans = np.where(np.abs(dvec) < 1e-300)[0]
         if len(orphans):
             A = A.tolil()
             for r in orphans:
-                A.rows[r] = [r]; A.data[r] = [1.0]; b[r] = 0.0
+                A.rows[r] = [r]
+                A.data[r] = [1.0]
+                b[r] = 0.0
             A = A.tocsr()
+
         self.n_orphans = int(len(orphans))
+        self.cutoff_spatial_coeff = cutoff_spatial
+        self.cutoff_acoustic_coeff = cutoff_acoustic
+        self.cutoff_optical_coeff = cutoff_optical
+        self.ii_event_coeff = ii_event_coeff
+        self.contact_links = contact_links
         self.A, self.b = A, b
         return A, b
 
+    # -------------------------------------------------------------------- solve
     def solve(self, tol=1e-8):
         A, b = self.A, self.b
-        # Jacobi row-scaling: contact rows have diag=1 while interior rows carry SI-scale
-        # (~1e23) coefficients -> condition number ~1e23 wrecks the direct solve. Normalize
-        # each row by its diagonal so all diagonals are 1 before solving.
         D = A.diagonal().copy()
         D[np.abs(D) < 1e-300] = 1.0
         As = (sp.diags(1.0 / D) @ A).tocsc()
         bs = b / D
         if self.Ndof <= 130000:
-            f = spla.spsolve(As, bs); info = 0
+            f_raw = spla.spsolve(As, bs)
+            info = 0
         else:
-            # large grid: ILU + lgmres on the well-conditioned (scaled) matrix
-            ilu = spla.spilu(As, drop_tol=1e-3, fill_factor=8)
-            M = spla.LinearOperator(As.shape, ilu.solve)
-            f, info = spla.lgmres(As, bs, M=M, rtol=tol, maxiter=400)
-        self.f = np.nan_to_num(np.maximum(f, 0.0))
+            # ILU+LGMRES on the scaled matrix. The impact-ionization redistribution breaks the
+            # clean M-matrix structure and gives spilu a zero pivot on the full grid. Build the
+            # preconditioner on a DIAGONAL-SHIFTED copy (shift kept above drop_tol so it is not
+            # dropped) but solve the UNSHIFTED As via lgmres, so the shift affects only the
+            # preconditioner quality, not the solution. Escalate the shift until it converges.
+            f_raw = None; info = -1
+            for shift in (1e-3, 1e-2, 5e-2, 1e-1):
+                try:
+                    Ashift = (As + shift * sp.eye(self.Ndof, format="csc")).tocsc()
+                    ilu = spla.spilu(Ashift, drop_tol=1e-3, fill_factor=10)
+                except Exception as e:
+                    print("  spilu shift=%.0e failed (%s)" % (shift, e)); continue
+                M = spla.LinearOperator(As.shape, ilu.solve)
+                f_raw, info = spla.lgmres(As, bs, M=M, rtol=tol, maxiter=800)
+                print("  ILU shift=%.0e -> lgmres info=%d" % (shift, info))
+                if info == 0:
+                    break
+            if f_raw is None or info != 0:
+                raise RuntimeError("SHE large-grid solve failed to converge (info=%s)" % info)
+
+        self.f_raw = np.nan_to_num(f_raw)
+        self.negative_min = float(np.min(self.f_raw))
+        self.negative_count = int(np.count_nonzero(self.f_raw < -1e-12 * max(np.max(np.abs(self.f_raw)), 1.0)))
+        self.f = np.maximum(self.f_raw, 0.0)
         self.info = info
+        self.scaled_residual_inf = float(
+            np.max(np.abs(As.dot(self.f) - bs)) / (max(np.max(np.abs(bs)), 1.0))
+        )
         return self.f
 
-    # ------------------------------------------------------------------- moments
+    # ------------------------------------------------------------ distributions
     def _f3d(self):
         F = np.zeros((self.Ny, self.Nx, self.NH))
         F[self.active] = self.f
         return F
 
+    def particle_flux_faces(self, F=None):
+        """
+        Return finite-volume particle-flux density on real-space faces [1/(m^2 s)].
+        gx[j,i] is positive from (j,i) -> (j,i+1); gy[j,i] positive from
+        (j,i) -> (j+1,i).  Only active-active energy channels carry real-space flux;
+        upper-cutoff crossings are counted separately as numerical absorption.
+        """
+        if F is None:
+            F = self._f3d()
+        ZD = self.Z * self.D
+
+        common_x = self.active[:, :-1, :] & self.active[:, 1:, :]
+        Kx = 0.5 * (ZD[:, :-1, :] + ZD[:, 1:, :])
+        dfdx = (F[:, 1:, :] - F[:, :-1, :]) / self.dxe[None, :, None]
+        gx_H = np.where(common_x, -Kx * dfdx, 0.0)
+        gx = np.sum(gx_H, axis=2) * self.dH
+
+        common_y = self.active[:-1, :, :] & self.active[1:, :, :]
+        Ky = 0.5 * (ZD[:-1, :, :] + ZD[1:, :, :])
+        dfdy = (F[1:, :, :] - F[:-1, :, :]) / self.dyn[:, None, None]
+        gy_H = np.where(common_y, -Ky * dfdy, 0.0)
+        gy = np.sum(gy_H, axis=2) * self.dH
+        return gx, gy
+
+    def _cell_center_flux(self, gx, gy):
+        Gx = np.zeros((self.Ny, self.Nx))
+        Gy = np.zeros((self.Ny, self.Nx))
+        if self.Nx > 1:
+            Gx[:, 0] = gx[:, 0]
+            Gx[:, -1] = gx[:, -1]
+        if self.Nx > 2:
+            Gx[:, 1:-1] = 0.5 * (gx[:, :-1] + gx[:, 1:])
+        if self.Ny > 1:
+            Gy[0, :] = gy[0, :]
+            Gy[-1, :] = gy[-1, :]
+        if self.Ny > 2:
+            Gy[1:-1, :] = 0.5 * (gy[:-1, :] + gy[1:, :])
+        return Gx, Gy
+
+    def terminal_particle_rates(self, gx=None, gy=None):
+        """
+        Particle rate injected FROM each contact INTO the silicon domain, per unit
+        out-of-plane width [1/(m s)].  Negative means net extraction into that contact.
+
+        When the matrix has been assembled, this is evaluated from the exact FV
+        contact links used in A; this makes the global number-balance diagnostic an
+        algebraic check of the solved discrete equation.
+        """
+        rates = {1: 0.0, 2: 0.0, 3: 0.0}
+        if hasattr(self, "contact_links") and hasattr(self, "f"):
+            for ct, p_int, p_ct, Tf in self.contact_links:
+                # Interior row contribution is Tf*(f_int-f_contact); the opposite
+                # quantity is particle injection from the contact into the domain.
+                rates[ct] += Tf * (self.f[p_ct] - self.f[p_int])
+            return rates
+
+        # Fallback for pre-assembly use: integrate the reconstructed face fluxes.
+        if gx is None or gy is None:
+            gx, gy = self.particle_flux_faces()
+        for j in range(self.Ny):
+            for i in range(self.Nx - 1):
+                fl = gx[j, i] * self.dyc[j]
+                cl, cr = int(self.ctype[j, i]), int(self.ctype[j, i + 1])
+                if cl in rates and cl != cr:
+                    rates[cl] += fl
+                if cr in rates and cr != cl:
+                    rates[cr] -= fl
+        for j in range(self.Ny - 1):
+            for i in range(self.Nx):
+                fl = gy[j, i] * self.dxc[i]
+                ct, cb = int(self.ctype[j, i]), int(self.ctype[j + 1, i])
+                if ct in rates and ct != cb:
+                    rates[ct] += fl
+                if cb in rates and cb != ct:
+                    rates[cb] -= fl
+        return rates
+
+    def terminal_currents(self, gx=None, gy=None):
+        """Conventional electron currents [A/um] from contact into device."""
+        rates = self.terminal_particle_rates(gx, gy)
+        return {ct: -q * rate * 1e-6 for ct, rate in rates.items()}
+
+    # ------------------------------------------------------------------ moments
     def moments(self):
         F = self._f3d()
         Z, eps, H = self.Z, self.eps, self.H
-        # n = int Z f0 dH   (dH is the energy measure since eps = H + qphi at fixed r)
-        n = np.trapezoid(Z * F, H, axis=2)                       # 1/m^3
-        emean = np.zeros_like(n)
+
+        n = np.trapezoid(Z * F, H, axis=2)
         num = np.trapezoid(eps * Z * F, H, axis=2)
-        # Te / velocity are ill-defined where n is negligible: mask depleted regions
-        # (n < 1e13 cm^-3 = 1e19 m^-3), else numerical noise -> spurious hot/fast spots.
-        good = n > 1e19
+        good = n > 1e19                         # 1e13 cm^-3
+        emean = np.zeros_like(n)
         emean[good] = num[good] / n[good]
-        Te = (2.0/3.0) * emean / kB                              # K
-        Te[~good] = T
-        # impact ionization generation G_ii = int Z f0 / tau_ii deps  (eps>eps_th)
-        eth = 1.1 * eV
-        P_ii = 2.0e13   # Keldysh prefactor [1/s] (surrogate; see report)
-        tii_inv = np.where(eps > eth, P_ii * ((eps - eth)/eth)**2, 0.0)
-        Gii = np.trapezoid(Z * F * tii_inv, H, axis=2)           # 1/(m^3 s)
-        # ---- average velocity field (Fig. 4): J = -int ZD grad_r f0|_H dH ; v = J/n ----
-        ZD = self.Z * self.D
-        xx, yy, HH = self.x, self.y, self.H
-        dFdx = np.zeros_like(F); dFdy = np.zeros_like(F)
-        dFdx[:, 1:-1, :] = (F[:, 2:, :] - F[:, :-2, :]) / (xx[2:] - xx[:-2])[None, :, None]
-        dFdy[1:-1, :, :] = (F[2:, :, :] - F[:-2, :, :]) / (yy[2:] - yy[:-2])[:, None, None]
-        Jx = -np.trapezoid(ZD * dFdx, HH, axis=2)               # 1/(m^2 s)
-        Jy = -np.trapezoid(ZD * dFdy, HH, axis=2)
-        vx = np.zeros_like(n); vy = np.zeros_like(n)
-        vx[good] = Jx[good] / n[good] * 100.0                    # cm/s
-        vy[good] = Jy[good] / n[good] * 100.0
-        self.n = n * 1e-6                                        # cm^-3
+        Te = np.full_like(n, T)
+        Te[good] = (2.0 / 3.0) * emean[good] / kB
+
+        Gii = np.trapezoid(Z * F * self.ii_rate, H, axis=2)
+
+        gx, gy = self.particle_flux_faces(F)
+        Gx, Gy = self._cell_center_flux(gx, gy)
+        vx = np.zeros_like(n)
+        vy = np.zeros_like(n)
+        vx[good] = Gx[good] / n[good] * 100.0   # cm/s
+        vy[good] = Gy[good] / n[good] * 100.0
+
+        self.n = n * 1e-6
         self.Te = Te
-        self.Gii = Gii * 1e-6                                    # 1/(cm^3 s)
+        self.Gii = Gii * 1e-6
         self.vx, self.vy = vx, vy
+        self.Gamma_x_face, self.Gamma_y_face = gx, gy
         self.F3d = F
         return self.n, self.Te, self.Gii
 
+    def tail_fraction(self, j, i, threshold_eV=1.0, dos_weighted=True):
+        """High-energy fraction at one spatial node; DOS-weighted by default."""
+        if not hasattr(self, "F3d"):
+            F = self._f3d()
+        else:
+            F = self.F3d
+        mask = self.active[j, i, :]
+        high = mask & (self.eps[j, i, :] >= threshold_eV * eV)
+        if dos_weighted:
+            w = self.Z[j, i, :] * F[j, i, :]
+        else:
+            w = F[j, i, :]
+        den = np.sum(w[mask]) * self.dH
+        num = np.sum(w[high]) * self.dH
+        return float(num / (den + 1e-300))
+
+    # -------------------------------------------------------------- diagnostics
+    def conservation_diagnostics(self):
+        """
+        Global number balance per unit device width.  For the assembled equation,
+
+            contact injection + II net generation - eps_max loss = 0.
+
+        Values are particle rates [1/(m s)] except currents [A/um].
+        """
+        if not hasattr(self, "Gamma_x_face"):
+            self.moments()
+        rates = self.terminal_particle_rates(self.Gamma_x_face, self.Gamma_y_face)
+        contact_in = float(sum(rates.values()))
+        ii_events = float(np.dot(self.ii_event_coeff, self.f)) if self.include_impact_ionization else 0.0
+        cut_sp = float(np.dot(self.cutoff_spatial_coeff, self.f))
+        cut_ac = float(np.dot(self.cutoff_acoustic_coeff, self.f))
+        cut_op = float(np.dot(self.cutoff_optical_coeff, self.f))
+        cutoff = cut_sp + cut_ac + cut_op
+        balance = contact_in + ii_events - cutoff
+        gross_contact = float(sum(abs(v) for v in rates.values()))
+        scale = max(gross_contact, abs(ii_events), abs(cutoff), 1e-300)
+        currents = self.terminal_currents(self.Gamma_x_face, self.Gamma_y_face)
+        return {
+            "contact_particle_injection_per_m_s": contact_in,
+            "ii_event_rate_per_m_s": ii_events,
+            "cutoff_loss_per_m_s": cutoff,
+            "cutoff_spatial_per_m_s": cut_sp,
+            "cutoff_acoustic_per_m_s": cut_ac,
+            "cutoff_optical_per_m_s": cut_op,
+            "number_balance_per_m_s": balance,
+            "relative_number_balance": balance / scale,
+            "source_current_A_per_um": currents[1],
+            "drain_current_A_per_um": currents[2],
+            "body_current_A_per_um": currents[3],
+            "scaled_linear_residual_inf": getattr(self, "scaled_residual_inf", np.nan),
+        }
+
 
 def get_phi(Nx, Ny, Vg, Vd, Phi_gate=0.30):
-    """Run (and cache) a DD solve to get phi, contact map, n_eq on the mesh."""
+    """Run (and cache) a DD solve to get phi, contact map, and contact n_eq."""
     from device import DeviceParams, make_mesh, build_doping
     from poisson import Poisson2D
     from dd import DDSolver
-    cache = os.path.join(os.path.dirname(__file__), "..", "data",
-                         f"dd_{Nx}x{Ny}_Vg{Vg}_Vd{Vd}.npz")
-    p = DeviceParams(); x, y, X, Y = make_mesh(p, Nx=Nx, Ny=Ny)
+
+    data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+    os.makedirs(data_dir, exist_ok=True)
+    cache = os.path.join(data_dir, f"dd_{Nx}x{Ny}_Vg{Vg}_Vd{Vd}.npz")
+    p = DeviceParams()
+    x, y, X, Y = make_mesh(p, Nx=Nx, Ny=Ny)
     if os.path.exists(cache):
         d = np.load(cache)
         return x, y, d["phi"], d["ctype"], d["neq"]
@@ -271,22 +548,32 @@ def get_phi(Nx, Ny, Vg, Vd, Phi_gate=0.30):
 
 if __name__ == "__main__":
     import time
+
     Nx, Ny = 40, 34
     x, y, phi, ctype, neq = get_phi(Nx, Ny, 3.0, 3.0)
     print("phi range %.3f..%.3f V" % (phi.min(), phi.max()))
-    she = SHE2D(x, y, phi, ctype, neq, dHi_eV=0.0125)
+    she = SHE2D(x, y, phi, ctype, neq, dHi_eV=0.0125,
+                include_impact_ionization=True, absorbing_top=True)
     print("H-grid: %d points, dH=%.4f eV, E_op=%d nodes; active DOF=%d" %
-          (she.NH, she.dH/eV, she.m_op, she.Ndof))
+          (she.NH, she.dH / eV, she.m_op, she.Ndof))
     t0 = time.time(); she.assemble()
-    print("assembled in %.1fs, nnz=%d, orphans pinned=%d" % (time.time()-t0, she.A.nnz, she.n_orphans))
-    t0 = time.time(); she.solve(); print("solved in %.1fs (info=%s)" % (time.time()-t0, she.info))
+    print("assembled in %.1fs, nnz=%d, orphans pinned=%d" %
+          (time.time() - t0, she.A.nnz, she.n_orphans))
+    t0 = time.time(); she.solve()
+    print("solved in %.1fs (info=%s, scaled residual %.2e)" %
+          (time.time() - t0, she.info, she.scaled_residual_inf))
     n, Te, Gii = she.moments()
+    vmag = np.sqrt(she.vx ** 2 + she.vy ** 2)
     print("n range %.2e..%.2e cm^-3" % (n.min(), n.max()))
-    print("Te range %.0f..%.0f K (max near drain?)" % (Te.min(), Te.max()))
+    print("Te range %.0f..%.0f K" % (Te.min(), Te.max()))
     print("Gii max %.2e /cm^3/s" % Gii.max())
-    vmag = np.sqrt(she.vx**2 + she.vy**2)
-    print("velocity |v| max %.2e cm/s (expect ~1e7 sat)" % vmag.max())
-    np.savez(os.path.join(os.path.dirname(__file__), "..", "data", "she2d_result.npz"),
+    print("velocity |v| max %.2e cm/s" % vmag.max())
+    print("conservation:", she.conservation_diagnostics())
+
+    data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
+    os.makedirs(data_dir, exist_ok=True)
+    np.savez(os.path.join(data_dir, "she2d_result.npz"),
              x=x, y=y, phi=phi, n=n, Te=Te, Gii=Gii, vx=she.vx, vy=she.vy,
-             F3d=she.F3d.astype(np.float32), H=she.H)
+             F3d=she.F3d.astype(np.float32), H=she.H,
+             Gamma_x_face=she.Gamma_x_face, Gamma_y_face=she.Gamma_y_face)
     print("saved data/she2d_result.npz")

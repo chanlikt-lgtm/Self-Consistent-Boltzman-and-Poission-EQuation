@@ -1,0 +1,17 @@
+==================================================================
+NUMERICAL AUDIT  --  clean 40x34 SHE (with II collision operator)
+==================================================================
+1. n_max            1.0516e+20 cm^-3   at (x=0.082, y=0.043) um
+2. Te_max           3232.9 K          at (x=0.595, y=0.005) um  [baseline 3236 K]
+3. Gii_max          1.3513e+27 /cm^3/s at (x=0.595, y=0.009) um  [baseline 1.37e27]
+4. |v|_max          9.7318e+06 cm/s    at (x=0.554, y=0.000) um  [old postproc 1.23e7]
+5. Te--Gii peak separation                      0.005 um
+6. SHE currents     I_source = -1.7044e-04 A/um   I_drain = +1.7071e-04 A/um   I_body = +5.503e-15
+   |I_src|-|I_drn| mismatch                     0.16 %
+7. normalized global continuity residual        -5.700e-06
+   (contact injection -1.704e+18 + II gen 1.691e+18 - cutoff loss 3.524e+08 per m/s)
+8. orphan states pinned                         0
+9. f0 raw (pre-clip): min = -3.301e-11   max = 3.799e+00
+   negative entries beyond -1e-12*scale         46 of 328544  (1.40e-04 of DOF)
+   scaled linear residual                       1.497e-09 (lgmres info=0)
+==================================================================

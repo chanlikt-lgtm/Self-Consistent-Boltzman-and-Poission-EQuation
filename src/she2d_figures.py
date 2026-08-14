@@ -21,11 +21,14 @@ pcm = a.pcolormesh(x, y, np.log10(np.maximum(n, 1)), cmap="viridis", shading="go
 a.invert_yaxis(); a.set_title("electron concentration  log$_{10}$ n [cm$^{-3}$]  (cf. Fig. 3)")
 a.set_xlabel("transverse x [um]"); a.set_ylabel("depth y [um]"); fig.colorbar(pcm, ax=a)
 
-# Fig 4: average-velocity vector field
+# Fig 4: average-velocity vector field (mask carrier-starved regions n<1e13 cm^-3:
+# depleted-region "velocities" J/n are meaningless, so draw no arrow there)
 a = ax[0, 1]
-vmag = np.sqrt(vx**2 + vy**2)
+mask = n < 1e13
+vxm = np.where(mask, np.nan, vx); vym = np.where(mask, np.nan, vy)
+vmag = np.sqrt(vxm**2 + vym**2)
 s = 2
-q = a.quiver(X[::s, ::s], Y[::s, ::s], vx[::s, ::s], vy[::s, ::s], vmag[::s, ::s],
+q = a.quiver(X[::s, ::s], Y[::s, ::s], vxm[::s, ::s], vym[::s, ::s], vmag[::s, ::s],
              cmap="plasma", scale_units="xy", angles="xy", width=0.004)
 a.invert_yaxis(); a.set_title("average electron velocity  [cm/s]  (cf. Fig. 4)")
 a.set_xlabel("transverse x [um]"); a.set_ylabel("depth y [um]")

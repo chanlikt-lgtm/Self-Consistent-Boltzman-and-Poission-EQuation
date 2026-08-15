@@ -40,9 +40,20 @@ def run(Nx, Ny, dHi_eV=0.0125):
                 include_impact_ionization=False, absorbing_top=True)
     pre.assemble()
     Ap = pre.A; Dp = Ap.diagonal().copy(); Dp[np.abs(Dp) < 1e-300] = 1.0
-    t0 = time.time()
-    ilu = spla.spilu((sp.diags(1.0 / Dp) @ Ap).tocsc(), drop_tol=1e-3, fill_factor=10)
+    Aps = (sp.diags(1.0 / Dp) @ Ap).tocsc()
+    # robust ILU: finer/larger grids can give spilu a zero pivot even for the clean no-II
+    # M-matrix (aggressive drop_tol); escalate a diagonal shift on the PRECONDITIONER only.
+    t0 = time.time(); ilu = None; pshift = None
+    for s in (0.0, 1e-3, 1e-2, 5e-2, 1e-1):
+        try:
+            Ash = Aps if s == 0.0 else (Aps + s * sp.eye(As.shape[0], format="csc")).tocsc()
+            ilu = spla.spilu(Ash, drop_tol=1e-4, fill_factor=12); pshift = s; break
+        except Exception as e:
+            print("  no-II ILU shift=%.0e failed (%s)" % (s, e))
+    if ilu is None:
+        raise RuntimeError("no-II preconditioner ILU failed at all shifts")
     tbuild = time.time() - t0
+    print("  no-II preconditioner ILU built with shift=%.0e in %.0fs" % (pshift, tbuild))
     M = spla.LinearOperator(As.shape, ilu.solve)
     t0 = time.time()
     f_raw, info = spla.lgmres(As, bs, M=M, rtol=1e-9, maxiter=1000)

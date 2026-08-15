@@ -1,1 +1,18 @@
-  DD solve 60x50 at Vg=3.0,Vd=3.0 (cached after)...
+  no-II ILU shift=0e+00 failed (Factor is exactly singular)
+  no-II ILU shift=1e-03 failed (Factor is exactly singular)
+  no-II preconditioner ILU built with shift=1e-02 in 618s
+======================================================================
+GRID-REFINEMENT AUDIT  60x50  dH=12.50 meV  (DOF=724774, ILU 618s, lgmres 32.7s)
+  mesh near drain: dx=13.6 nm  dy(surface)=0.6 nm
+----------------------------------------------------------------------
+Te_max    3423.0 K   at (0.597, 0.008) um   (5.78% vs ref 3236 K)
+Gii_max   8.2595e+26 /cm^3/s  at (0.597, 0.016) um   (-39.71% vs ref 1.37e27)
+|v|_max   9.9961e+06 cm/s  at (0.529, 0.048) um
+n_max     1.0473e+20 cm^-3
+Te--Gii peak separation   0.008 um  = 2 cell(s)  (mesh dx~13.6 nm near drain)
+SHE currents   I_src=-1.8762e-04  I_drn=+1.8775e-04 A/um   mismatch 0.07%
+global continuity residual (relative, dimensionless)   -7.569e-06
+  balance terms [1/(m s)]: contact_inj=-8.347e+17  II_gen=8.169e+17  cutoff_loss=2.604e+03
+orphans=0   f0 raw min=-5.295e-10 max=3.800e+00   scaled residual=2.272e-09
+total wall time 678s
+======================================================================

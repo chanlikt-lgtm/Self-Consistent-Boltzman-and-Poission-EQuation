@@ -1,0 +1,272 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\vecr}{\mathbf{r}}
+\newcommand{\veck}{\mathbf{k}}
+\newcommand{\vecE}{\mathbf{E}}
+\newcommand{\vecj}{\mathbf{j}}
+\newcommand{\Om}{\hat{\boldsymbol{\Omega}}}
+\newcommand{\gradr}{\nabla_{\!\vecr}}
+\newcommand{\honest}[1]{\par\medskip\noindent{\setlength{\fboxsep}{7pt}%
+\colorbox{yellow!22}{\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}%
+\small\textbf{Honesty note.} #1\end{minipage}}}\par\medskip}
+
+\title{\textbf{Derivation and Numerical Reproduction of\\
+Liang, Goldsman, Mayergoyz \& Oldiges (1997):\\
+2-D Deterministic SHE-Boltzmann MOSFET Simulation}\\[5pt]
+\large\textit{Complete report, Revision~2 --- coupled, impact-ionization-in-BTE state}}
+\author{Reproduction study \quad\small(code commit \texttt{891e7c9}; Python 3.13.14, NumPy 2.5.1, SciPy 1.18.0)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+This report derives and numerically reproduces the deterministic spherical-harmonic (SHE)
+Boltzmann device solver of Liang \emph{et al.}, \emph{IEEE Trans.\ Electron Devices}
+\textbf{44}(2), 257--267 (1997). Revision~2 supersedes the earlier one-way/post-processed
+description: impact ionization is now \emph{inside} the assembled electron collision operator
+(primary depletion + secondary redistribution), the self-consistent
+SHE$\leftrightarrow$Poisson$\leftrightarrow$hole-continuity loop is \emph{demonstrated and
+observably converging}, global number- and terminal-current-conservation diagnostics are in
+place, and a physics-split preconditioner removes the previous solver bottleneck
+($\sim$10~min~$\to$~$\sim$15~s on the 40$\times$34 problem). Established results: core
+transport ($n$, $|v|$, $T_e$) is validated and spatially robust; the self-consistent feedback
+materially suppresses avalanche generation and drain current while leaving $T_e$ comparatively
+stable; conservation holds across one-way, refined, and coupled runs. Open items are stated
+precisely: the impact-ionization rate is not yet grid-converged (best estimate $G_{ii,\max}
+\!\approx\!8.5\times10^{26}\,\si{cm^{-3}s^{-1}}$, coupled refined-grid run still required); the
+$T_e$/$G_{ii}$ peak offset is unresolved at present mesh; and quantitative Liang overlays await
+device recalibration. Every model element is classified as \emph{paper-specified},
+\emph{reconstruction}, \emph{surrogate}, or \emph{not-yet-converged}.
+\end{abstract}
+
+\tableofcontents
+
+\section{Overview and audit provenance}\label{sec:overview}
+Liang \emph{et al.} solve, self-consistently, three coupled equations on a 2-D MOSFET
+cross-section: Poisson, the electron BTE (first-order SHE), and hole continuity with an
+impact-ionization pair-generation source. This reproduction has passed through four external
+audit rounds and three code patches (Appendix~\ref{sec:history}); the present revision documents
+the resulting coupled state.
+\honest{Model substitutions carried throughout and classified in Table~\ref{tab:taxonomy}: the
+doping profile is a \emph{reconstruction}; the band is a 1-parameter Kane \emph{surrogate}
+(paper: 2-band Fiegna/Brunetti); the impact-ionization rate is a Keldysh \emph{surrogate}; the
+momentum time $\tau_1$ is a single calibrated surrogate (not a summed Table-I model); and the
+device carries an un-recalibrated $V_{th}=\SI{1.64}{V}$.}
+
+\part{Method derivation and validated foundation}
+
+\section{First-order SHE equation}\label{sec:derivation}
+With $\vecE=-\gradr\phi$, expand $f=f_0(\vecr,\eps)+\Om\cdot\mathbf{f}_1(\vecr,\eps)$ (all
+$\ell\ge2$ discarded). Projection gives the current relation and the conservative
+augmented-space balance
+\begin{equation}
+\mathbf{f}_1=-\tau_1 v(\gradr f_0-q\vecE\partial_\eps f_0),\qquad
+\gradr\!\cdot\vecj_x+\partial_\eps j_\eps= Z\,\mathcal{Q}[f_0]+Z\,S_{\text{gen}},
+\end{equation}
+$\vecj_x=-ZD(\gradr f_0-q\vecE\partial_\eps f_0)$, $D=\tfrac13v^2\tau_1$. In total energy
+$H=\eps-q\phi$ this becomes pure spatial diffusion at fixed $H$, the collision operator coupling
+$H\!\leftrightarrow\!H\pm E_{op}$ locally in space, over the global mesh $-q\phi_{max}\le H\le
+\eps_{max}-q\phi_{min}$ with mask $0\le H+q\phi\le\eps_{max}$; $\eps=0$ reflecting, $\eps_{max}$
+absorbing. The DOS-weighted acoustic operator $\mathcal{Q}_{ac}=Z^{-1}\partial_\eps[ZA(\partial_
+\eps+1/k_BT)f_0]$ (Scharfetter--Gummel) makes the collision term irreducible; it is
+number-conserving (defect $7.6\times10^{-17}$) with the Maxwellian as its exact null.
+
+\section{Reconstructed device, taxonomy, foundation}\label{sec:device}
+The \SI{0.35}{\micro\meter} LDD NMOS uses error-function junctions ($x_j=\SI{0.170}{\micro
+\meter}$ metallurgical). Foundation checks (all at $T=\SI{300}{K}$): equilibrium Poisson (built-in
+$+0.586/-0.44$~V, quadratic Newton); nonparabolic $N_c=2.857\times10^{19}$ (0.1\% of the
+independent value; parabolic limit 0.09\% of closed form); bulk scattering engine
+detailed-balance $2\times10^{-5}$, zero-field $T_e\to309.7$~K, monotone heating. The DD solve
+at $V_{gs}=V_{ds}=\SI{3}{V}$ gives the operating-point potential driving the SHE.
+
+\begin{table}[h]\centering\small
+\caption{Modelling taxonomy (Rev.~2 adds a \emph{not-yet-converged} class).}\label{tab:taxonomy}
+\begin{tabular}{p{5.4cm}p{3.0cm}p{5.8cm}}
+\toprule
+Element & Class & Basis / status \\
+\midrule
+Method eqs., SHE reduction, moments & \textbf{paper} & Liang \emph{et al.} \\
+Table-I params, spherical band & \textbf{paper} & paper Sec.~II \\
+$L_{\text{eff}},t_{ox},x_j,N_D^\pm$ & \textbf{paper} & paper text \\
+1-param Kane $\gamma(\eps)$ & \textbf{surrogate} & paper: 2-band Fiegna/Brunetti \\
+LDD doping shape, mesh & \textbf{reconstruction} & ref.~[7] unavailable \\
+Channel $N_A$, $\Phi_{gate}$, $\tau_1$, $c_{op}$, $1/\tau_{ii}$ & \textbf{surrogate} & calibrated; disclosed \\
+$G_{ii,\max}$ magnitude & \textbf{not-yet-converged} & $\sim\!8.5\times10^{26}$; coupled-grid run pending \\
+$T_e$/$G_{ii}$ peak offset & \textbf{not-yet-converged} & unresolved at present mesh \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\part{The 2-D SHE core, impact ionization, and self-consistency}
+
+\section{Assembled operator, impact ionization, and moments}\label{sec:core}
+The solver discretizes the $(\vecr,H)$ equation by box integration; contributions (spatial
+diffusion $\times\Delta H$, optical in/out $\times A_{ij}\Delta H$, acoustic SG flux $\times
+A_{ij}$) share units and form a positive-diagonal system. Contacts inject a Maxwellian
+$f_0=n_{contact}e^{-\eps/k_BT}/\!\int Ze^{-\eps/k_BT}dH$.
+
+\paragraph{Impact ionization in the electron BTE.} An event removes a primary electron at rate
+$1/\tau_{ii}(\eps)$ (Keldysh surrogate, $\eps_{th}=\SI{1.1}{eV}$) and deposits two secondaries at
+$\eps'=(\eps-\eps_{th})/2$, linearly distributed onto the neighbouring $H$ nodes, with net
+electron gain $+1$ per event. This is \emph{assembled into the electron collision operator}
+(primary depletion + secondary redistribution), so $f_0$ is directly shaped by avalanche;
+$G_{ii}=\int Zf_0/\tau_{ii}\,d\eps$ is a moment of that II-affected distribution. The absorbing
+$\eps_{max}$ cutoff acts on spatial, acoustic, and optical fluxes. Moments $n$, $\langle
+\mathbf{v}\rangle$, $T_e$, $G_{ii}$, and the terminal currents are reconstructed from the
+\emph{same finite-volume face fluxes} as the operator.
+
+\section{Numerics: physics-split preconditioner}\label{sec:numerics}
+The large-grid system is solved by a multiplicative physics-split preconditioner. Because DOFs
+are numbered with $H$ fastest, same-spatial-cell couplings (acoustic + optical + II
+redistribution + spatial diagonal) form contiguous local energy blocks --- the \textbf{E block}
+--- factored cheaply; the diagonal plus cross-cell couplings form the fixed-$H$ real-space
+\textbf{S block}. One application does $E^{-1}\!\to\!S^{-1}\!\to\!E^{-1}$ with a fresh residual
+between stages; the solved matrix is never shifted (shifts touch only preconditioner factors).
+On the 328\,544-DOF 40$\times$34 problem this solves to $\SI{e-10}{}$ in $\sim$15~s (raw scaled
+residual $1.22\times10^{-11}$), where the previous global ILU did not finish its setup in
+120~s. The legacy path is retained as \texttt{method="legacy\_ilu"} for regression.
+
+\section{Numerical audit of the one-way baseline}\label{sec:audit}
+Table~\ref{tab:audit} is the extracted audit of the locked one-way reference (commit
+\texttt{f016e3c}); it is preserved as a regression benchmark.
+
+\begin{table}[h]\centering\small
+\caption{Clean 40$\times$34 numerical audit (impact ionization in the collision operator).}
+\label{tab:audit}
+\begin{tabular}{p{5.6cm}p{4.6cm}p{3.6cm}}
+\toprule
+Quantity & Value & Location / note \\
+\midrule
+$n_{\max}$ & $1.0516\times10^{20}\,\si{cm^{-3}}$ & source n$^+$ (0.082,\,0.043) \\
+$T_{e,\max}$ & $3232.9$~K & drain (0.595,\,0.005) \\
+$G_{ii,\max}$ & $1.3513\times10^{27}\,\si{cm^{-3}s^{-1}}$ & drain (0.595,\,0.009) \\
+$|v|_{\max}$ & $9.732\times10^{6}\,\si{cm/s}$ & drain surface (0.554,\,0) \\
+$T_e$--$G_{ii}$ peak separation & $\SI{5}{nm}$ ($\sim$1 cell) & co-located within mesh \\
+SHE currents $I_{src}/I_{drn}$ & $-1.7044/+1.7071\times10^{-4}\,$A/\si{\micro\meter} & mismatch $0.16\%$ \\
+global continuity residual & $-5.70\times10^{-6}$ (relative) & --- \\
+orphan states & $0$ & no artificial sinks \\
+$f_0$ pre-clip min & $-3.3\times10^{-11}$ & 46/328544 tiny negatives \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{../figures/she2d_moments.png}
+\caption{One-way SHE moments (40$\times$34). $n$ (Fig.~3), velocity field saturating at
+$9.73\times10^6\,\si{cm/s}$ (Fig.~4; masked where $n<10^{13}\,\si{cm^{-3}}$), $T_e$ (Fig.~7
+dashed, drain-localized), $G_{ii}$ (Fig.~7 solid, drain-localized).}
+\end{figure}
+
+\section{Grid refinement (40$\times$34 vs 60$\times$50, one-way)}\label{sec:grid}
+Refining the spatial mesh at fixed $\Delta H=\SI{12.5}{meV}$:
+\begin{center}\small
+\begin{tabular}{lrrl}
+\toprule
+Quantity & 40$\times$34 & 60$\times$50 & converged? \\
+\midrule
+$n_{\max}$ & $1.0516\times10^{20}$ & $1.0473\times10^{20}$ & yes ($-0.4\%$) \\
+$|v|_{\max}$ & $9.73\times10^{6}$ & $10.0\times10^{6}$ & yes ($+2.7\%$) \\
+$T_{e,\max}$ [K] & $3232.9$ & $3423.0$ & moderate ($+5.9\%$) \\
+$G_{ii,\max}$ & $1.3513\times10^{27}$ & $8.26\times10^{26}$ & \textbf{no} ($-40\%$) \\
+$T_e$/$G_{ii}$ separation & 1 cell & 2 cells & grid-scale (unresolved) \\
+current mismatch / residual & 0.16\% / $5.7\!\times\!10^{-6}$ & 0.07\% / $7.6\!\times\!10^{-6}$ & conserved \\
+\bottomrule
+\end{tabular}
+\end{center}
+Transport ($n$, $|v|$, $T_e$) is spatially robust; $G_{ii}$ is \emph{not} grid-converged (it
+depends on the high-energy tail); and the peak separation tracks the mesh, so it is unresolved,
+not a reproduced physical offset.
+
+\section{Self-consistent SHE$\leftrightarrow$Poisson$\leftrightarrow$hole loop}\label{sec:coupled}
+A damped outer iteration solves the SHE (with impact ionization) on the current potential, drives
+hole continuity with $G_{ii}$ as pair generation (holding $n_{\text{SHE}}$), updates Poisson from
+the SHE density, damps, and repeats; $n$ is recomputed from the SHE after each potential update
+(not constitutively from DD). Over 12 iterations (Fig.~\ref{fig:coupled}) the maximum potential
+update falls monotonically $17.7\to\SI{4.0}{mV}$, and the physical observables plateau:
+$G_{ii,\max}$ is suppressed $37\%$ ($1.35\to0.85\times10^{27}$) and the drain current $29\%$
+($1.71\to1.21\times10^{-4}\,$A/\si{\micro\meter}), while $T_{e,\max}$ stays $\sim\!\SI{3240}{K}$.
+This is the physically expected negative feedback: the SHE electrons and the $G_{ii}$-generated
+holes reshape the potential, lowering the peak drain field and throttling avalanche. Final
+conservation is clean (relative number balance $2.4\times10^{-5}$, currents balance $0.14\%$).
+\honest{The loop is \emph{demonstrated and observably converging}, not converged to the
+prescribed tolerance: the plateaued observables are meaningful, but $\max|\Delta\phi|\approx
+\SI{4}{mV}$ remains above the chosen \SI{2}{mV} stopping criterion. Tighter convergence needs
+more iterations or reduced damping.}
+
+\begin{figure}[h]\centering
+\includegraphics[width=\linewidth]{../figures/she2d_coupled_convergence.png}
+\caption{Self-consistent loop (40$\times$34). Potential update converges $17.7\to\SI{4.0}{mV}$;
+feedback suppresses $G_{ii}$ 37\% and $I_d$ 29\% (both plateauing) while $T_e$ stays stable.}
+\label{fig:coupled}
+\end{figure}
+
+\part{Assessment}
+\section{Conclusions, classified}\label{sec:concl}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt]
+\item \textbf{Core SHE transport:} validated and spatially robust for $n$, $|v|$, and $T_e$.
+\item \textbf{Impact ionization:} now part of the assembled electron collision operator, with
+explicit primary depletion and secondary redistribution ($G_{ii}$ is a moment of the II-affected
+$f_0$).
+\item \textbf{Self-consistency:} SHE$\leftrightarrow$Poisson$\leftrightarrow$hole feedback
+\emph{demonstrated and observably converging}; it materially suppresses avalanche generation and
+drain current while leaving $T_e$ comparatively stable.
+\item \textbf{Conservation:} validated across one-way, refined, and coupled calculations
+(number balance $10^{-5}$--$10^{-7}$; terminal currents balance $<0.2\%$).
+\item \textbf{Numerics:} physics-split preconditioning removes the previous practical solver
+bottleneck.
+\item \textbf{$G_{ii}$:} the earlier $1.37\times10^{27}$ agreement with Liang was \emph{fortuitous}
+(coarse, one-way). The current best estimate is $G_{ii,\max}\approx8.5\times10^{26}\,\si{cm^{-3}
+s^{-1}}$; independent spatial refinement and self-consistent feedback both reduce the coarse
+one-way value toward this scale. \emph{A coupled refined-grid calculation is still required for a
+quantitative convergence claim.}
+\item \textbf{$T_e$/$G_{ii}$ offset:} unresolved at present mesh resolution; \emph{no longer
+claimed reproduced}.
+\item \textbf{Remaining quantitative gaps:} coupled 60$\times$50 convergence, $V_{th}$
+recalibration, and digitized Liang target-figure overlays.
+\end{itemize}
+
+\appendix
+\section{Numerical and model specifications}\label{sec:specs}
+$T=\SI{300}{K}$, Boltzmann, $m^*=0.32m_0$, $g_v=6$, $\alpha=\SI{0.5}{eV^{-1}}$, $v_s=\SI{9.04e3}
+{m/s}$; erfc doping per earlier revisions; SHE grid $\Delta H=\SI{12.5}{meV}$ ($E_{op}/\Delta H=4$
+integer), $\eps=0$ reflecting / $\eps_{max}$ absorbing. Optical $c_{op}=\SI{4.69e-34}{J\,m^3/s}$,
+$\tau_1=\SI{e-14}{s}/(\sqrt\gamma\gamma')$, $\tau_{ac}=\tau_1$; impact ionization
+$1/\tau_{ii}=P[(\eps-\eps_{th})/\eps_{th}]^2\Theta$, $P=\SI{2e13}{1/s}$, $\eps_{th}=\SI{1.1}{eV}$,
+equal-split secondaries. Solve: physics-split E$\to$S$\to$E preconditioner, LGMRES tol
+\SI{e-10}{} (audit) / \SI{e-8}{} (coupled iterations). Coupled loop: $\phi$-damping $0.25$,
+$\le$12 outer iterations, $\SI{2}{mV}$ stop.
+
+\section{Provenance and audit history}\label{sec:history}
+Git commit \texttt{891e7c9}; Python 3.13.14, NumPy 2.5.1, SciPy 1.18.0. Key commits:
+\texttt{f016e3c} (locked one-way audit), \texttt{7aad998} (60$\times$50 refinement),
+\texttt{65461ad} (physics-split solver), \texttt{047da93} (coupled loop). Four audit rounds fixed:
+over-claims, missing specs, junction geometry, $N_c$ convergence, the reducible-collision
+zero-field-$T_e$ bug (acoustic operator), the global $H$-grid, the contact-Maxwellian
+normalization (report typo; code correct), boundary/velocity/current extraction, and finally
+delivered the real impact-ionization operator, the coupled driver, and the physics-split solver.
+
+\begin{thebibliography}{9}\small
+\bibitem{liang} W.~Liang, N.~Goldsman, I.~Mayergoyz, P.~J.~Oldiges, \emph{IEEE Trans.\ Electron
+Devices} \textbf{44}(2), 257--267, 1997.
+\bibitem{gnudi} A.~Gnudi, D.~Ventura, G.~Baccarani, F.~Odeh, \emph{Solid-State Electron.}
+\textbf{36}, 575, 1993.
+\bibitem{wu} Y.-J.~Wu, N.~Goldsman, \emph{J.\ Appl.\ Phys.} \textbf{78}, 1995.
+\bibitem{jungemann} C.~Jungemann, B.~Meinerzhagen, \emph{Hierarchical Device Simulation}.
+Springer, 2003.
+\bibitem{sg} D.~L.~Scharfetter, H.~K.~Gummel, \emph{IEEE TED} \textbf{ED-16}, 64, 1969.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,208 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex.fmt)
+ restricted \write18 enabled.
+entering extended mode
+(report_v2.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+For additional information on amsmath, use the `?' option.
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.cf
+g)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def)
+)) (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+) (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/siunitx\siunitx.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/translations\translation
+s.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds.
+sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.st
+y) (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
+))) (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx))
+ (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty)
+
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefinek
+eys.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.st
+y) (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettitl
+estring.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty)
+))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.st
+y) (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc.
+sty)))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfile
+check.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniqueco
+unter.sty)))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdft
+ex.def)
+No file report_v2.aux.
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mki
+i
+[Loading MPS to PDF converter (version 2006.09.02).]
+)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-ba
+se.sty
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cf
+g))
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/translations/dicts\trans
+lations-basic-dictionary-english.trsl)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd)
+(C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd)
+No file report_v2.toc.
+
+LaTeX Warning: Reference `sec:history' on page 1 undefined on input line 61.
+
+
+LaTeX Warning: Reference `tab:taxonomy' on page 1 undefined on input line 67.
+
+[1{C:/Users/User/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+Underfull \hbox (badness 10000) in paragraph at lines 107--107
+[]|\OT1/cmr/bx/n/10 not-yet-
+
+Underfull \hbox (badness 10000) in paragraph at lines 108--108
+[]|\OT1/cmr/bx/n/10 not-yet-
+[2]
+
+LaTeX Warning: Reference `tab:audit' on page 3 undefined on input line 143.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 158--158
+[]|$\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7044
+\OML/cmm/m/it/10 = \OT1/cmr/m/n/10 + 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7071 \O
+MS/cmsy/m/n/10 ^^B
+
+Underfull \hbox (badness 2865) in paragraph at lines 161--162
+[]|\OT1/cmr/m/n/10 46/328544 tiny neg-a-
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 173.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\times' on input line 173.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 173.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 173.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\times' on input line 173.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 173.
+
+[3]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 193.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\leftrightarrow' on input line 193.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 193.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 193.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `\leftrightarrow' on input line 193.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 193.
+
+
+LaTeX Warning: Reference `fig:coupled' on page 4 undefined on input line 197.
+
+[4 <../figures/she2d_moments.png>] [5 <../figures/she2d_coupled_convergence.png
+>] [6] (report_v2.aux)
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `report_v2.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+ )
+(see the transcript file for additional information) <C:\Users\User\AppData\Loc
+al\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1000.pk> <C:\Users\User\AppDat
+a\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Users/User/Ap
+pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users
+/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
+C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx
+8.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
+cm/cmex10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmmi10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/
+public/amsfonts/cm/cmmi6.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts
+/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/User/AppData/Local/Programs/MiKTe
+X/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/User/AppData/Local/Program
+s/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/User/AppData/Local/
+Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/User/AppData
+/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/User/A
+ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/
+User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C
+:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7
+.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/c
+m/cmsy8.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmti10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/pu
+blic/amsfonts/cm/cmti12.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/
+type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on report_v2.pdf (6 pages, 748903 bytes).
+Transcript written on report_v2.log.
+pdflatex: major issue: So far, you have not checked for MiKTeX updates.

@@ -107,15 +107,23 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
 
 
 if __name__ == "__main__":
-    result = solve_coupled()
+    import sys
+    Nx = int(sys.argv[1]) if len(sys.argv) > 1 else 40
+    Ny = int(sys.argv[2]) if len(sys.argv) > 2 else 34
+    result = solve_coupled(Nx=Nx, Ny=Ny)
     outdir = os.path.join(os.path.dirname(__file__), "..", "data")
     os.makedirs(outdir, exist_ok=True)
-    np.savez(os.path.join(outdir, "she2d_coupled_result.npz"),
+    tag = "" if (Nx, Ny) == (40, 34) else "_%dx%d" % (Nx, Ny)
+    fn = "she2d_coupled_result%s.npz" % tag
+    np.savez(os.path.join(outdir, fn),
              x=result["x"], y=result["y"], phi=result["phi"],
              n=result["n"], p=result["p"], Te=result["Te"], Gii=result["Gii"],
              vx=result["vx"], vy=result["vy"],
              F3d=result["F3d"].astype(np.float32), H=result["H"],
              Gamma_x_face=result["Gamma_x_face"],
              Gamma_y_face=result["Gamma_y_face"])
+    Gii = result["Gii"]; jx, ix = np.unravel_index(int(np.argmax(Gii)), Gii.shape)
+    print("Gii_max=%.4e at (x=%.3f,y=%.3f) um  Te_max=%.1f  n_max=%.4e" %
+          (Gii[jx, ix], result["x"][ix], result["y"][jx], result["Te"].max(), result["n"].max()))
     print("final conservation:", result["conservation"])
-    print("saved data/she2d_coupled_result.npz")
+    print("saved data/%s" % fn)

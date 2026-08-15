@@ -1,0 +1,8 @@
+  Vgs=0.20  Id=1.088e-09 A/um
+  Vgs=0.40  Id=1.520e-07 A/um
+  Vgs=0.60  Id=3.390e-07 A/um
+  Vgs=0.80  Id=4.876e-06 A/um
+  Vgs=1.00  Id=1.214e-05 A/um
+  Vgs=1.20  Id=1.932e-05 A/um
+Phi_gate=-0.740 V  ->  extracted Vth=0.614 V  (target ~0.6; was 1.64 at Phi_gate=0.30)
+overdrive at Vg=3: Vg-Vth = 2.39 V (was 1.36)

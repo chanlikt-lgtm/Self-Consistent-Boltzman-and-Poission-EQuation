@@ -1,0 +1,15 @@
+======================================================================
+GRID-REFINEMENT AUDIT  40x34  dH=6.25 meV  (DOF=657160, ILU 5s, lgmres 50.8s)
+  mesh near drain: dx=20.5 nm  dy(surface)=1.3 nm
+----------------------------------------------------------------------
+Te_max    3229.9 K   at (0.595, 0.005) um   (-0.19% vs ref 3236 K)
+Gii_max   1.3368e+27 /cm^3/s  at (0.595, 0.009) um   (-2.42% vs ref 1.37e27)
+|v|_max   9.7707e+06 cm/s  at (0.533, 0.000) um
+n_max     1.0310e+20 cm^-3
+Te--Gii peak separation   0.005 um  = 1 cell(s)  (mesh dx~20.5 nm near drain)
+SHE currents   I_src=-1.6935e-04  I_drn=+1.6962e-04 A/um   mismatch 0.16%
+global continuity residual (relative, dimensionless)   -8.625e-07
+  balance terms [1/(m s)]: contact_inj=-1.675e+18  II_gen=1.673e+18  cutoff_loss=4.866e+05
+orphans=0   f0 raw min=-7.508e-14 max=3.625e+00   scaled residual=1.079e-10
+total wall time 65s
+======================================================================

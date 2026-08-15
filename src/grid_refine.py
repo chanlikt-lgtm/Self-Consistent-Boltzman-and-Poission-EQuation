@@ -32,37 +32,12 @@ def run(Nx, Ny, dHi_eV=0.0125):
     she = SHE2D(x, y, phi, ctype, neq, dHi_eV=dHi_eV,
                 include_impact_ionization=True, absorbing_top=True)
     she.assemble()
-    A, b = she.A, she.b
-    D = A.diagonal().copy(); D[np.abs(D) < 1e-300] = 1.0
-    As = (sp.diags(1.0 / D) @ A).tocsc(); bs = b / D
-
-    pre = SHE2D(x, y, phi, ctype, neq, dHi_eV=dHi_eV,
-                include_impact_ionization=False, absorbing_top=True)
-    pre.assemble()
-    Ap = pre.A; Dp = Ap.diagonal().copy(); Dp[np.abs(Dp) < 1e-300] = 1.0
-    Aps = (sp.diags(1.0 / Dp) @ Ap).tocsc()
-    # robust ILU: finer/larger grids can give spilu a zero pivot even for the clean no-II
-    # M-matrix (aggressive drop_tol); escalate a diagonal shift on the PRECONDITIONER only.
-    t0 = time.time(); ilu = None; pshift = None
-    for s in (0.0, 1e-3, 1e-2, 5e-2, 1e-1):
-        try:
-            Ash = Aps if s == 0.0 else (Aps + s * sp.eye(As.shape[0], format="csc")).tocsc()
-            ilu = spla.spilu(Ash, drop_tol=1e-4, fill_factor=12); pshift = s; break
-        except Exception as e:
-            print("  no-II ILU shift=%.0e failed (%s)" % (s, e))
-    if ilu is None:
-        raise RuntimeError("no-II preconditioner ILU failed at all shifts")
-    tbuild = time.time() - t0
-    print("  no-II preconditioner ILU built with shift=%.0e in %.0fs" % (pshift, tbuild))
-    M = spla.LinearOperator(As.shape, ilu.solve)
     t0 = time.time()
-    f_raw, info = spla.lgmres(As, bs, M=M, rtol=1e-9, maxiter=1000)
+    she.solve(tol=1e-10, method="auto")   # fast physics-split preconditioner
     tsolve = time.time() - t0
-
-    she.f_raw = np.nan_to_num(f_raw)
-    she.f = np.maximum(she.f_raw, 0.0)
-    she.info = info
-    she.scaled_residual_inf = float(np.max(np.abs(As.dot(she.f) - bs)) / max(np.max(np.abs(bs)), 1.0))
+    ps = getattr(she, "preconditioner_stats", {})
+    tbuild = float(ps.get("energy_setup_s", 0.0) + ps.get("space_setup_s", 0.0))
+    f_raw = she.f_raw
     n, Te, Gii = she.moments()
     cons = she.conservation_diagnostics()
 

@@ -1,0 +1,10 @@
+phi range -0.348..3.586 V
+H-grid: 565 points, dH=0.0125 eV, E_op=4 nodes; active DOF=328544
+assembled in 6.4s, nnz=3187123, orphans pinned=0
+solved in 15.6s (info=0, scaled residual 1.22e-11)
+n range 5.17e+03..1.05e+20 cm^-3
+Te range 295..3233 K
+Gii max 1.35e+27 /cm^3/s
+velocity |v| max 9.73e+06 cm/s
+conservation: {'contact_particle_injection_per_m_s': -1.6916635731007393e+18, 'ii_event_rate_per_m_s': 1.6913929981782454e+18, 'cutoff_loss_per_m_s': 495348.3363131762, 'cutoff_spatial_per_m_s': 89875.6802384837, 'cutoff_acoustic_per_m_s': 382805.4098151463, 'cutoff_optical_per_m_s': 22667.246259546217, 'number_balance_per_m_s': -270574922989300.34, 'relative_number_balance': -1.2707258310569252e-07, 'source_current_A_per_um': np.float64(-0.000170439759064874), 'drain_current_A_per_um': np.float64(0.00017071079344983434), 'body_current_A_per_um': np.float64(-1.9244133161652164e-17), 'scaled_linear_residual_inf': 1.2225413599008105e-11}
+saved data/she2d_result.npz

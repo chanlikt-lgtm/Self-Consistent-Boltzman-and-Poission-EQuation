@@ -311,44 +311,165 @@ class SHE2D:
         return A, b
 
     # -------------------------------------------------------------------- solve
-    def solve(self, tol=1e-8):
+    def solve(self, tol=1e-10, method="auto"):
+        """Solve the assembled SHE system.
+
+        Large systems use a physics-split multiplicative preconditioner:
+
+          E: same-spatial-cell energy/collision block (acoustic + optical + II),
+          S: same-H real-space diffusion block (diagonal + cross-cell couplings),
+          preconditioner application: E^{-1} -> S^{-1} -> E^{-1}.
+
+        This avoids the very expensive fill of a global ILU while retaining both stiff
+        directions of the operator.  Any diagonal shift is applied ONLY to the
+        preconditioner, never to the solved matrix.
+
+        method = "auto"      : direct below 130k DOF, split_ilu otherwise
+                 "direct"    : sparse direct solve
+                 "split_ilu" : E-S-E ILU + LGMRES
+                 "legacy_ilu": old shifted global-ILU path (comparison/fallback)
+        """
+        import time
+
         A, b = self.A, self.b
         D = A.diagonal().copy()
         D[np.abs(D) < 1e-300] = 1.0
-        As = (sp.diags(1.0 / D) @ A).tocsc()
+        As = (sp.diags(1.0 / D) @ A).tocsr()
         bs = b / D
-        if self.Ndof <= 130000:
-            f_raw = spla.spsolve(As, bs)
+
+        if method == "auto":
+            method = "direct" if self.Ndof <= 130000 else "split_ilu"
+
+        stats = {"method": method}
+
+        if method == "direct":
+            t0 = time.time()
+            f_raw = spla.spsolve(As.tocsc(), bs)
             info = 0
-        else:
-            # ILU+LGMRES on the scaled matrix. The impact-ionization redistribution breaks the
-            # clean M-matrix structure and gives spilu a zero pivot on the full grid. Build the
-            # preconditioner on a DIAGONAL-SHIFTED copy (shift kept above drop_tol so it is not
-            # dropped) but solve the UNSHIFTED As via lgmres, so the shift affects only the
-            # preconditioner quality, not the solution. Escalate the shift until it converges.
-            f_raw = None; info = -1
+            stats["solve_s"] = time.time() - t0
+
+        elif method == "split_ilu":
+            # DOFs were numbered with H fastest inside each (j,i), so same-cell
+            # entries form contiguous local energy blocks.  Build a cell id for each DOF.
+            cell3 = np.broadcast_to(
+                np.arange(self.Ny * self.Nx, dtype=np.int32).reshape(self.Ny, self.Nx, 1),
+                self.active.shape,
+            )
+            dof_cell = cell3[self.active]
+
+            coo = As.tocoo(copy=False)
+            same_cell = dof_cell[coo.row] == dof_cell[coo.col]
+            is_diag = coo.row == coo.col
+
+            def factor_with_shifts(M, *, drop_tol, fill_factor, permc_spec):
+                last = None
+                for shift in (0.0, 1e-6, 1e-4, 1e-3, 1e-2):
+                    try:
+                        Mt = M if shift == 0.0 else (M + shift * sp.eye(self.Ndof, format="csc"))
+                        fac = spla.spilu(
+                            Mt, drop_tol=drop_tol, fill_factor=fill_factor,
+                            permc_spec=permc_spec, diag_pivot_thresh=0.0,
+                        )
+                        return fac, shift
+                    except Exception as exc:
+                        last = exc
+                raise RuntimeError("split-ILU factorization failed") from last
+
+            # E preconditioner: all same-spatial-cell couplings.  This contains the
+            # complete acoustic/optical/II energy block plus the spatial diagonal.
+            t0 = time.time()
+            PE = sp.csc_matrix(
+                (coo.data[same_cell], (coo.row[same_cell], coo.col[same_cell])),
+                shape=As.shape,
+            )
+            Efac, Eshift = factor_with_shifts(
+                PE, drop_tol=1e-8, fill_factor=4, permc_spec="NATURAL"
+            )
+            stats["energy_setup_s"] = time.time() - t0
+            stats["energy_shift"] = Eshift
+            stats["energy_precond_nnz"] = int(Efac.L.nnz + Efac.U.nnz)
+            del PE
+
+            # S preconditioner: diagonal + cross-cell couplings only.  With local
+            # energy couplings removed this is the fixed-H real-space transport part.
+            t0 = time.time()
+            space_keep = is_diag | (~same_cell)
+            PS = sp.csc_matrix(
+                (coo.data[space_keep], (coo.row[space_keep], coo.col[space_keep])),
+                shape=As.shape,
+            )
+            Sfac, Sshift = factor_with_shifts(
+                PS, drop_tol=1e-4, fill_factor=5, permc_spec="COLAMD"
+            )
+            stats["space_setup_s"] = time.time() - t0
+            stats["space_shift"] = Sshift
+            stats["space_precond_nnz"] = int(Sfac.L.nnz + Sfac.U.nnz)
+            del PS, coo, same_cell, is_diag, dof_cell, cell3
+
+            # Multiplicative E-S-E Schwarz/line relaxation.  Recomputing the residual
+            # between stages is important; a plain additive E+S preconditioner converges
+            # much more slowly on refined spatial grids.
+            def apply_prec(r):
+                z = Efac.solve(r)
+                rr = r - As.dot(z)
+                z += Sfac.solve(rr)
+                rr = r - As.dot(z)
+                z += Efac.solve(rr)
+                return z
+
+            M = spla.LinearOperator(As.shape, matvec=apply_prec, dtype=As.dtype)
+            outer_iterations = [0]
+
+            def count_outer(_x):
+                outer_iterations[0] += 1
+
+            t0 = time.time()
+            f_raw, info = spla.lgmres(
+                As, bs, M=M, rtol=tol, atol=0.0, maxiter=150,
+                inner_m=40, outer_k=5, callback=count_outer,
+            )
+            stats["solve_s"] = time.time() - t0
+            stats["outer_iterations"] = int(outer_iterations[0])
+            if info != 0:
+                raise RuntimeError("SHE split-ILU solve failed to converge (info=%s)" % info)
+
+        elif method == "legacy_ilu":
+            # Retained only for regression comparisons.  It can be orders of magnitude
+            # slower to set up on refined grids because SuperLU sees the full 3-D graph.
+            f_raw = None
+            info = -1
+            t0 = time.time()
             for shift in (1e-3, 1e-2, 5e-2, 1e-1):
                 try:
-                    Ashift = (As + shift * sp.eye(self.Ndof, format="csc")).tocsc()
+                    Ashift = (As.tocsc() + shift * sp.eye(self.Ndof, format="csc")).tocsc()
                     ilu = spla.spilu(Ashift, drop_tol=1e-3, fill_factor=10)
-                except Exception as e:
-                    print("  spilu shift=%.0e failed (%s)" % (shift, e)); continue
+                except Exception:
+                    continue
                 M = spla.LinearOperator(As.shape, ilu.solve)
-                f_raw, info = spla.lgmres(As, bs, M=M, rtol=tol, maxiter=800)
-                print("  ILU shift=%.0e -> lgmres info=%d" % (shift, info))
+                f_raw, info = spla.lgmres(As, bs, M=M, rtol=tol, atol=0.0, maxiter=800)
                 if info == 0:
+                    stats["legacy_shift"] = shift
                     break
+            stats["solve_s"] = time.time() - t0
             if f_raw is None or info != 0:
-                raise RuntimeError("SHE large-grid solve failed to converge (info=%s)" % info)
+                raise RuntimeError("SHE legacy large-grid solve failed to converge (info=%s)" % info)
+
+        else:
+            raise ValueError("unknown SHE solve method %r" % (method,))
 
         self.f_raw = np.nan_to_num(f_raw)
         self.negative_min = float(np.min(self.f_raw))
-        self.negative_count = int(np.count_nonzero(self.f_raw < -1e-12 * max(np.max(np.abs(self.f_raw)), 1.0)))
+        self.negative_count = int(np.count_nonzero(
+            self.f_raw < -1e-12 * max(np.max(np.abs(self.f_raw)), 1.0)
+        ))
         self.f = np.maximum(self.f_raw, 0.0)
         self.info = info
-        self.scaled_residual_inf = float(
-            np.max(np.abs(As.dot(self.f) - bs)) / (max(np.max(np.abs(bs)), 1.0))
-        )
+        scale = max(np.max(np.abs(bs)), 1.0)
+        self.scaled_raw_residual_inf = float(np.max(np.abs(As.dot(self.f_raw) - bs)) / scale)
+        self.scaled_residual_inf = float(np.max(np.abs(As.dot(self.f) - bs)) / scale)
+        stats["raw_residual_inf"] = self.scaled_raw_residual_inf
+        stats["clipped_residual_inf"] = self.scaled_residual_inf
+        self.preconditioner_stats = stats
         return self.f
 
     # ------------------------------------------------------------ distributions

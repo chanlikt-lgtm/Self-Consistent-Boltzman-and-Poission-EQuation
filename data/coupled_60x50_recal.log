@@ -1,0 +1,15 @@
+outer  0  dphi=1.224e-02 V  nmax=1.681e+20  pmax=1.818e+17  Temax=3483 K  Gmax=2.115e+27  Id=5.374e-04 A/um  bal=-1.80e-04  (50.8s)
+outer  1  dphi=1.045e-02 V  nmax=1.503e+20  pmax=1.317e+17  Temax=3513 K  Gmax=1.974e+27  Id=4.662e-04 A/um  bal=-1.84e-04  (55.5s)
+outer  2  dphi=1.036e-02 V  nmax=1.239e+20  pmax=9.860e+16  Temax=3529 K  Gmax=1.798e+27  Id=3.994e-04 A/um  bal=-7.11e-05  (53.4s)
+outer  3  dphi=1.000e-02 V  nmax=1.142e+20  pmax=8.116e+16  Temax=3555 K  Gmax=1.717e+27  Id=3.625e-04 A/um  bal=8.78e-05  (53.1s)
+outer  4  dphi=9.631e-03 V  nmax=1.070e+20  pmax=6.998e+16  Temax=3565 K  Gmax=1.653e+27  Id=3.352e-04 A/um  bal=2.53e-04  (50.7s)
+outer  5  dphi=9.231e-03 V  nmax=1.025e+20  pmax=6.282e+16  Temax=3575 K  Gmax=1.613e+27  Id=3.164e-04 A/um  bal=4.27e-04  (52.3s)
+outer  6  dphi=8.934e-03 V  nmax=1.025e+20  pmax=5.643e+16  Temax=3588 K  Gmax=1.546e+27  Id=2.953e-04 A/um  bal=3.15e-04  (51.3s)
+outer  7  dphi=8.596e-03 V  nmax=1.018e+20  pmax=5.240e+16  Temax=3591 K  Gmax=1.508e+27  Id=2.821e-04 A/um  bal=2.05e-04  (50.5s)
+outer  8  dphi=8.354e-03 V  nmax=1.015e+20  pmax=4.894e+16  Temax=3592 K  Gmax=1.453e+27  Id=2.679e-04 A/um  bal=-3.26e-07  (50.8s)
+outer  9  dphi=7.978e-03 V  nmax=1.022e+20  pmax=4.734e+16  Temax=3598 K  Gmax=1.438e+27  Id=2.621e-04 A/um  bal=-2.94e-05  (52.7s)
+outer 10  dphi=7.760e-03 V  nmax=1.015e+20  pmax=4.501e+16  Temax=3600 K  Gmax=1.392e+27  Id=2.517e-04 A/um  bal=-1.75e-04  (49.7s)
+outer 11  dphi=7.535e-03 V  nmax=1.014e+20  pmax=4.308e+16  Temax=3596 K  Gmax=1.348e+27  Id=2.429e-04 A/um  bal=-2.29e-05  (53.5s)
+Gii_max=1.3391e+27 at (x=0.597,y=0.000) um  Te_max=3598.5  n_max=1.0133e+20
+final conservation: {'contact_particle_injection_per_m_s': -2.8700659782463008e+17, 'ii_event_rate_per_m_s': 5.0729443698467475e+17, 'cutoff_loss_per_m_s': 70.58971828328772, 'cutoff_spatial_per_m_s': 8.296811684027897, 'cutoff_acoustic_per_m_s': 59.36058719772398, 'cutoff_optical_per_m_s': 2.932319401535856, 'number_balance_per_m_s': 2.202878391600446e+17, 'relative_number_balance': 7.326842794062078e-05, 'source_current_A_per_um': np.float64(-0.00024083111045837202), 'drain_current_A_per_um': np.float64(0.00024087709398487556), 'body_current_A_per_um': np.float64(-1.9700127265569906e-17), 'scaled_linear_residual_inf': 5.573748925802438e-09}
+saved data/she2d_coupled_result_60x50_Phg-0.74.npz

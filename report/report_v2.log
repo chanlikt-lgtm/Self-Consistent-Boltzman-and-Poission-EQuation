@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.8)  15 AUG 2026 14:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.8)  15 AUG 2026 14:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -514,30 +514,30 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 \openout4 = `report_v2.toc'.
 
  [2]
-Underfull \hbox (badness 10000) in paragraph at lines 112--112
-[]|\OT1/cmr/bx/n/10 not-yet-
- []
-
-
-Underfull \hbox (badness 1540) in paragraph at lines 112--113
-[]|\OT1/cmr/m/n/10 spatially un-con-verged; $5\OML/cmm/m/it/10 :\OT1/cmr/m/n/10
- 24 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 10[]$
- []
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 113--113
 []|\OT1/cmr/bx/n/10 not-yet-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 163--163
+Underfull \hbox (badness 1540) in paragraph at lines 113--114
+[]|\OT1/cmr/m/n/10 spatially un-con-verged; $5\OML/cmm/m/it/10 :\OT1/cmr/m/n/10
+ 24 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 10[]$
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 114--114
+[]|\OT1/cmr/bx/n/10 not-yet-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 164--164
 []|$\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7044
 \OML/cmm/m/it/10 = \OT1/cmr/m/n/10 + 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7071 \O
 MS/cmsy/m/n/10 ^^B
  []
 
 
-Underfull \hbox (badness 2865) in paragraph at lines 166--167
+Underfull \hbox (badness 2865) in paragraph at lines 167--168
 []|\OT1/cmr/m/n/10 46/328544 tiny neg-a-
  []
 
@@ -545,7 +545,7 @@ Underfull \hbox (badness 2865) in paragraph at lines 166--167
 <../figures/she2d_moments.png, id=117, 939.51pt x 650.43pt>
 File: ../figures/she2d_moments.png Graphic file (type png)
 <use ../figures/she2d_moments.png>
-Package pdftex.def Info: ../figures/she2d_moments.png  used on input line 172.
+Package pdftex.def Info: ../figures/she2d_moments.png  used on input line 173.
 (pdftex.def)             Requested size: 452.9679pt x 313.59232pt.
 
 
@@ -553,72 +553,72 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 178.
+(hyperref)                removing `math shift' on input line 179.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\times' on input line 178.
+(hyperref)                removing `\times' on input line 179.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 178.
+(hyperref)                removing `math shift' on input line 179.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 178.
+(hyperref)                removing `math shift' on input line 179.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\times' on input line 178.
+(hyperref)                removing `\times' on input line 179.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 178.
+(hyperref)                removing `math shift' on input line 179.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 198.
+(hyperref)                removing `math shift' on input line 199.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leftrightarrow' on input line 198.
+(hyperref)                removing `\leftrightarrow' on input line 199.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 198.
+(hyperref)                removing `math shift' on input line 199.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 198.
+(hyperref)                removing `math shift' on input line 199.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leftrightarrow' on input line 198.
+(hyperref)                removing `\leftrightarrow' on input line 199.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 198.
+(hyperref)                removing `math shift' on input line 199.
 
 <../figures/she2d_coupled_convergence.png, id=120, 1084.05pt x 317.988pt>
 File: ../figures/she2d_coupled_convergence.png Graphic file (type png)
 <use ../figures/she2d_coupled_convergence.png>
 Package pdftex.def Info: ../figures/she2d_coupled_convergence.png  used on inpu
-t line 215.
+t line 216.
 (pdftex.def)             Requested size: 452.9679pt x 132.86989pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 221.
+(hyperref)                removing `math shift' on input line 222.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `subscript' on input line 221.
+(hyperref)                removing `subscript' on input line 222.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 221.
+(hyperref)                removing `math shift' on input line 222.
 
 [4] [5 <../figures/she2d_moments.png>] [6 <../figures/she2d_coupled_convergence
 .png>] [7] (report_v2.aux)
@@ -662,7 +662,7 @@ Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/User/
 AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Use
 rs/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb
 >
-Output written on report_v2.pdf (7 pages, 785441 bytes).
+Output written on report_v2.pdf (7 pages, 786523 bytes).
 PDF statistics:
  259 PDF objects out of 1000 (max. 8388607)
  38 named destinations out of 1000 (max. 500000)

@@ -51,9 +51,10 @@ $1.35\times10^{27}$ to $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$ (the finest-teste
 not a continuum estimate), while a one-way energy refinement to $\Delta H=\SI{6.25}{meV}$ moves it
 only $-2.4\%$ (negligible beside the spatial error); the $T_e$/$G_{ii}$ peak offset is unresolved;
 and the device has now been recalibrated to $V_{th}=\SI{0.614}{V}$ for the pending Liang overlays.
-The robust reproductions, established on the pre-recalibration device, are the transport moments
-and the ($\sim$37\%) self-consistent feedback fraction; their values on the recalibrated device
-are being re-established. Every model element is classified as \emph{paper-specified},
+The robust reproductions are the transport moments and the ($\sim$37\%) self-consistent
+$G_{ii}$-feedback fraction --- the latter now \emph{confirmed} on the recalibrated
+$V_{th}=\SI{0.614}{V}$ device ($-36\%$), where the higher overdrive raises the absolute
+(still grid-unconverged) generation to $1.34\times10^{27}$. Every model element is classified as \emph{paper-specified},
 \emph{reconstruction}, \emph{surrogate}, or \emph{not-yet-converged}.
 \end{abstract}
 
@@ -254,9 +255,15 @@ transport moments and the ($\sim$37\%, grid-independent) feedback fraction.
 
 \paragraph{Device recalibration.} A rigid gate offset $\Phi_{gate}=\SI{-0.74}{V}$
 ($dV_{th}/d\Phi_{gate}\!\approx\!+1$) recalibrates the extracted threshold to
-$V_{th}=\SI{0.614}{V}$ (was \SI{1.64}{V}); the $V_g=\SI{3}{V}$ overdrive becomes \SI{2.39}{V}.
-Re-running the coupled operating point on this device, then digitized Liang overlays, is the
-remaining quantitative work.
+$V_{th}=\SI{0.614}{V}$ (was \SI{1.64}{V}); the $V_g=\SI{3}{V}$ overdrive becomes \SI{2.39}{V}. The
+coupled 60$\times$50 operating point on this device converges the observables
+($n_{\max}=1.01\times10^{20}$, $T_{e,\max}=\SI{3598}{K}$, $I_d=\SI{0.24}{mA/\micro\meter}$,
+currents balance $0.02\%$, final $\max|\Delta\phi|=\SI{7.5}{mV}$) and \emph{preserves the
+$G_{ii}$-feedback fraction} ($-36\%$ vs.\ $-37\%$ on the old device; current suppression $-55\%$
+at the higher overdrive). The higher overdrive raises the absolute $G_{ii,\max}$ to
+$1.34\times10^{27}$ ($\sim$2.5$\times$ the old-device coupled value, from more inversion/heating)
+--- device-dependent and still grid-unconverged. Digitized Liang overlays on this recalibrated
+operating point are the outstanding quantitative work.
 
 \part{Assessment}
 \section{Conclusions, classified}\label{sec:concl}
@@ -270,8 +277,8 @@ $f_0$).
 \item \textbf{Self-consistency:} SHE$\leftrightarrow$Poisson$\leftrightarrow$hole feedback
 \emph{demonstrated and observably converging} (not to the \SI{2}{mV} criterion); it materially
 suppresses avalanche generation and drain current while leaving $T_e$ comparatively stable.
-Established on the pre-recalibration device; values on the recalibrated $V_{th}=\SI{0.614}{V}$
-device are being re-established.
+The $G_{ii}$-suppression fraction is \emph{confirmed} on the recalibrated $V_{th}=\SI{0.614}{V}$
+device ($-36\%$; current suppression is stronger, $-55\%$, at the higher 2.39-V overdrive).
 \item \textbf{Conservation:} validated across one-way, refined, and coupled calculations
 (number balance $10^{-5}$--$10^{-7}$; terminal currents balance $<0.2\%$).
 \item \textbf{Numerics:} physics-split preconditioning removes the previous practical solver
@@ -286,9 +293,9 @@ it only $-2.4\%$. \emph{No converged magnitude can be quoted} (Table~\ref{tab:gi
 claimed reproduced}.
 \item \textbf{Device:} recalibrated to $V_{th}=\SI{0.614}{V}$ ($\Phi_{gate}=\SI{-0.74}{V}$),
 replacing the earlier over-high \SI{1.64}{V}.
-\item \textbf{Remaining quantitative gaps:} a spatially-converged $G_{ii}$ (finer than
-60$\times$50), the coupled operating point re-run on the recalibrated device, and digitized
-Liang target-figure overlays.
+\item \textbf{Remaining quantitative gaps:} digitized Liang target-figure overlays on the
+recalibrated coupled solution, and (lower priority) a spatially-converged $G_{ii}$ via
+drain-local refinement.
 \end{itemize}
 
 \appendix

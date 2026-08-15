@@ -84,9 +84,14 @@ HONEST: Te-Gii peaks 5nm apart = WITHIN one cell (mesh ~20nm) -> co-located at t
 NOT a resolved offset. Needs grid refinement to resolve Liang's offset.
 II STATUS: coupled to electron BTE (in collision operator, affects f0), NOT yet self-consistent
 with Poisson/holes.
-NEXT (auditor plan, one change at a time, compare vs f016e3c): (1) GRID REFINE 60x50 dH=12.5meV
-[IN PROGRESS] - check if Te/Gii peak separation persists; (2) then self-consistency (coupled_she.py
-damped); (3) energy check dH=6.25meV (E_op=8). Then report revision + target-figure overlays.
+(1) GRID REFINE 60x50 DONE (commit 7aad998): Te +5.9%/n/|v| stable, but Gii -40% (NOT converged,
+tail-sensitive); Te-Gii peak sep stays grid-scale (1->2 cells) = offset UNRESOLVED. Conservation robust.
+SOLVER ACCELERATION (auditor patch #3, commit 65461ad): physics-split E->S->E preconditioner replaces
+global ILU. 40x34 solve 10min -> 15.6s, residual 1.22e-11, reproduces locked audit EXACTLY. Unblocks
+coupled loop + finer grids. Old path = solve(method="legacy_ilu"). (run_she_clean.py/grid_refine.py
+no-II trick now redundant - can simplify to she.solve().)
+NEXT: (2) coupled_she.py self-consistent SHE<->Poisson<->hole loop [IN PROGRESS, now tractable];
+(3) finer-grid Gii convergence; report revision + target-figure overlays.
 
 ## AUDIT (Rev 1 -> Rev 2), 2026-08-14
 External audit verdict on report Rev 1: "promising Part I; NOT reproduction-grade yet."

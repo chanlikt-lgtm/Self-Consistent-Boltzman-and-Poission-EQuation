@@ -47,12 +47,13 @@ materially suppresses avalanche generation and drain current while leaving $T_e$
 stable; conservation holds across one-way, refined, and coupled runs. Open items are stated
 precisely: the impact-ionization magnitude is \emph{not spatially converged} --- a
 $2\times2$ grid$\times$coupling study drives $G_{ii,\max}$ multiplicatively from
-$1.35\times10^{27}$ to $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$ with no plateau, while an energy
-refinement to $\Delta H=\SI{6.25}{meV}$ moves it only $-2.4\%$ (the sensitivity is spatial, not
-energetic), so no converged value can be quoted; the $T_e$/$G_{ii}$ peak offset is unresolved;
-and the device has now been recalibrated to $V_{th}=\SI{0.614}{V}$ for the pending Liang
-overlays. The robust reproductions are the transport moments and the ($\sim$37\%) self-consistent
-feedback fraction. Every model element is classified as \emph{paper-specified},
+$1.35\times10^{27}$ to $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$ (the finest-tested coupled value,
+not a continuum estimate), while a one-way energy refinement to $\Delta H=\SI{6.25}{meV}$ moves it
+only $-2.4\%$ (negligible beside the spatial error); the $T_e$/$G_{ii}$ peak offset is unresolved;
+and the device has now been recalibrated to $V_{th}=\SI{0.614}{V}$ for the pending Liang overlays.
+The robust reproductions, established on the pre-recalibration device, are the transport moments
+and the ($\sim$37\%) self-consistent feedback fraction; their values on the recalibrated device
+are being re-established. Every model element is classified as \emph{paper-specified},
 \emph{reconstruction}, \emph{surrogate}, or \emph{not-yet-converged}.
 \end{abstract}
 
@@ -219,10 +220,15 @@ feedback suppresses $G_{ii}$ 37\% and $I_d$ 29\% (both plateauing) while $T_e$ s
 
 \section{$G_{ii}$ convergence matrix and device recalibration}\label{sec:giiconv}
 Combining one-way and coupled runs at both grids isolates how the impact-ionization magnitude
-responds to spatial refinement and to self-consistency (Table~\ref{tab:giimat}). The two effects
-are independent and \emph{compound multiplicatively} ($1.35\times10^{27}\times0.61_{\text{grid}}
-\times0.63_{\text{coupling}}=5.2\times10^{26}$), and the coupled result is \emph{still} spatially
-unconverged (coupled 40$\times$34$\to$60$\times$50: $-38\%$, no plateau).
+responds to spatial refinement and to self-consistency (Table~\ref{tab:giimat}). The spatial
+ratios ($8.26/13.5=0.612$ one-way, $5.24/8.50=0.616$ coupled) and the coupling ratios
+($8.50/13.5=0.630$ at 40$\times$34, $5.24/8.26=0.634$ at 60$\times$50) agree to $\sim$1\%
+(ratio-of-ratios $1.0085$): the two effects are \emph{multiplicatively separable to that
+precision} over the tested meshes, and $1.35\times10^{27}\times0.612\times0.630=5.20\times10^{26}$
+predicts the observed $5.24\times10^{26}$. The coupled result is \emph{still} spatially
+unconverged (coupled 40$\times$34$\to$60$\times$50: $-38\%$, no plateau), and, like the
+40$\times$34 loop, the coupled 60$\times$50 outer iteration ended above the \SI{2}{mV}
+$\max|\Delta\phi|$ criterion (observably converging, not formally converged).
 
 \begin{table}[h]\centering\small
 \caption{$G_{ii,\max}$ [\si{cm^{-3}s^{-1}}] over grid $\times$ coupling.}\label{tab:giimat}
@@ -236,10 +242,15 @@ unconverged (coupled 40$\times$34$\to$60$\times$50: $-38\%$, no plateau).
 \end{tabular}
 \end{table}
 
-An \emph{energy} refinement to $\Delta H=\SI{6.25}{meV}$ ($E_{op}=8$) moves $G_{ii,\max}$ only
-$-2.4\%$ ($T_e$ $-0.19\%$): the tail sensitivity is therefore \textbf{spatial} --- resolution of
-the drain high-field/heating region --- not energetic. No converged $G_{ii}$ magnitude can be
-quoted; the robust results are transport and the ($\sim$37\%, grid-independent) feedback fraction.
+A \emph{one-way} energy refinement to $\Delta H=\SI{6.25}{meV}$ ($E_{op}=8$) moves $G_{ii,\max}$
+only $-2.4\%$ ($T_e$ $-0.19\%$) --- \emph{negligible beside} the $-38$--$40\%$ spatial error --- so
+the dominant numerical uncertainty is resolving the drain-side high-field/high-energy hotspot in
+real space rather than the energy axis. (The energy test was performed one-way, not on the coupled
+configuration in which the spatial sensitivity was measured, so we state energy insensitivity, not
+a proof of purely-spatial error.) $5.24\times10^{26}$ is thus the \emph{finest-tested coupled
+value}, not an estimate of the continuum limit: with a $-38\%$ change under the last spatial
+refinement there is no numerical basis to quote a converged $G_{ii}$. The robust results are the
+transport moments and the ($\sim$37\%, grid-independent) feedback fraction.
 
 \paragraph{Device recalibration.} A rigid gate offset $\Phi_{gate}=\SI{-0.74}{V}$
 ($dV_{th}/d\Phi_{gate}\!\approx\!+1$) recalibrates the extracted threshold to
@@ -250,22 +261,27 @@ remaining quantitative work.
 \part{Assessment}
 \section{Conclusions, classified}\label{sec:concl}
 \begin{itemize}[leftmargin=1.4em,itemsep=2pt]
-\item \textbf{Core SHE transport:} validated and spatially robust for $n$, $|v|$, and $T_e$.
+\item \textbf{Core SHE transport} shows a clean grid-sensitivity hierarchy: $n$ strongly robust
+($0.4\%$), $|v|$ robust ($2.7\%$), $T_e$ \emph{moderately grid-sensitive} ($5.9\%$; robust but not
+converged), $G_{ii}$ unconverged ($40\%$).
 \item \textbf{Impact ionization:} now part of the assembled electron collision operator, with
 explicit primary depletion and secondary redistribution ($G_{ii}$ is a moment of the II-affected
 $f_0$).
 \item \textbf{Self-consistency:} SHE$\leftrightarrow$Poisson$\leftrightarrow$hole feedback
-\emph{demonstrated and observably converging}; it materially suppresses avalanche generation and
-drain current while leaving $T_e$ comparatively stable.
+\emph{demonstrated and observably converging} (not to the \SI{2}{mV} criterion); it materially
+suppresses avalanche generation and drain current while leaving $T_e$ comparatively stable.
+Established on the pre-recalibration device; values on the recalibrated $V_{th}=\SI{0.614}{V}$
+device are being re-established.
 \item \textbf{Conservation:} validated across one-way, refined, and coupled calculations
 (number balance $10^{-5}$--$10^{-7}$; terminal currents balance $<0.2\%$).
 \item \textbf{Numerics:} physics-split preconditioning removes the previous practical solver
 bottleneck.
-\item \textbf{$G_{ii}$:} the earlier $1.37\times10^{27}$ agreement with Liang was \emph{fortuitous}
-(coarse, one-way). The coupled 60$\times$50 run gives $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$,
-still $-38\%$ below coupled 40$\times$34 with no plateau, whereas energy refinement to
-\SI{6.25}{meV} moves it only $-2.4\%$: $G_{ii}$ is \textbf{spatially unconverged}, and
-\emph{no converged magnitude can be quoted} (Table~\ref{tab:giimat}).
+\item \textbf{$G_{ii}$:} the earlier $1.37\times10^{27}$ agreement with Liang was
+\emph{demonstrably accidental} --- spatial refinement and self-consistency each push it downward
+(multiplicatively separable to $\sim$1\%). The coupled 60$\times$50 run gives
+$5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$, the \emph{finest-tested coupled value} (not a continuum
+estimate: still $-38\%$ below coupled 40$\times$34, no plateau); a one-way energy refinement moves
+it only $-2.4\%$. \emph{No converged magnitude can be quoted} (Table~\ref{tab:giimat}).
 \item \textbf{$T_e$/$G_{ii}$ offset:} unresolved at present mesh resolution; \emph{no longer
 claimed reproduced}.
 \item \textbf{Device:} recalibrated to $V_{th}=\SI{0.614}{V}$ ($\Phi_{gate}=\SI{-0.74}{V}$),

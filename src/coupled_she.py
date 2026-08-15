@@ -24,11 +24,11 @@ from constants import Vt, ni
 
 def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                   dH_eV=0.0125, max_outer=12, phi_damp=0.25,
-                  tol_phi=2e-3, she_tol=1e-8, verbose=True):
+                  tol_phi=2e-3, she_tol=1e-8, Phi_gate=0.30, verbose=True):
     pdev = DeviceParams()
     x, y, X, Y = make_mesh(pdev, Nx=Nx, Ny=Ny)
     Nd, Na, Nnet = build_doping(pdev, X, Y)
-    ps = Poisson2D(x, y, Nnet, pdev, Phi_gate=0.30)
+    ps = Poisson2D(x, y, Nnet, pdev, Phi_gate=Phi_gate)
     dd = DDSolver(ps)
 
     # Drift-diffusion gives a robust initial electrostatic/hole state only.
@@ -110,10 +110,11 @@ if __name__ == "__main__":
     import sys
     Nx = int(sys.argv[1]) if len(sys.argv) > 1 else 40
     Ny = int(sys.argv[2]) if len(sys.argv) > 2 else 34
-    result = solve_coupled(Nx=Nx, Ny=Ny)
+    Phi_gate = float(sys.argv[3]) if len(sys.argv) > 3 else 0.30
+    result = solve_coupled(Nx=Nx, Ny=Ny, Phi_gate=Phi_gate)
     outdir = os.path.join(os.path.dirname(__file__), "..", "data")
     os.makedirs(outdir, exist_ok=True)
-    tag = "" if (Nx, Ny) == (40, 34) else "_%dx%d" % (Nx, Ny)
+    tag = "" if (Nx, Ny) == (40, 34) and Phi_gate == 0.30 else "_%dx%d_Phg%.2f" % (Nx, Ny, Phi_gate)
     fn = "she2d_coupled_result%s.npz" % tag
     np.savez(os.path.join(outdir, fn),
              x=result["x"], y=result["y"], phi=result["phi"],

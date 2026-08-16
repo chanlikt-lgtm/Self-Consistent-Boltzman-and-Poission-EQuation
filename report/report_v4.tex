@@ -255,7 +255,8 @@ current mismatch / residual & 0.16\% / $5.7\!\times\!10^{-6}$ & 0.07\% / $7.6\!\
 \bottomrule
 \end{tabular}
 \end{center}
-Transport ($n$, $|v|$, $T_e$) is spatially robust; $G_{ii}$ is \emph{not} grid-converged (it
+$n$ and $|v|$ are spatially robust over this refinement; $T_e$ is moderately grid-sensitive
+($5.9\%$, not converged); $G_{ii}$ is \emph{not} grid-converged (it
 depends on the high-energy tail); and the peak separation tracks the mesh, so it is unresolved,
 not a reproduced physical offset.
 
@@ -293,7 +294,10 @@ ratios ($8.26/13.5=0.612$ one-way, $5.24/8.50=0.616$ coupled) and the coupling r
 ($8.50/13.5=0.630$ at 40$\times$34, $5.24/8.26=0.634$ at 60$\times$50) agree to $\sim$1\%
 (ratio-of-ratios $1.0085$): the two effects are \emph{multiplicatively separable to that
 precision} over the tested meshes, and $1.35\times10^{27}\times0.612\times0.630=5.20\times10^{26}$
-predicts the observed $5.24\times10^{26}$. The coupled result is \emph{still} spatially
+predicts the observed $5.24\times10^{26}$. This is an \emph{empirical relation among the matched
+coupled-snapshot (under-converged) calculations}, \emph{not} a converged self-consistent scaling
+law --- the coupled entries are not fixed-point values (Fig.~\ref{fig:conv50}). The coupled result
+is \emph{still} spatially
 unconverged (coupled 40$\times$34$\to$60$\times$50: $-38\%$, no plateau), and, like the
 40$\times$34 loop, the coupled 60$\times$50 outer iteration ended above the \SI{2}{mV}
 $\max|\Delta\phi|$ criterion. As the 50-iteration recalibrated study below shows
@@ -302,10 +306,12 @@ monotonically --- so the self-consistent column here holds under-converged snaps
 fixed-point values.
 
 \begin{table}[h]\centering\small
-\caption{$G_{ii,\max}$ [\si{cm^{-3}s^{-1}}] over grid $\times$ coupling (original device).}\label{tab:giimat}
+\caption{$G_{ii,\max}$ [\si{cm^{-3}s^{-1}}] over grid $\times$ coupling (original device). The
+coupled column holds \emph{under-converged snapshots}: the loop does not converge $G_{ii}$
+(\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}).}\label{tab:giimat}
 \begin{tabular}{lrr}
 \toprule
- & one-way & self-consistent \\
+ & one-way & coupled (snapshot) \\
 \midrule
 40$\times$34 & $1.35\times10^{27}$ & $8.50\times10^{26}$ \\
 60$\times$50 & $8.26\times10^{26}$ & $\mathbf{5.24\times10^{26}}$ \\
@@ -569,7 +575,8 @@ given for each of Liang's Figs.~2--8 (\S\ref{sec:compare}, Tables~\ref{tab:f2}--
 bottleneck.
 \item \textbf{$G_{ii}$:} the earlier $1.37\times10^{27}$ agreement with Liang was
 \emph{demonstrably accidental} --- spatial refinement and self-consistency each push it downward
-(multiplicatively separable to $\sim$1\%). On the original device the coupled 60$\times$50 run
+(multiplicatively separable to $\sim$1\% among the under-converged snapshots). On the original
+device the coupled 60$\times$50 run
 gives $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$, the \emph{finest-tested coupled value} (not a
 continuum estimate: still $-38\%$ below coupled 40$\times$34, no plateau); a one-way energy
 refinement moves it only $-2.4\%$. \emph{No converged magnitude can be quoted}
@@ -657,8 +664,9 @@ $\sim$46/328544 nodes; moment change $<10^{-4}$).
 commit in Appendix~\ref{sec:history}. From \texttt{src/}: \texttt{python coupled\_she.py 60 50
 -0.74} (recalibrated coupled solve); \texttt{python she2d\_liang\_overlay.py} /
 \texttt{she2d\_liang\_compare.py} / \texttt{she2d\_paper\_compare\_figs.py} (Fig.~7 overlays,
-comparison plots); \texttt{python she2d\_iv.py} (DD-proxy Fig.~8); \texttt{python audit\_result.py}
-(regression audit); \texttt{python coupled\_converge.py 0.35 50} (coupled loop toward \SI{2}{mV}).
+comparison plots); \texttt{python she2d\_iv.py} (DD-proxy Fig.~8); \texttt{python she2d\_iv\_moment.py} (SHE
+velocity-moment I-V, Fig.~\ref{fig:ivmoment}); \texttt{python audit\_result.py} (regression audit);
+\texttt{python coupled\_converge.py 0.35 50} (coupled loop toward \SI{2}{mV}).
 
 \section{Provenance and audit history}\label{sec:history}
 Base code commit \texttt{0994290}; Python 3.13.14, NumPy 2.5.1, SciPy 1.18.0. Key commits:

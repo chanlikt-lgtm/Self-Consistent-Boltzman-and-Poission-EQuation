@@ -44,7 +44,7 @@ UM = 1e-4                         # cm / um (device helper)
 
 class SHE2D:
     def __init__(self, x_um, y_um, phi, contact_type, n_eq, dHi_eV=0.0125,
-                 include_impact_ionization=True, absorbing_top=True):
+                 include_impact_ionization=True, absorbing_top=True, phi_span_H=None):
         """
         x_um,y_um : tensor mesh [um]
         phi       : electrostatic potential [V], shape (Ny,Nx)
@@ -53,6 +53,9 @@ class SHE2D:
         dHi_eV    : uniform H spacing [eV], chosen so E_op/dH is integer
         include_impact_ionization : assemble primary loss + equal-split secondary gain
         absorbing_top : impose f0=0 at eps_max through finite-volume boundary fluxes
+        phi_span_H : optional (phi_lo,phi_hi) to size the H grid from a FIXED potential span
+                     instead of this iteration's phi.min()/max(); freezes NH across a self-
+                     consistent outer loop (span must bound the loop's whole phi range).
         """
         self.x = np.asarray(x_um, dtype=float) * 1e-6
         self.y = np.asarray(y_um, dtype=float) * 1e-6
@@ -68,7 +71,14 @@ class SHE2D:
         if not np.isclose(self.m_op * self.dH, E_OP_J, rtol=0.0, atol=1e-12 * eV):
             raise ValueError("E_OP/dH must be an integer for the optical jump stencil")
 
-        phi_min, phi_max = self.phi.min(), self.phi.max()
+        # H-grid energy bounds. By default from THIS iteration's phi range; but in a self-
+        # consistent outer loop that lets NH drift as phi evolves, re-discretizing the tail-
+        # sensitive Gii moment each iteration (a per-iteration noise source). A fixed phi_span_H
+        # that bounds the whole loop freezes NH so the fixed-point map is not re-discretized.
+        if phi_span_H is not None:
+            phi_min, phi_max = float(phi_span_H[0]), float(phi_span_H[1])
+        else:
+            phi_min, phi_max = self.phi.min(), self.phi.max()
         # Padding is not relied upon for absorption, but leaves room for diagnostics/interpolation.
         H_lo = (-phi_max) * eV - max(2, self.m_op) * self.dH
         H_hi = EPS_MAX + (-phi_min) * eV + max(2, self.m_op) * self.dH

@@ -24,7 +24,17 @@ from constants import Vt, ni
 
 def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                   dH_eV=0.0125, max_outer=12, phi_damp=0.25,
-                  tol_phi=2e-3, she_tol=1e-8, Phi_gate=0.30, verbose=True):
+                  tol_phi=2e-3, she_tol=1e-8, Phi_gate=0.30, verbose=True,
+                  accel="picard", aa_depth=6, aa_beta=0.5, freeze_H=False,
+                  aa_restart=6, aa_rcond=1e-8):
+    """Coupled SHE<->Poisson<->hole outer iteration.
+
+    accel="picard"   : damped Picard, phi <- phi + phi_damp*(G(phi)-phi)  (default; unchanged).
+    accel="anderson" : Anderson acceleration AA(aa_depth) with mixing aa_beta on the free (non-
+                       contact) potential DOFs. The convergence measure is the TRUE fixed-point
+                       residual max|G(phi)-phi| (not the damped step), so `max_dphi_V`/`tol_phi`
+                       are on the raw residual in this mode.
+    """
     pdev = DeviceParams()
     x, y, X, Y = make_mesh(pdev, Nx=Nx, Ny=Ny)
     Nd, Na, Nnet = build_doping(pdev, X, Y)
@@ -37,10 +47,16 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
 
     history = []
     she = None
+    free = ~ps.dirichlet            # free (non-contact) DOFs for Anderson acceleration
+    X_hist, F_hist = [], []         # Anderson history of iterate / residual on the free DOFs
+    best_raw, stall = np.inf, 0     # stagnation tracking for Anderson restart
+    # Freeze the H-grid across the outer loop: a fixed span bounding the loop's phi range keeps
+    # NH constant, so the tail-sensitive Gii moment is not re-discretized each iteration.
+    phi_span_H = (float(phi.min()) - 0.25, float(phi.max()) + 0.05) if freeze_H else None
     for it in range(max_outer):
         t0 = time.time()
         she = SHE2D(x, y, phi, ps.contact_type, dd.n_eq, dHi_eV=dH_eV,
-                    include_impact_ionization=True, absorbing_top=True)
+                    include_impact_ionization=True, absorbing_top=True, phi_span_H=phi_span_H)
         she.assemble()
         she.solve(tol=she_tol)
         n_she, Te, Gii = she.moments()
@@ -58,15 +74,45 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
         phi_target = ps.solve(phi_init=phi, phi_n=phi_n_eff, phi_p=phi_p_eff,
                               Vs=Vs, Vd=Vd, Vg=Vg, Vb=Vb,
                               max_newton=60, tol=1e-8, damp_clip=0.25)
-        dphi = phi_target - phi
-        phi = phi + phi_damp * dphi
-        # Contacts are exact Dirichlet values; keep them exact after damping.
-        phi[ps.dirichlet] = phi_target[ps.dirichlet]
-        err = float(np.max(np.abs(phi_damp * dphi)))
+        # ---- fixed-point update: damped Picard or Anderson acceleration ----
+        f_full = phi_target - phi                       # residual G(phi) - phi (raw)
+        if accel == "anderson":
+            raw = float(np.max(np.abs(f_full[free])))   # true fixed-point residual
+            xk = phi[free].copy(); f = f_full[free].copy()   # xk: free-DOF iterate (NOT the mesh x)
+            # Stagnation restart: once the residual stops improving, the AA difference history has
+            # become near-dependent and the least-squares step just shuffles the iterate inside a
+            # noise band. Flush the history so this iterate restarts a fresh (damped-Picard) cycle.
+            if raw < 0.999 * best_raw:
+                best_raw, stall = raw, 0
+            else:
+                stall += 1
+                if aa_restart and stall >= aa_restart:
+                    X_hist.clear(); F_hist.clear(); stall = 0
+            X_hist.append(xk); F_hist.append(f)
+            if len(F_hist) > aa_depth + 1:
+                X_hist.pop(0); F_hist.pop(0)
+            m = len(F_hist) - 1
+            if m == 0:
+                x_new = xk + aa_beta * f                # first step: damped Picard
+            else:
+                dF = np.column_stack([F_hist[-i] - F_hist[-i - 1] for i in range(1, m + 1)])
+                dX = np.column_stack([X_hist[-i] - X_hist[-i - 1] for i in range(1, m + 1)])
+                gamma, *_ = np.linalg.lstsq(dF, f, rcond=aa_rcond)
+                x_new = xk + aa_beta * f - (dX + aa_beta * dF) @ gamma
+            phi = phi.copy()
+            phi[free] = x_new
+            phi[ps.dirichlet] = phi_target[ps.dirichlet]
+            err = raw
+        else:
+            phi = phi + phi_damp * f_full
+            # Contacts are exact Dirichlet values; keep them exact after damping.
+            phi[ps.dirichlet] = phi_target[ps.dirichlet]
+            err = float(np.max(np.abs(phi_damp * f_full)))
 
         cons = she.conservation_diagnostics()
         rec = {
             "iteration": it,
+            "NH": int(she.NH),
             "max_dphi_V": err,
             "n_max_cm3": float(n_she.max()),
             "p_max_cm3": float(p_h.max()),
@@ -78,9 +124,9 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
         }
         history.append(rec)
         if verbose:
-            print("outer %2d  dphi=%.3e V  nmax=%.3e  pmax=%.3e  "
+            print("outer %2d  dphi=%.3e V  NH=%d  nmax=%.3e  pmax=%.3e  "
                   "Temax=%.0f K  Gmax=%.3e  Id=%.3e A/um  bal=%.2e  (%.1fs)" %
-                  (it, err, rec["n_max_cm3"], rec["p_max_cm3"], rec["Te_max_K"],
+                  (it, err, rec["NH"], rec["n_max_cm3"], rec["p_max_cm3"], rec["Te_max_K"],
                    rec["Gii_max_cm3s"], rec["drain_current_A_per_um"],
                    rec["relative_number_balance"], rec["seconds"]))
         if err < tol_phi:
@@ -88,7 +134,7 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
 
     # Final SHE solve on the final damped phi so all returned moments correspond to phi.
     she = SHE2D(x, y, phi, ps.contact_type, dd.n_eq, dHi_eV=dH_eV,
-                include_impact_ionization=True, absorbing_top=True)
+                include_impact_ionization=True, absorbing_top=True, phi_span_H=phi_span_H)
     she.assemble(); she.solve(tol=she_tol)
     n_she, Te, Gii = she.moments()
     p_h = dd.solve_holes(phi, n_she, p_init=p_h, generation=Gii,

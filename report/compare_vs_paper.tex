@@ -93,14 +93,18 @@ Maxwellian plane is recovered under the noise.
 \begin{center}
 \includegraphics[height=0.44\textheight]{../figures/paper_fig8.png}\\[4pt]
 {\footnotesize Liang \emph{et al.} (1997): dots = simulator, solid lines = experiment.}\\[10pt]
-\includegraphics[width=0.92\linewidth]{../figures/she2d_iv_fig8.png}\\[2pt]
-{\footnotesize This work (drift-diffusion proxy, per $\mu$m).}
+\includegraphics[width=\linewidth]{../figures/she2d_iv_moment.png}\\[2pt]
+{\footnotesize This work: terminal current from the \emph{SHE velocity moment} (finite-volume face
+flux, solid) vs the DD proxy (dashed), per $\mu$m.}
 \end{center}
-\textbf{Comparison.} Both show the subthreshold exponential (our swing $\approx$\SI{99}{mV/dec}) and
-the triode$\to$saturation output family with monotonic $V_{gs}$ ordering. Ours is a per-$\mu$m
-drift-diffusion proxy for the terminal current, whereas Liang's Fig.~8 solid lines are experimental
-data for a real device of unstated width, so only the per-width \emph{shape} is comparable, not the
-absolute ampere magnitude ($I_d(V_g\!=\!V_d\!=\!3)=\SI{0.54}{mA/\micro m}$ here, order-consistent
-with the coupled SHE \SI{0.24}{mA/\micro m}).
+\textbf{Comparison.} Like Liang, the terminal current is obtained from the SHE velocity moment (the
+finite-volume face flux), \emph{not} a mobility model, reproducing the triode$\to$saturation output
+family and the monotonic $V_{gs}$ ordering; source/drain current conservation is
+$2\times10^{-5}$--$10^{-3}$. The SHE current runs $I_{d,\text{SHE}}/I_{d,\text{DD}}=0.51$--$0.96$
+(bias-dependent), systematically below the DD proxy retained (dashed) for comparison. This is a
+\emph{one-way} SHE (on the DD potential), and the subthreshold panel is at $V_{ds}=\SI{0.5}{V}$ only
+--- a partial reproduction of Liang's 0.25/0.5-V Fig.~8(a) family. Liang's Fig.~8 solid lines are
+moreover experimental data for a real device of unstated width, so only the per-width \emph{shape}
+is comparable, not the absolute ampere magnitude.
 
 \end{document}

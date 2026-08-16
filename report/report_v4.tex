@@ -72,8 +72,9 @@ and band models}. Liang's explicit surface-roughness, surface-acoustic, and ioni
 operators are \emph{lumped} into a single calibrated momentum time $\tau_1$, not reproduced as
 distinct mechanisms (Table~\ref{tab:physmatrix}); the quantitative overlays use a \emph{calibrated}
 device ($V_{th}$ fitted to \SI{0.614}{V}), so they are calibrated comparisons, not blind
-predictions (Table~\ref{tab:calib}); and the terminal I-V is a drift-diffusion proxy, \emph{not}
-Liang's BTE-velocity-moment current. Every model element is classified as \emph{paper-specified},
+predictions (Table~\ref{tab:calib}); and the DD I-V curve is retained only as a comparison proxy,
+while the one-way SHE face-flux sweep reproduces Liang's current-extraction method
+(\S\ref{sec:compare}). Every model element is classified as \emph{paper-specified},
 \emph{reconstruction}, \emph{surrogate/lumped}, or \emph{unconverged/mesh-dependent}.
 \end{abstract}
 
@@ -263,21 +264,25 @@ A damped outer iteration solves the SHE (with impact ionization) on the current 
 hole continuity with $G_{ii}$ as pair generation (holding $n_{\text{SHE}}$), updates Poisson from
 the SHE density, damps, and repeats; $n$ is recomputed from the SHE after each potential update
 (not constitutively from DD). Over 12 iterations (Fig.~\ref{fig:coupled}) the maximum potential
-update falls monotonically $17.7\to\SI{4.0}{mV}$, and the physical observables plateau:
-$G_{ii,\max}$ is suppressed $37\%$ ($1.35\to0.85\times10^{27}$) and the drain current $29\%$
-($1.71\to1.21\times10^{-4}\,$A/\si{\micro\meter}), while $T_{e,\max}$ stays $\sim\!\SI{3240}{K}$.
+update falls monotonically $17.7\to\SI{4.0}{mV}$, and over these first 12 iterations the observables
+\emph{appeared} to plateau: $G_{ii,\max}$ suppressed $37\%$ ($1.35\to0.85\times10^{27}$), drain
+current $29\%$ ($1.71\to1.21\times10^{-4}\,$A/\si{\micro\meter}), $T_{e,\max}\sim\!\SI{3240}{K}$.
+\textbf{This early plateau is only apparent}: the extended 50-iteration study
+(\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}) shows $G_{ii}$ continues to fall monotonically.
 This is the physically expected negative feedback: the SHE electrons and the $G_{ii}$-generated
 holes reshape the potential, lowering the peak drain field and throttling avalanche. Final
 conservation is clean (relative number balance $2.4\times10^{-5}$, currents balance $0.14\%$).
-\honest{The loop is \emph{demonstrated and observably converging}, not converged to the
-prescribed tolerance: the plateaued observables are meaningful, but $\max|\Delta\phi|\approx
-\SI{4}{mV}$ remains above the chosen \SI{2}{mV} stopping criterion. Tighter convergence needs
-more iterations or reduced damping.}
+\honest{This is a 12-iteration \emph{snapshot}. The loop is not converged
+($\max|\Delta\phi|\approx\SI{4}{mV}$, above the \SI{2}{mV} criterion), and the apparent $G_{ii}$
+plateau does \emph{not} survive: extending to 50 iterations (\S\ref{sec:giiconv}) shows $G_{ii}$
+keeps decreasing. $n$ and $|v|$ are the robust observables.}
 
 \begin{figure}[h]\centering
 \includegraphics[width=\linewidth]{../figures/she2d_coupled_convergence.png}
-\caption{Self-consistent loop (40$\times$34). Potential update converges $17.7\to\SI{4.0}{mV}$;
-feedback suppresses $G_{ii}$ 37\% and $I_d$ 29\% (both plateauing) while $T_e$ stays stable.}
+\caption{Self-consistent loop (40$\times$34), first 12 iterations. Potential update
+$17.7\to\SI{4.0}{mV}$; feedback suppresses $G_{ii}$ and $I_d$ with an \emph{apparent} early plateau
+--- superseded by the 50-iteration study (\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}), where
+$G_{ii}$ keeps falling.}
 \label{fig:coupled}
 \end{figure}
 
@@ -316,7 +321,8 @@ configuration in which the spatial sensitivity was measured, so we state energy 
 a proof of purely-spatial error.) $5.24\times10^{26}$ is thus the \emph{finest-tested coupled
 value}, not an estimate of the continuum limit: with a $-38\%$ change under the last spatial
 refinement there is no numerical basis to quote a converged $G_{ii}$. The robust results are the
-transport moments and the ($\sim$37\%, grid-independent) feedback fraction.
+transport moments ($n$, $|v|$); the feedback suppression is \emph{not} converged --- it reaches at
+least $-53\%$ (\S\ref{sec:giiconv} below) and keeps growing.
 
 \paragraph{Device recalibration and coupled-loop convergence study.} A rigid gate offset
 $\Phi_{gate}=\SI{-0.74}{V}$ ($dV_{th}/d\Phi_{gate}\!\approx\!+1$) recalibrates the extracted
@@ -391,7 +397,8 @@ at $V_{ds}=0.25,\SI{0.5}{V}$; (b) output characteristic at $V_{gs}=2.0,2.5,\SI{3
 \includegraphics[width=\linewidth]{../figures/she2d_iv_moment.png}
 \caption{Terminal I-V from the \emph{SHE velocity moment} (finite-volume face-flux current ---
 Liang's method), one-way SHE on the DD potential, vs the DD proxy (dashed); recalibrated device,
-40$\times$34. (a) subthreshold ($V_{ds}=\SI{0.5}{V}$); (b) output families
+40$\times$34. (a) subthreshold at $V_{ds}=\SI{0.5}{V}$ \emph{only} --- a partial reproduction of
+Liang's Fig.~8(a), which also shows \SI{0.25}{V}; (b) output families
 $V_{gs}=2.0,2.5,\SI{3.0}{V}$. Source/drain current conservation $|I_{src}{+}I_{drn}|/\overline{|I|}$
 is $2\times10^{-5}$--$10^{-3}$ across the sweep (largest at $V_{ds}=\SI{3}{V}$), so the reported
 current is the genuine SHE terminal flux. The \emph{measured} ratio $I_{d,\text{SHE}}/I_{d,\text{DD}}$
@@ -505,9 +512,10 @@ Subthreshold swing & $\sim$\SI{99}{mV/dec} (DD) & sub-$\mu$m NMOS & reasonable \
 \honest{The comparisons apply \emph{our} model on Liang's \emph{levels}; they are not a pixel
 registration. With a reconstructed doping profile the absolute spatial positions of the hotspots
 need not coincide with Liang's, so structural agreement (drain-localization, $T_e$ broader than
-$G_{ii}$, order-of-magnitude levels) is the claim, not point-by-point overlap. $G_{ii,\max}$
-remains grid-unconverged (\S\ref{sec:giiconv}), so its 58\%-of-top value is an \emph{unconverged,
-mesh-dependent} value (not a bound), and the $T_e$/$G_{ii}$ peak offset stays within one cell.
+$G_{ii}$, order-of-magnitude levels) is the claim, not point-by-point overlap. $G_{ii,\max}$ is
+unconverged in \emph{both} the mesh and the nonlinear coupling loop (\S\ref{sec:giiconv}), so its
+27\%-of-top value is a still-falling snapshot, not a bound; and the $T_e$/$G_{ii}$ peak offset stays
+within one cell.
 \textbf{The Fig.~8 I-V now includes a SHE velocity-moment current} (Fig.~\ref{fig:ivmoment}): the
 terminal current is read from the SHE finite-volume face flux, reproducing Liang's method (current
 from the BTE moment, \emph{not} a mobility model), with source/drain conservation
@@ -550,10 +558,11 @@ decrease, no plateau); $n$ and $|v|$ are stable while $T_e$ drifts down slowly. 
 previously-quoted $-37\%$ feedback fraction is \emph{superseded} --- the suppression is $\ge-53\%$
 and still growing.
 \item \textbf{Quantitative overlays (this revision):} on Liang's own Fig.~7 contour levels the
-recalibrated coupled fields reach 72\% ($T_e$) and 58\% ($G_{ii}$) of the top published contours,
-drain-localized and correctly structured ($T_e$ region much broader than $G_{ii}$); the DD-proxy
-I-V reproduces the Fig.~8 triode$\to$saturation shape and $V_{gs}$ ordering. A per-plot comparison
-table is given for each of Liang's Figs.~2--8 (\S\ref{sec:compare}, Tables~\ref{tab:f2}--\ref{tab:f8}).
+best-converged coupled fields reach 66\% ($T_e$) and 27\% ($G_{ii}$, unconverged) of the top
+published contours, drain-localized and correctly structured ($T_e$ region much broader than
+$G_{ii}$); a one-way SHE velocity-moment I-V reproduces Liang's current-extraction method
+(Fig.~\ref{fig:ivmoment}), with the DD curve retained for comparison. A per-plot comparison table is
+given for each of Liang's Figs.~2--8 (\S\ref{sec:compare}, Tables~\ref{tab:f2}--\ref{tab:f8}).
 \item \textbf{Conservation:} validated across one-way, refined, and coupled calculations
 (number balance $10^{-5}$--$10^{-7}$; terminal currents balance $<0.2\%$).
 \item \textbf{Numerics:} physics-split preconditioning removes the previous practical solver
@@ -579,8 +588,9 @@ demonstrated (if not yet self-consistent) reproduction of Liang's I-V method.
 (Anderson/Newton): the damped Picard loop reaches only \SI{2.5}{mV} in 50 iterations and does not
 converge $G_{ii}$ (\S\ref{sec:giiconv}), which is now the \emph{fundamental} $G_{ii}$ blocker ---
 spatial refinement on an unconverged nonlinear state is hard to interpret, so the fixed point must
-be controlled first; (b) \emph{then} a third spatial grid for a converged $G_{ii}$, plus
-$\eps_{max}$/coupled-$\Delta H$ sensitivity; (c) a fully self-consistent (not one-way) SHE-moment
+be controlled first; (b) \emph{then} a third spatial grid to assess $G_{ii}$ spatial convergence
+after the nonlinear fixed point is controlled (a third grid does not itself guarantee convergence),
+plus $\eps_{max}$/coupled-$\Delta H$ sensitivity; (c) a fully self-consistent (not one-way) SHE-moment
 I-V; (d) explicit surface-roughness / -acoustic / impurity operators replacing the lumped $\tau_1$.
 \end{itemize}
 
@@ -669,13 +679,13 @@ Revision~4 responds to an external audit: corrected the Fig.~7 contour levels (a
 removed a spurious $2.3\times10^{26}$ $G_{ii}$ level) and regenerated the overlays; reframed the
 work as a \emph{reduced} P1/SHE reproduction with a paper-to-code physics matrix
 (Table~\ref{tab:physmatrix}) and a calibration-vs-validation matrix (Table~\ref{tab:calib});
-separated the DD-proxy I-V from the SHE validation; fixed the doping reference ([7]$\to$[25]); and
-added the reproducibility package (Appendix~\ref{sec:specs}). The coupled-loop convergence study is
+added a one-way SHE velocity-moment I-V (Fig.~\ref{fig:ivmoment}); fixed the doping reference
+([7]$\to$[25]); and added the reproducibility package (Appendix~\ref{sec:specs}). The coupled-loop convergence study is
 now complete (\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}): 50 iterations reach \SI{2.5}{mV} (not
 \SI{2}{mV}) and reveal that $G_{ii}$ does not converge in the outer loop, superseding the earlier
 snapshot values (overlays regenerated on the best-converged fields). Three-level spatial refinement
-and coupled $\eps_{max}/\Delta H$ sensitivity remain deferred; a SHE-velocity-moment I-V campaign is
-under way.
+and coupled $\eps_{max}/\Delta H$ sensitivity remain deferred; the one-way SHE velocity-moment I-V
+campaign is complete (Fig.~\ref{fig:ivmoment}, Table~\ref{tab:f8}).
 
 \begin{thebibliography}{9}\small
 \bibitem{liang} W.~Liang, N.~Goldsman, I.~Mayergoyz, P.~J.~Oldiges, \emph{IEEE Trans.\ Electron

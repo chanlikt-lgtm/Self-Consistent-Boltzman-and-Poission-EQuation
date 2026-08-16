@@ -237,83 +237,83 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 g> <../figures/she2d_liang_fig7_overlay.png>] [10 <../figures/she2d_liang_fig5_
 6.png> <../figures/she2d_fig2_distribution.png> <../figures/she2d_iv_fig8.png>]
 [11 <../figures/she2d_iv_moment.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 426--426
+Underfull \hbox (badness 10000) in paragraph at lines 429--429
 []|\OT1/cmr/m/n/10 hot, non-
 
-Underfull \hbox (badness 10000) in paragraph at lines 440--440
+Underfull \hbox (badness 10000) in paragraph at lines 443--443
 []|$\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 02 \OMS/cmsy/m/n/10 ^^B 
 \OT1/cmr/m/n/10 10[] [][]$ @
 
-Underfull \hbox (badness 10000) in paragraph at lines 441--441
+Underfull \hbox (badness 10000) in paragraph at lines 444--444
 []|\OT1/cmr/m/n/10 Channel in-ver-sion
 
-Underfull \hbox (badness 10000) in paragraph at lines 455--455
+Underfull \hbox (badness 10000) in paragraph at lines 458--458
 []|\OT1/cmr/m/n/10 velocity-saturated near
 
-Underfull \hbox (badness 10000) in paragraph at lines 466--466
+Underfull \hbox (badness 10000) in paragraph at lines 469--469
 []|$\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 35 \
 OMS/cmsy/m/n/10 ! \OT1/cmr/m/n/10 +3\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 59$ V
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 2961) in paragraph at lines 481--481
+Underfull \hbox (badness 2961) in paragraph at lines 484--484
 []|$\OMS/cmsy/m/n/10 ^^T  \OT1/cmr/m/n/10 4 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/1
 0 10[] [][]$ (de-
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 2460) in paragraph at lines 494--495
+Underfull \hbox (badness 2460) in paragraph at lines 497--498
 []|\OT1/cmr/m/n/10 same or-der, drain-
 
-Underfull \hbox (badness 10000) in paragraph at lines 495--496
+Underfull \hbox (badness 10000) in paragraph at lines 498--499
 []|\OT1/cmr/m/n/10 unconverged in
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 508--508
+Underfull \hbox (badness 10000) in paragraph at lines 511--511
 []|\OT1/cmr/m/n/10 BTE ve-loc-ity
 
-Underfull \hbox (badness 10000) in paragraph at lines 508--509
+Underfull \hbox (badness 10000) in paragraph at lines 511--512
 []|\OT1/cmr/m/it/10 method re-pro-duced
 
-Underfull \hbox (badness 10000) in paragraph at lines 509--509
+Underfull \hbox (badness 10000) in paragraph at lines 512--512
 []|\OT1/cmr/m/n/10 triode$\OMS/cmsy/m/n/10 !$\OT1/cmr/m/n/10 sat, $\OML/cmm/m/i
 t/10 V[]$\OT1/cmr/m/n/10 -ordered
 
-Underfull \hbox (badness 1389) in paragraph at lines 511--511
+Underfull \hbox (badness 1389) in paragraph at lines 514--514
 []|\OT1/cmr/m/n/10 0.51--0.54 (sub.), 0.60--0.96
 
-Underfull \hbox (badness 10000) in paragraph at lines 511--512
+Underfull \hbox (badness 10000) in paragraph at lines 514--515
 []|\OT1/cmr/m/n/10 SHE be-low DD
 
-Underfull \hbox (badness 10000) in paragraph at lines 512--513
+Underfull \hbox (badness 10000) in paragraph at lines 515--516
 []|\OT1/cmr/m/n/10 genuine ter-mi-nal
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 [12]
-Overfull \hbox (1.46451pt too wide) in paragraph at lines 550--555
+Overfull \hbox (1.46451pt too wide) in paragraph at lines 553--558
 []\OT1/cmr/bx/n/10.95 Core SHE trans-port \OT1/cmr/m/n/10.95 shows a clean grid
 -sensitivity hi-er-ar-chy over the tested 40$\OMS/cmsy/m/n/10.95 ^^B$\OT1/cmr/m
 /n/10.95 34$\OMS/cmsy/m/n/10.95 !$\OT1/cmr/m/n/10.95 60$\OMS/cmsy/m/n/10.95 ^^B
 $\OT1/cmr/m/n/10.95 50
 [13] [14]
-Overfull \hbox (15.03954pt too wide) in paragraph at lines 632--636
+Overfull \hbox (15.03954pt too wide) in paragraph at lines 635--640
  []\OT1/cmr/bx/n/10.95 Mesh & en-ergy grid.[] $\OML/cmm/m/it/10.95 x \OT1/cmr/m
 /n/10.95 = [](0\OML/cmm/m/it/10.95 ; L[]; N[]\OT1/cmr/m/n/10.95 )$; surface-ref
 ined $\OML/cmm/m/it/10.95 y \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 L[] s[]$\O
 T1/cmr/m/n/10.95 , $\OML/cmm/m/it/10.95 s \OT1/cmr/m/n/10.95 = [](0\OML/cmm/m/i
 t/10.95 ; \OT1/cmr/m/n/10.95 1\OML/cmm/m/it/10.95 ; N[]\OT1/cmr/m/n/10.95 )$.
 
-Overfull \hbox (14.34132pt too wide) in paragraph at lines 637--642
+Overfull \hbox (14.34132pt too wide) in paragraph at lines 641--646
 \OT1/cmr/m/n/10.95 Robin ($\OML/cmm/m/it/10.95 "[]=t[]$\OT1/cmr/m/n/10.95 ); Ne
 u-mann on free edges. SHE: con-tact Maxwellian $\OML/cmm/m/it/10.95 f[] \OT1/cm
 r/m/n/10.95 = \OML/cmm/m/it/10.95 n[]e[]=  [] Ze[]dH$\OT1/cmr/m/n/10.95 ;
 
-Overfull \hbox (46.98297pt too wide) in paragraph at lines 650--655
+Overfull \hbox (46.98297pt too wide) in paragraph at lines 654--659
 \OML/cmm/m/it/10.95 p$\OT1/cmr/m/n/10.95 : $44\OML/cmm/m/it/10.95 :\OT1/cmr/m/n
 /10.95 9\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 470\OML/cmm/m/it/10.95 :\OT1/cm
 r/m/n/10.95 5\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 2\OML/cmm/m/it/10.95 :\OT1
@@ -324,22 +324,22 @@ t/10.95 :\OT1/cmr/m/n/10.95 07[]10[]\OML/cmm/m/it/10.95 ; ^^L[][]\OT1/cmr/m/n/1
 0.95 2$; $\OML/cmm/m/it/10.95 v[][]\OT1/cmr/m/n/10.95 8\OML/cmm/m/it/10.95 :\OT
 1/cmr/m/n/10.95 37[]10[]\OML/cmm/m/it/10.95 ; ^^L[][]\OT1/cmr/m/n/10.95 1$),
 [15]
-Overfull \hbox (77.09547pt too wide) in paragraph at lines 663--670
+Overfull \hbox (77.09547pt too wide) in paragraph at lines 667--674
 \OT1/cmr/m/n/10.95 cou-pled solve); \OT1/cmtt/m/n/10.95 python she2d[]liang[]ov
 erlay.py \OT1/cmr/m/n/10.95 / \OT1/cmtt/m/n/10.95 she2d[]liang[]compare.py \OT1
 /cmr/m/n/10.95 / \OT1/cmtt/m/n/10.95 she2d[]paper[]compare[]figs.py
 
-Overfull \hbox (49.87534pt too wide) in paragraph at lines 663--670
+Overfull \hbox (49.87534pt too wide) in paragraph at lines 667--674
 \OT1/cmr/m/n/10.95 (Fig. 7 over-lays, com-par-i-son plots); \OT1/cmtt/m/n/10.95
  python she2d[]iv.py \OT1/cmr/m/n/10.95 (DD-proxy Fig. 8); \OT1/cmtt/m/n/10.95 
 python she2d[]iv[]moment.py
 
-Overfull \hbox (78.98009pt too wide) in paragraph at lines 663--670
+Overfull \hbox (78.98009pt too wide) in paragraph at lines 667--674
 \OT1/cmr/m/n/10.95 (SHE velocity-moment I-V, Fig. [][]9[][]); \OT1/cmtt/m/n/10.
 95 python audit[]result.py \OT1/cmr/m/n/10.95 (re-gres-sion au-dit); \OT1/cmtt/
 m/n/10.95 python coupled[]converge.py
 
-Overfull \hbox (3.6833pt too wide) in paragraph at lines 672--697
+Overfull \hbox (3.6833pt too wide) in paragraph at lines 676--701
 \OT1/cmr/m/n/10.95 miss-ing specs, junc-tion ge-om-e-try, $\OML/cmm/m/it/10.95 
 N[]$ \OT1/cmr/m/n/10.95 con-ver-gence, the reducible-collision zero-field-$\OML
 /cmm/m/it/10.95 T[]$ \OT1/cmr/m/n/10.95 bug (acous-
@@ -376,6 +376,6 @@ MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/User/AppData/Local/Pr
 ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users/User/AppData/
 Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><C:/Users/User/
 AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on report_v4.pdf (16 pages, 2734204 bytes).
+Output written on report_v4.pdf (16 pages, 2734577 bytes).
 Transcript written on report_v4.log.
 pdflatex: major issue: So far, you have not checked for MiKTeX updates.

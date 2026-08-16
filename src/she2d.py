@@ -652,7 +652,9 @@ def get_phi(Nx, Ny, Vg, Vd, Phi_gate=0.30):
 
     data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
     os.makedirs(data_dir, exist_ok=True)
-    cache = os.path.join(data_dir, f"dd_{Nx}x{Ny}_Vg{Vg}_Vd{Vd}.npz")
+    # cache key MUST include Phi_gate: the same grid/bias at a different gate offset yields a
+    # different phi, so omitting it would silently reuse a wrong-gate potential (audit-flagged).
+    cache = os.path.join(data_dir, f"dd_{Nx}x{Ny}_Vg{Vg}_Vd{Vd}_Phg{Phi_gate}.npz")
     p = DeviceParams()
     x, y, X, Y = make_mesh(p, Nx=Nx, Ny=Ny)
     if os.path.exists(cache):

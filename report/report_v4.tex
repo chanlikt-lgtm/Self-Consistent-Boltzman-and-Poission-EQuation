@@ -351,10 +351,13 @@ but the $G_{ii}$ fraction is itself unconverged and decreasing.
 
 \begin{figure}[h]\centering
 \includegraphics[width=\linewidth]{../figures/she2d_converge_60x50.png}
-\caption{Recalibrated coupled 60$\times$50 convergence study (50 outer iterations, $\phi$-damping
-$0.35$). (a) $\max|\Delta\phi|$ falls to \SI{2.5}{mV}, short of the \SI{2}{mV} criterion; (b)
-$G_{ii,\max}$ decreases monotonically with \emph{no plateau} --- not converged in the outer loop;
-(c) $T_e$ drifts slowly downward; (d) $n$ and $I_d$ are essentially stable.}\label{fig:conv50}
+\caption{Recalibrated coupled 60$\times$50 convergence study --- \emph{outer-iteration history}
+(50 iterations, $\phi$-damping $0.35$). Panels (b)--(d) show each outer iteration's SHE-solve
+observables on that iteration's \emph{pre-update} potential, while (a) is the \emph{subsequent}
+damped update $\max|\Delta\phi|$; the final saved fields rerun the SHE on the final damped $\phi$.
+(a) $\max|\Delta\phi|$ falls to \SI{2.5}{mV}, short of the \SI{2}{mV} criterion; (b) $G_{ii,\max}$
+decreases monotonically with \emph{no plateau} --- not converged in the outer loop; (c) $T_e$ drifts
+slowly downward; (d) $n$ and $I_d$ are essentially stable.}\label{fig:conv50}
 \end{figure}
 
 \section{Quantitative comparison with Liang's published figures}\label{sec:compare}
@@ -631,8 +634,9 @@ $N_A=N_{A,\text{sub}}+N_{A,\text{chimp}}\,\tfrac12[\mathrm{erfc}(\tfrac{x-x_{c2}
 
 \paragraph{Mesh \& energy grid.} $x=\mathrm{linspace}(0,L_x,N_x)$; surface-refined
 $y=L_y\,s^{1.8}$, $s=\mathrm{linspace}(0,1,N_y)$. SHE grids $40\times34$, $60\times50$; DD-I-V
-$56\times48$/$44\times36$. $\Delta H=\SI{12.5}{meV}$ ($E_{op}/\Delta H=4$); global
-$-q\phi_{max}\le H\le\eps_{max}-q\phi_{min}$; mask $0\le H+q\phi\le\eps_{max}$.
+$56\times48$/$44\times36$. $\Delta H=\SI{12.5}{meV}$ ($E_{op}/\Delta H=4$); \emph{active} $H$-domain
+$-q\phi_{max}\le H\le\eps_{max}-q\phi_{min}$ (the stored $H$ array is padded a few $\Delta H$ nodes
+each side), with active energy mask $0\le\eps\!=\!H{+}q\phi<\eps_{max}$.
 
 \paragraph{Boundary conditions.} Poisson: Dirichlet (built-in$+$applied) at ohmic S/D/body; gate
 oxide Robin ($\eps_{ox}/t_{ox}$); Neumann on free edges. SHE: contact Maxwellian

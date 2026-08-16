@@ -1,0 +1,13 @@
+=== Id-Vds (Fig 8b), recalibrated device ===
+Vgs=2.0: 5.028e-16 1.065e-04 1.760e-04 2.229e-04 2.411e-04 2.521e-04 2.614e-04 2.696e-04
+Vgs=2.5: 4.719e-16 1.431e-04 2.450e-04 3.285e-04 3.637e-04 3.789e-04 3.912e-04 4.013e-04
+Vgs=3.0: 2.168e-16 1.765e-04 3.087e-04 4.313e-04 4.883e-04 5.081e-04 5.256e-04 5.381e-04
+
+=== Id-Vgs subthreshold (Fig 8a) ===
+Vds=0.25: 2.311e-09 4.087e-11 5.976e-09 4.202e-07 6.910e-06 2.232e-05
+Vds=0.50: 8.612e-13 4.404e-11 6.609e-09 4.764e-07 7.716e-06 2.671e-05
+
+subthreshold swing ~ 103 mV/dec (Vds=0.5)
+Id at Vgs=Vds=3: 5.381e-04 A/um  (SHE coupled gave 0.24 mA/um)
+wrote E:\claude\CEDA\liang1997_she_bte_mosfet_repro\src\..\figures\she2d_iv_fig8.png
+saved data/iv_recal.npz

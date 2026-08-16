@@ -176,14 +176,20 @@ class DDSolver:
         return A, b
 
     def solve(self, Vs=0.0, Vd=0.0, Vg=0.0, Vb=0.0,
-              max_gummel=80, tol=1e-5, verbose=False):
+              max_gummel=80, tol=1e-5, verbose=False,
+              phi_init=None, n_init=None, p_init=None):
         ps = self.ps
         Ny, Nx = self.Ny, self.Nx
 
-        # start from equilibrium Poisson
-        phi = ps.solve(Vs=Vs, Vd=Vd, Vg=Vg, Vb=Vb)
-        n = np.maximum(ps.n, 1.0)
-        p = np.maximum(ps.p_h, 1.0)
+        # start from equilibrium Poisson, or from a supplied warm start (bias
+        # continuation: previous bias point). Optional kwargs default to the
+        # original equilibrium start, so existing callers are unaffected.
+        if phi_init is not None:
+            phi = np.array(phi_init, dtype=float, copy=True)
+        else:
+            phi = ps.solve(Vs=Vs, Vd=Vd, Vg=Vg, Vb=Vb)
+        n = np.maximum(ps.n if n_init is None else n_init, 1.0)
+        p = np.maximum(ps.p_h if p_init is None else p_init, 1.0)
 
         phi_prev = phi.copy()
         for git in range(max_gummel):

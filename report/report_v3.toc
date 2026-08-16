@@ -1,0 +1,18 @@
+\contentsline {section}{\numberline {1}Overview and audit provenance}{2}{section.1}%
+\contentsline {part}{I\hspace {1em}Method derivation and validated foundation}{2}{part.1}%
+\contentsline {section}{\numberline {2}First-order SHE equation}{2}{section.2}%
+\contentsline {section}{\numberline {3}Reconstructed device, taxonomy, foundation}{3}{section.3}%
+\contentsline {part}{II\hspace {1em}The 2-D SHE core, impact ionization, and self-consistency}{3}{part.2}%
+\contentsline {section}{\numberline {4}Assembled operator, impact ionization, and moments}{3}{section.4}%
+\contentsline {paragraph}{Impact ionization in the electron BTE.}{3}{section*.3}%
+\contentsline {section}{\numberline {5}Numerics: physics-split preconditioner}{4}{section.5}%
+\contentsline {section}{\numberline {6}Numerical audit of the one-way baseline}{4}{section.6}%
+\contentsline {section}{\numberline {7}Grid refinement (40$\times $34 vs 60$\times $50, one-way)}{4}{section.7}%
+\contentsline {section}{\numberline {8}Self-consistent SHE$\leftrightarrow $Poisson$\leftrightarrow $hole loop}{5}{section.8}%
+\contentsline {section}{\numberline {9}$G_{ii}$ convergence matrix and device recalibration}{5}{section.9}%
+\contentsline {paragraph}{Device recalibration.}{6}{section*.8}%
+\contentsline {section}{\numberline {10}Quantitative comparison with Liang's published figures}{6}{section.10}%
+\contentsline {part}{III\hspace {1em}Assessment}{9}{part.3}%
+\contentsline {section}{\numberline {11}Conclusions, classified}{9}{section.11}%
+\contentsline {section}{\numberline {A}Numerical and model specifications}{11}{appendix.A}%
+\contentsline {section}{\numberline {B}Provenance and audit history}{11}{appendix.B}%

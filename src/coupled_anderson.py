@@ -48,3 +48,5 @@ np.savez(os.path.join(outdir, "she2d_coupled_anderson_%dx%d%s.npz" % (Nx, Ny, ta
          vx=r["vx"], vy=r["vy"], F3d=r["F3d"].astype(np.float32), H=r["H"],
          Gamma_x_face=r["Gamma_x_face"], Gamma_y_face=r["Gamma_y_face"])
 print("saved data/she2d_coupled_anderson_%dx%d%s.npz" % (Nx, Ny, tag))
+print("consistency: saved Gii_max %.4e == trajectory-last %.4e (same iterate; residual %.3e V)"
+      % (float(r["Gii"].max()), G[-1], final["max_dphi_V"]))

@@ -20,7 +20,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_result_60x50_Phg-0.74.npz")
+D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_60x50.npz")  # converged Anderson result (Rev 5)
 d = np.load(D)
 x, y, Te, Gii = d["x"], d["y"], d["Te"], d["Gii"]
 

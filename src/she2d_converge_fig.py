@@ -36,8 +36,8 @@ a = ax[1, 1]
 a.plot(it, nmax / 1e20, "o-", ms=3, color="teal", label="$n_{\\max}$/$10^{20}$")
 a.plot(it, Id / 1e-4, "s-", ms=3, color="navy", label="$I_d$/$10^{-4}$A/$\\mu$m")
 a.set_xlabel("outer iteration"); a.set_title("(d) $n$, $I_d$ -- essentially stable"); a.legend(fontsize=8); a.grid(alpha=0.3)
-fig.suptitle("Recalibrated coupled 60$\\times$50 convergence study (50 outers, damp 0.35): "
-             "$G_{ii}$ does not converge in the outer loop", fontsize=12)
+fig.suptitle("Damped Picard baseline (superseded): $G_{ii}$ still drifting after 50 outer "
+             "iterations (recalibrated coupled 60$\\times$50, damp 0.35)", fontsize=12)
 fig.tight_layout()
 fig.savefig(os.path.join(ROOT, "figures", "she2d_converge_60x50.png"), dpi=135)
 print("wrote figures/she2d_converge_60x50.png")

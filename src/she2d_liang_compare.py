@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_result_60x50_Phg-0.74.npz")
+D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_60x50.npz")  # converged Anderson result (Rev 5)
 d = np.load(D)
 x, y, n, Te, Gii, vx, vy = d["x"], d["y"], d["n"], d["Te"], d["Gii"], d["vx"], d["vy"]
 X, Y = np.meshgrid(x, y)

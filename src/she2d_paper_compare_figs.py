@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
-D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_result_60x50_Phg-0.74.npz")
+D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_60x50.npz")  # converged Anderson result (Rev 5)
 FIGS = os.path.join(os.path.dirname(__file__), "..", "figures")
 d = np.load(D)
 x, y, n, phi, p = d["x"], d["y"], d["n"], d["phi"], d["p"]

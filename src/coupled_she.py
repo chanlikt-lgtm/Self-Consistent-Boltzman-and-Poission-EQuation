@@ -53,6 +53,7 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
     # Freeze the H-grid across the outer loop: a fixed span bounding the loop's phi range keeps
     # NH constant, so the tail-sensitive Gii moment is not re-discretized each iteration.
     phi_span_H = (float(phi.min()) - 0.25, float(phi.max()) + 0.05) if freeze_H else None
+    conv = None                     # last in-loop SHE state (for internally-consistent return)
     for it in range(max_outer):
         t0 = time.time()
         she = SHE2D(x, y, phi, ps.contact_type, dd.n_eq, dHi_eV=dH_eV,
@@ -76,6 +77,11 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                               max_newton=60, tol=1e-8, damp_clip=0.25)
         # ---- fixed-point update: damped Picard or Anderson acceleration ----
         f_full = phi_target - phi                       # residual G(phi) - phi (raw)
+        # Snapshot this iteration's SHE solution on the CURRENT (pre-update) potential. The
+        # returned/saved fields are this last snapshot, so its Gii, its residual (err below), and
+        # the last-iterate plateau all refer to ONE potential -- no re-solve on a further-updated
+        # phi whose residual was never measured.
+        conv = dict(phi=phi.copy(), she=she, n=n_she, Te=Te, Gii=Gii, p=p_h)
         if accel == "anderson":
             raw = float(np.max(np.abs(f_full[free])))   # true fixed-point residual
             xk = phi[free].copy(); f = f_full[free].copy()   # xk: free-DOF iterate (NOT the mesh x)
@@ -132,13 +138,18 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
         if err < tol_phi:
             break
 
-    # Final SHE solve on the final damped phi so all returned moments correspond to phi.
-    she = SHE2D(x, y, phi, ps.contact_type, dd.n_eq, dHi_eV=dH_eV,
-                include_impact_ionization=True, absorbing_top=True, phi_span_H=phi_span_H)
-    she.assemble(); she.solve(tol=she_tol)
-    n_she, Te, Gii = she.moments()
-    p_h = dd.solve_holes(phi, n_she, p_init=p_h, generation=Gii,
-                         max_iter=30, tol=1e-5)
+    # Internal consistency: return the LAST in-loop SHE solve rather than re-solving on a further-
+    # updated phi. Its moments, its residual (history[-1]["max_dphi_V"]), and its potential all
+    # correspond to one iterate, so the quoted converged Gii is exactly the last plateau point.
+    if conv is not None:
+        she = conv["she"]
+        phi, n_she, Te, Gii, p_h = conv["phi"], conv["n"], conv["Te"], conv["Gii"], conv["p"]
+    else:                                   # max_outer == 0: single solve on the initial phi
+        she = SHE2D(x, y, phi, ps.contact_type, dd.n_eq, dHi_eV=dH_eV,
+                    include_impact_ionization=True, absorbing_top=True, phi_span_H=phi_span_H)
+        she.assemble(); she.solve(tol=she_tol)
+        n_she, Te, Gii = she.moments()
+        p_h = dd.solve_holes(phi, n_she, p_init=p_h, generation=Gii, max_iter=30, tol=1e-5)
 
     return {
         "x": x, "y": y, "phi": phi, "n": n_she, "p": p_h,

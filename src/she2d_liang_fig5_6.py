@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_60x50.npz")  # converged Anderson result (Rev 5)
+D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_80x66.npz")  # converged Anderson result, finest grid (Rev 5)
 d = np.load(D)
 x, y, phi, p = d["x"], d["y"], d["phi"], d["p"]
 
@@ -27,7 +27,7 @@ pcm = a.pcolormesh(x, y, np.log10(np.maximum(p, 1.0)), cmap="magma", shading="go
 a.invert_yaxis(); a.set_title("hole $p$(x,y)  log$_{10}$[cm$^{-3}$]  vs Liang Fig. 6")
 fig.colorbar(pcm, ax=a); a.set_xlabel("x [$\\mu$m]"); a.set_ylabel("y [$\\mu$m]")
 
-fig.suptitle("Recalibrated coupled 60x50 ($V_{th}$=0.614 V): potential (Fig. 5) and holes (Fig. 6)",
+fig.suptitle("Recalibrated coupled 80x66 ($V_{th}$=0.614 V): potential (Fig. 5) and holes (Fig. 6)",
              fontsize=12)
 fig.tight_layout()
 out = os.path.join(os.path.dirname(__file__), "..", "figures", "she2d_liang_fig5_6.png")

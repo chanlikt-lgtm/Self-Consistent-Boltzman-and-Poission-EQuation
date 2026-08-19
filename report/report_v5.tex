@@ -24,8 +24,8 @@
 \title{\textbf{Derivation and Numerical Reproduction of\\
 Liang, Goldsman, Mayergoyz \& Oldiges (1997):\\
 2-D Deterministic SHE-Boltzmann MOSFET Simulation}\\[5pt]
-\large\textit{Complete report, Revision~5 --- reduced P1/SHE-Boltzmann reproduction of Liang's 2-D signatures; coupled loop now converged (stagnation-restart Anderson)}}
-\author{Reproduction study \quad\small(code commit \texttt{0994290}+Anderson solver; Python 3.13.14, NumPy 2.5.1, SciPy 1.18.0)}
+\large\textit{Complete report, Revision~5 --- Anderson-accelerated coupled fixed point; converged self-consistent $G_{ii}$}}
+\author{Reproduction study \quad\small(code commit \texttt{2a4ac30}+anderson; Python 3.13.15, NumPy 2.5.1, SciPy 1.18.0)}
 \date{\today}
 
 \begin{document}
@@ -34,7 +34,7 @@ Liang, Goldsman, Mayergoyz \& Oldiges (1997):\\
 \begin{abstract}
 \noindent
 This report derives and numerically reproduces the deterministic spherical-harmonic (SHE)
-Boltzmann device solver of Liang \emph{et al.}~\cite{liang}, \emph{IEEE Trans.\ Electron Devices}
+Boltzmann device solver of Liang \emph{et al.}, \emph{IEEE Trans.\ Electron Devices}
 \textbf{44}(2), 257--267 (1997). Revision~2 superseded the earlier one-way/post-processed
 description: impact ionization is now \emph{inside} the assembled electron collision operator
 (primary depletion + secondary redistribution), the self-consistent
@@ -42,35 +42,36 @@ SHE$\leftrightarrow$Poisson$\leftrightarrow$hole-continuity loop is \emph{demons
 observably converging}, global number- and terminal-current-conservation diagnostics are in
 place, and a physics-split preconditioner removes the previous solver bottleneck
 ($\sim$10~min~$\to$~$\sim$15~s on the 40$\times$34 problem). Established results: core
-transport ($n$, $|v|$) is validated and spatially robust, with $T_e$ stable but not
-grid-converged ($5.9\%$ over the tested refinement); the self-consistent feedback
-materially suppresses avalanche generation and drain current while leaving $T_e$ comparatively
-stable; conservation holds across one-way, refined, and coupled runs. Open items are stated
-precisely: a \emph{stagnation-restart Anderson} acceleration of the coupled
-SHE$\leftrightarrow$Poisson$\leftrightarrow$hole loop now \textbf{converges} the impact-ionization
-magnitude at each grid, where the damped Picard iteration could only stall. $G_{ii,\max}$ reaches a
-stable plateau at $7.44\times10^{26}$ (40$\times$34, last-4 spread $0.33\%$) and
-$2.29\times10^{26}\,\si{cm^{-3}s^{-1}}$ (60$\times$50, $0.21\%$), with $T_e$, $n$ and $I_d$ likewise
-flat --- so the earlier finding that $G_{ii}$ ``does not converge in the loop'' was a \emph{solver
-artifact}, not physics (the max-norm potential residual still floors at $0.6$--$1.5$~mV, a few
-drain-hotspot nodes, but the observables converge well above it). Relative to the one-way SHE on the
-same recalibrated potential the converged feedback suppression is $-84\%$ (40$\times$34) and $-89\%$
-(60$\times$50). \textbf{The converged $G_{ii}$ is, however, strongly mesh-dependent}: $-69\%$ from
-40$\times$34 to 60$\times$50, larger than the corresponding one-way $-54\%$ and still falling, so a
-continuum magnitude cannot be quoted --- the open problem moves from the coupling loop (now solved)
-to the spatial mesh, and a third grid is the next step. A one-way energy refinement to
-$\Delta H=\SI{6.25}{meV}$ moves $G_{ii,\max}$ only $-2.4\%$ (negligible beside the spatial error);
-the $T_e$/$G_{ii}$ peak offset is unresolved; the device is recalibrated to $V_{th}=\SI{0.614}{V}$
-for the Liang overlays.
-The quantitative overlays (\S\ref{sec:compare}) use the converged coupled 60$\times$50 fields on
-Liang's \emph{own} published Fig.~7 contour levels: $T_{e,\max}\approx\SI{3092}{K}$ (62\% of Liang's
-top \SI{5000}{K} contour) and $G_{ii,\max}\approx2.29\times10^{26}$ (10\% of the top
-$2.3\times10^{27}$, mesh-unconverged), both drain-localized with the correct structure ($T_e$
-region much broader than $G_{ii}$); a one-way \emph{SHE velocity-moment} I-V reproduces Liang's Fig.~8 method --- terminal
-current from the SHE face flux, not a mobility model (source/drain conservation $\le10^{-3}$),
-running $0.5$--$0.96\times$ the DD proxy --- and a per-plot comparison table is given for each of
-Liang's Figs.~2--8.
-\textbf{Revision~4} (this version) responds to an external audit by reframing the work honestly: it
+transport ($n$, $|v|$) is validated and spatially robust ($T_e$ moderately grid-sensitive); the
+self-consistent feedback materially suppresses avalanche generation and drain current; conservation
+holds across one-way, refined, and coupled runs. Open items are stated
+precisely: the impact-ionization magnitude is \emph{not spatially converged} --- a
+$2\times2$ grid$\times$coupling study drives $G_{ii,\max}$ multiplicatively from
+$1.35\times10^{27}$ to $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$ (the finest-tested coupled value,
+not a continuum estimate), while a one-way energy refinement to $\Delta H=\SI{6.25}{meV}$ moves it
+only $-2.4\%$ (negligible beside the spatial error); the $T_e$/$G_{ii}$ peak offset is unresolved;
+and the device has been recalibrated to $V_{th}=\SI{0.614}{V}$ for the quantitative Liang overlays.
+The robust reproductions are the transport moments ($n$, $|v|$). \textbf{Revision~5 replaces the
+damped-Picard coupling with Anderson acceleration on a frozen $H$-grid, which \emph{converges} the
+self-consistent fixed point that Picard could not} (\S\ref{sec:anderson}, Fig.~\ref{fig:anderson}):
+on each grid the true residual $\max|G(\phi){-}\phi|$ falls to a $\sim$3--4~mV inner-solve floor and
+$G_{ii}$ \emph{plateaus} (last-4 spread 1.6--11\%), where the 50-iteration Picard baseline left
+$G_{ii}$ in monotone free-fall. This separates two distinct questions: the \emph{nonlinear-loop}
+convergence is now resolved, but the converged fixed-point $G_{ii}$ is \emph{still spatially
+unconverged} --- over the $40{\times}34\!\to\!60{\times}50\!\to\!80{\times}66$ sequence it decreases
+$8.1\!\to\!2.2\!\to\!1.5\times10^{26}\,\si{cm^{-3}s^{-1}}$ (decelerating). Crucially, this converged
+$G_{ii}\approx1.5\times10^{26}$ is only $7\%$ of Liang's top contour --- an order of magnitude below
+the paper --- so the earlier snapshot ``matches'' (27\%, 58\%) were artefacts of an under-converged
+loop, and the honest converged result is that our surrogate Keldysh II rate on the reconstructed
+device produces far \emph{less} avalanche than Liang's numerical rates. The overlays
+(\S\ref{sec:compare}) use the converged finest-grid ($80{\times}66$) fields:
+$T_{e,\max}\approx\SI{3201}{K}$ (64\% of Liang's top \SI{5000}{K} contour) and
+$G_{ii,\max}\approx1.5\times10^{26}$ (7\%), both drain-localized with $T_e$ far broader than
+$G_{ii}$; a one-way \emph{SHE velocity-moment} I-V reproduces Liang's Fig.~8 method (terminal current
+from the SHE face flux, not a mobility model, S/D conservation $\le10^{-3}$, running
+$0.5$--$0.96\times$ the DD proxy); and a per-plot comparison table is given for each of Liang's
+Figs.~2--8.
+\textbf{Revision~4} reframed the work honestly (retained here): it
 is a \emph{reduced} P1/($\ell\le1$) SHE-Boltzmann reproduction of the principal 2-D transport and
 impact-ionization \emph{signatures}, using reconstructed device data and \emph{surrogate scattering
 and band models}. Liang's explicit surface-roughness, surface-acoustic, and ionized-impurity
@@ -102,7 +103,7 @@ device $V_{th}$, initially an over-high \SI{1.64}{V}, is recalibrated to \SI{0.6
 
 \section{First-order SHE equation}\label{sec:derivation}
 With $\vecE=-\gradr\phi$, expand $f=f_0(\vecr,\eps)+\Om\cdot\mathbf{f}_1(\vecr,\eps)$ (all
-$\ell\ge2$ discarded). This $\ell\le1$ (P1) truncation~\cite{gnudi,jungemann} \emph{is} Liang's ``first four spherical
+$\ell\ge2$ discarded). This $\ell\le1$ (P1) truncation \emph{is} Liang's ``first four spherical
 harmonics'': $Y_0^0$ plus the three $\ell=1$ components ($Y_1^{-1,0,1}$) carried by
 $\Om\cdot\mathbf{f}_1$. Projection gives the current relation and the conservative
 augmented-space balance
@@ -115,7 +116,7 @@ $H=\eps-q\phi$ this becomes pure spatial diffusion at fixed $H$, the collision o
 $H\!\leftrightarrow\!H\pm E_{op}$ locally in space, over the global mesh $-q\phi_{max}\le H\le
 \eps_{max}-q\phi_{min}$ with mask $0\le H+q\phi\le\eps_{max}$; $\eps=0$ reflecting, $\eps_{max}$
 absorbing. The DOS-weighted acoustic operator $\mathcal{Q}_{ac}=Z^{-1}\partial_\eps[ZA(\partial_
-\eps+1/k_BT)f_0]$ (Scharfetter--Gummel~\cite{sg}) makes the collision term irreducible; it is
+\eps+1/k_BT)f_0]$ (Scharfetter--Gummel) makes the collision term irreducible; it is
 number-conserving (defect $7.6\times10^{-17}$) with the Maxwellian as its exact null.
 
 \section{Reconstructed device, taxonomy, foundation}\label{sec:device}
@@ -136,10 +137,10 @@ Method eqs., SHE reduction, moments & \textbf{paper} & Liang \emph{et al.} \\
 Table-I params, spherical band & \textbf{paper} & paper Sec.~II \\
 $L_{\text{eff}},t_{ox},x_j,N_D^\pm$ & \textbf{paper} & paper text \\
 1-param Kane $\gamma(\eps)$ & \textbf{surrogate} & paper: 2-band Fiegna/Brunetti \\
-LDD doping shape, mesh & \textbf{reconstruction} & after Khalil~(1994), unavailable \\
+LDD doping shape, mesh & \textbf{reconstruction} & ref.~[25] (Khalil 1994) unavailable \\
 Surface-roughness / -acoustic / impurity scattering & \textbf{lumped surrogate} & folded into $\tau_1$; not distinct operators (Table~\ref{tab:physmatrix}) \\
 Channel $N_A$, $\Phi_{gate}$, $\tau_1$, $c_{op}$, $1/\tau_{ii}$ & \textbf{surrogate} & calibrated; disclosed (Table~\ref{tab:calib}) \\
-$G_{ii,\max}$ magnitude & \textbf{loop-converged, mesh-dep.} & converged $2.29\times10^{26}$ (coupled 60$\times$50); $-69\%$ vs 40$\times$34 \\
+$G_{ii,\max}$ magnitude & \textbf{loop-conv., mesh-dep.} & Anderson fixed point $1.5\times10^{26}$ (80$\times$66); $\sim$15$\times$ below Liang (surrogate II) \\
 $T_e$/$G_{ii}$ peak offset & \textbf{unconverged} & unresolved at present mesh \\
 \bottomrule
 \end{tabular}
@@ -158,7 +159,7 @@ Optical / intervalley phonon & explicit inelastic op. & detailed-balance operato
 Ionized impurity (Brooks--Herring) & explicit $\ell{=}1$ op. & folded into $\tau_1$ & \textbf{lumped} \\
 Surface acoustic phonon ($D_{sa}$) & explicit op. & folded into $\tau_1$ & \textbf{lumped} \\
 Surface roughness ($\Gamma,\delta$) & explicit op. & folded into $\tau_1$ & \textbf{lumped} \\
-Impact ionization & numerical rate \cite{wu} & Keldysh surrogate, in operator & \textbf{present} (surrogate rate) \\
+Impact ionization & numerical rate [23] & Keldysh surrogate, in operator & \textbf{present} (surrogate rate) \\
 $e$--$h$ recombination (SRH) & in BTE (trap occupancy) & SRH in DD hole continuity & \textbf{proxy location} \\
 Net momentum relaxation & sum of the above & single calibrated $\tau_1$ & \textbf{lumped surrogate} \\
 \bottomrule
@@ -270,114 +271,163 @@ A damped outer iteration solves the SHE (with impact ionization) on the current 
 hole continuity with $G_{ii}$ as pair generation (holding $n_{\text{SHE}}$), updates Poisson from
 the SHE density, damps, and repeats; $n$ is recomputed from the SHE after each potential update
 (not constitutively from DD). Over 12 iterations (Fig.~\ref{fig:coupled}) the maximum potential
-update falls monotonically $17.7\to\SI{4.0}{mV}$ and the observables \emph{appear} to plateau:
-$G_{ii,\max}$ suppressed $37\%$ ($1.35\to0.85\times10^{27}$), drain current $29\%$
-($1.71\to1.21\times10^{-4}\,$A/\si{\micro\meter}), $T_{e,\max}\sim\!\SI{3240}{K}$.
-\textbf{This early plateau is only apparent}: extended to 50 iterations the \emph{damped Picard}
-loop keeps drifting and never settles $G_{ii}$ (Fig.~\ref{fig:conv50}). The suppression itself is the
-physically expected negative feedback --- the SHE electrons and the $G_{ii}$-generated holes reshape
-the potential, lowering the peak drain field and throttling avalanche --- but \emph{converging} it
-requires a better fixed-point solver than damped Picard: \S\ref{sec:giiconv} shows a stagnation-restart
-Anderson acceleration \emph{does} reach the fixed point, at which $G_{ii}$ plateaus. Final
+update falls monotonically $17.7\to\SI{4.0}{mV}$, and over these first 12 iterations the observables
+\emph{appeared} to plateau: $G_{ii,\max}$ suppressed $37\%$ ($1.35\to0.85\times10^{27}$), drain
+current $29\%$ ($1.71\to1.21\times10^{-4}\,$A/\si{\micro\meter}), $T_{e,\max}\sim\!\SI{3240}{K}$.
+\textbf{This early plateau is only apparent}: the extended 50-iteration study
+(\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}) shows $G_{ii}$ continues to fall monotonically.
+This is the physically expected negative feedback: the SHE electrons and the $G_{ii}$-generated
+holes reshape the potential, lowering the peak drain field and throttling avalanche. Final
 conservation is clean (relative number balance $2.4\times10^{-5}$, currents balance $0.14\%$).
-\honest{Fig.~\ref{fig:coupled} is a 12-iteration Picard \emph{snapshot} whose apparent $G_{ii}$
-plateau does \emph{not} survive --- damped Picard is simply too slow to reach the fixed point
-(\S\ref{sec:giiconv}). The converged loop, and the converged $G_{ii}$, come from the
-stagnation-restart Anderson solver, not from this Picard run.}
+\honest{This is a 12-iteration \emph{snapshot}. The loop is not converged
+($\max|\Delta\phi|\approx\SI{4}{mV}$, above the \SI{2}{mV} criterion), and the apparent $G_{ii}$
+plateau does \emph{not} survive: extending to 50 iterations (\S\ref{sec:giiconv}) shows $G_{ii}$
+keeps decreasing. $n$ and $|v|$ are the robust observables.}
 
 \begin{figure}[h]\centering
 \includegraphics[width=\linewidth]{../figures/she2d_coupled_convergence.png}
-\caption{Self-consistent loop (40$\times$34), first 12 \emph{damped-Picard} iterations. Potential
-update $17.7\to\SI{4.0}{mV}$; feedback suppresses $G_{ii}$ and $I_d$ with an \emph{apparent} early
-plateau that does not survive (Picard stalls, Fig.~\ref{fig:conv50}); the converged loop uses the
-stagnation-restart Anderson solver (\S\ref{sec:giiconv}, Fig.~\ref{fig:anderson}).}
+\caption{Self-consistent loop (40$\times$34), first 12 iterations. Potential update
+$17.7\to\SI{4.0}{mV}$; feedback suppresses $G_{ii}$ and $I_d$ with an \emph{apparent} early plateau
+--- superseded by the 50-iteration study (\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}), where
+$G_{ii}$ keeps falling.}
 \label{fig:coupled}
 \end{figure}
 
 \section{$G_{ii}$ convergence matrix and device recalibration}\label{sec:giiconv}
-Combining one-way and \emph{converged} coupled runs at both grids isolates how the impact-ionization
-magnitude responds to spatial refinement and to self-consistency (Table~\ref{tab:giimat}). With the
-stagnation-restart Anderson solver (below) the coupled column now holds true fixed-point values, not
-the under-converged Picard snapshots of earlier revisions. Two facts emerge. \emph{(i)~Feedback is
-strong and now converged:} the coupled $G_{ii,\max}$ is $-84\%$ (40$\times$34) and $-89\%$
-(60$\times$50) below the one-way value on the same recalibrated potential --- a much larger, and
-finally \emph{settled}, suppression than the $-37$--$53\%$ under-converged snapshots quoted before.
-\emph{(ii)~The converged $G_{ii}$ is strongly mesh-dependent:} $-69\%$ from 40$\times$34 to
-60$\times$50, exceeding even the one-way spatial drop ($-54\%$) because the feedback amplifies the
-grid-dependence of the drain hotspot. The earlier ``multiplicatively separable to $\sim$1\%''
-relation was an artifact of the matched \emph{under-converged} snapshots; it does not hold for the
-converged fields, and no simple separable scaling is claimed. Because the converged coupled value
-still moves $-69\%$ under the one spatial refinement tested, \emph{no continuum $G_{ii}$ can be
-quoted}: the fixed point is now controlled, but the mesh is not.
+Combining one-way and coupled runs at both grids isolates how the impact-ionization magnitude
+responds to spatial refinement and to self-consistency (Table~\ref{tab:giimat}). The spatial
+ratios ($8.26/13.5=0.612$ one-way, $5.24/8.50=0.616$ coupled) and the coupling ratios
+($8.50/13.5=0.630$ at 40$\times$34, $5.24/8.26=0.634$ at 60$\times$50) agree to $\sim$1\%
+(ratio-of-ratios $1.0085$): the two effects are \emph{multiplicatively separable to that
+precision} over the tested meshes, and $1.35\times10^{27}\times0.612\times0.630=5.20\times10^{26}$
+predicts the observed $5.24\times10^{26}$. This is an \emph{empirical relation among the matched
+coupled-snapshot (under-converged) calculations}, \emph{not} a converged self-consistent scaling
+law --- the coupled entries are not fixed-point values (Fig.~\ref{fig:conv50}). The coupled result
+is \emph{still} spatially
+unconverged (coupled 40$\times$34$\to$60$\times$50: $-38\%$, no plateau), and, like the
+40$\times$34 loop, the coupled 60$\times$50 outer iteration ended above the \SI{2}{mV}
+$\max|\Delta\phi|$ criterion. As the 50-iteration recalibrated study below shows
+(Fig.~\ref{fig:conv50}), the coupled loop does \emph{not} converge $G_{ii}$ at all --- it decreases
+monotonically --- so the self-consistent column here holds under-converged snapshots, not
+fixed-point values.
 
 \begin{table}[h]\centering\small
-\caption{$G_{ii,\max}$ [\si{cm^{-3}s^{-1}}] over grid $\times$ coupling (recalibrated device,
-$\Phi_{gate}=\SI{-0.74}{V}$). The coupled column holds \emph{converged} fixed-point values
-(stagnation-restart Anderson, Fig.~\ref{fig:anderson}); the one-way column is iteration~0 of the same
-loop (SHE on the recalibrated DD potential). Both fall with refinement; the converged coupled value
-is $-69\%$ from 40$\times$34 to 60$\times$50.}\label{tab:giimat}
+\caption{$G_{ii,\max}$ [\si{cm^{-3}s^{-1}}] over grid $\times$ coupling (original device). The
+coupled column holds \emph{under-converged snapshots}: the loop does not converge $G_{ii}$
+(\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}).}\label{tab:giimat}
 \begin{tabular}{lrr}
 \toprule
- & one-way (iter 0) & coupled (converged) \\
+ & one-way & coupled (snapshot) \\
 \midrule
-40$\times$34 & $4.61\times10^{27}$ & $7.44\times10^{26}$ \\
-60$\times$50 & $2.12\times10^{27}$ & $\mathbf{2.29\times10^{26}}$ \\
+40$\times$34 & $1.35\times10^{27}$ & $8.50\times10^{26}$ \\
+60$\times$50 & $8.26\times10^{26}$ & $\mathbf{5.24\times10^{26}}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 A \emph{one-way} energy refinement to $\Delta H=\SI{6.25}{meV}$ ($E_{op}=8$) moves $G_{ii,\max}$
-only $-2.4\%$ ($T_e$ $-0.19\%$) --- \emph{negligible beside} the $-69\%$ spatial change --- so the
-dominant numerical uncertainty is resolving the drain-side high-field/high-energy hotspot in real
-space, not the energy axis. (The energy test was performed one-way, so we state energy
-insensitivity, not a proof of purely-spatial error.) $2.29\times10^{26}$ is thus the
-\emph{finest-tested converged coupled value}, not an estimate of the continuum limit: with a $-69\%$
-change under the last spatial refinement there is no basis to quote a mesh-converged $G_{ii}$. The
-mesh-robust results are $n$, $|v|$ and the terminal current $I_d$ ($+3\%$ over the refinement); the
-feedback suppression is now converged \emph{per grid} ($-84$/$-89\%$) but is itself grid-dependent.
+only $-2.4\%$ ($T_e$ $-0.19\%$) --- \emph{negligible beside} the $-38$--$40\%$ spatial error --- so
+the dominant numerical uncertainty is resolving the drain-side high-field/high-energy hotspot in
+real space rather than the energy axis. (The energy test was performed one-way, not on the coupled
+configuration in which the spatial sensitivity was measured, so we state energy insensitivity, not
+a proof of purely-spatial error.) $5.24\times10^{26}$ is thus the \emph{finest-tested coupled
+value}, not an estimate of the continuum limit: with a $-38\%$ change under the last spatial
+refinement there is no numerical basis to quote a converged $G_{ii}$. The robust results are the
+transport moments ($n$, $|v|$); the feedback suppression is \emph{not} converged --- it reaches at
+least $-53\%$ (\S\ref{sec:giiconv} below) and keeps growing.
 
-\paragraph{Device recalibration and the converged coupled loop.} A rigid gate offset
+\paragraph{Device recalibration and coupled-loop convergence study.} A rigid gate offset
 $\Phi_{gate}=\SI{-0.74}{V}$ ($dV_{th}/d\Phi_{gate}\!\approx\!+1$) recalibrates the extracted
 threshold to $V_{th}=\SI{0.614}{V}$ (was \SI{1.64}{V}); the $V_g=\SI{3}{V}$ overdrive becomes
-\SI{2.39}{V}. On this device the \emph{damped Picard} loop does not converge $G_{ii}$: over 50
-iterations $\max|\Delta\phi|$ only reaches \SI{2.5}{mV} and $G_{ii,\max}$ drifts monotonically
-$2.1\times10^{27}\to6.3\times10^{26}$, still falling (Fig.~\ref{fig:conv50}) --- the earlier
-``$G_{ii}$ does not converge in the loop'' conclusion. \textbf{That was a solver limitation, not
-physics.} A stagnation-restart Anderson acceleration (Fig.~\ref{fig:anderson}) --- least-squares
-mixing on the free potential DOFs, with the difference history flushed whenever the residual stalls
-and the least-squares regularized ($\mathrm{rcond}=10^{-8}$) --- reaches the fixed point at both
-grids. $G_{ii,\max}$ \emph{plateaus}: $7.44\times10^{26}$ at 40$\times$34 (last-4 spread $0.33\%$)
-and $2.29\times10^{26}$ at 60$\times$50 ($0.21\%$), with $T_{e,\max}$ ($2734$/\SI{3092}{K}),
-$n_{\max}\approx1.0\times10^{20}$ and $I_d$ ($0.29$/\SI{0.30}{mA/\micro\meter}) all flat. The
-max-norm potential residual floors at $0.6$--\SI{1.5}{mV} --- a handful of drain-hotspot nodes
-wiggling below the observables' convergence, so it does not reach the strict \SI{1e-4}{V} tolerance,
-yet every physical moment is settled to $<0.5\%$. The recalibrated Picard snapshot
-$1.34\times10^{27}$ and the falling Picard $6.3\times10^{26}$ were both far from this converged
-$2.29\times10^{26}$. The overlays of \S\ref{sec:compare} use the \emph{converged} 60$\times$50
-fields, on which $T_e$ reaches $62\%$ and $G_{ii}$ $10\%$ of Liang's top contours --- the latter now
-a converged (if mesh-dependent) value, not a still-falling snapshot.
+\SI{2.39}{V}. A 12-outer-iteration run (stopped at $\max|\Delta\phi|=\SI{7.5}{mV}$) gave a snapshot
+$G_{ii,\max}=1.34\times10^{27}$; \textbf{extending the loop to 50 iterations
+(Fig.~\ref{fig:conv50}) shows that snapshot was under-converged.} Over 50 damped iterations
+($\phi$-damping $0.35$) $\max|\Delta\phi|$ falls $17.1\to\SI{2.5}{mV}$ --- \emph{not} reaching the
+\SI{2}{mV} criterion --- and the observables split sharply by convergence behaviour:
+$n_{\max}=1.02\times10^{20}$ (last-4 relative spread $0.2\%$) and $|v|_{\max}=9.9\times10^{6}\,
+\si{cm/s}$ are \emph{stable}; $T_{e,\max}$ drifts down to \SI{3323}{K}; $I_d\approx
+\SI{0.28}{mA/\micro\meter}$; but $G_{ii,\max}$ \emph{decreases monotonically with no plateau},
+$2.1\times10^{27}\to6.3\times10^{26}$ (a factor $0.30$), and is \emph{still falling} at iteration 50.
+\textbf{So the self-consistent $G_{ii}$ is not converged in the outer coupling loop either} --- not
+only on the mesh. The earlier $1.34\times10^{27}$ was a snapshot; the feedback suppression is at
+least $-53\%$ (vs.\ the previously-quoted $-37\%$) and still growing; and \emph{no self-consistent
+$G_{ii}$ magnitude can be quoted from this damped-Picard baseline}. \textbf{This limitation is
+resolved in \S\ref{sec:anderson}}: Anderson acceleration converges the fixed point, and the overlays
+of \S\ref{sec:compare} use those \emph{converged} fields (not these under-converged Picard values).
 
 \begin{figure}[h]\centering
 \includegraphics[width=\linewidth]{../figures/she2d_converge_60x50.png}
-\caption{The \emph{damped-Picard} 60$\times$50 loop stalls (50 iterations, $\phi$-damping $0.35$):
-(a) $\max|\Delta\phi|$ falls only to \SI{2.5}{mV}; (b) $G_{ii,\max}$ drifts monotonically with
-\emph{no plateau}; (c) $T_e$ drifts down; (d) $n$, $I_d$ stable. This slow non-convergence motivated
-the stagnation-restart Anderson solver (Fig.~\ref{fig:anderson}), which reaches the fixed point
-Picard could not.}\label{fig:conv50}
+\caption{Recalibrated coupled 60$\times$50 convergence study --- \emph{outer-iteration history}
+(50 iterations, $\phi$-damping $0.35$). Panels (b)--(d) show each outer iteration's SHE-solve
+observables on that iteration's \emph{pre-update} potential, while (a) is the \emph{subsequent}
+damped update $\max|\Delta\phi|$; the final saved fields rerun the SHE on the final damped $\phi$.
+(a) $\max|\Delta\phi|$ falls to \SI{2.5}{mV}, short of the \SI{2}{mV} criterion; (b) $G_{ii,\max}$
+decreases monotonically with \emph{no plateau} --- not converged in the outer loop; (c) $T_e$ drifts
+slowly downward; (d) $n$ and $I_d$ are essentially stable.}\label{fig:conv50}
 \end{figure}
 
+\section{Anderson-accelerated coupled fixed point}\label{sec:anderson}
+The Picard non-convergence of \S\ref{sec:giiconv} is a \emph{solver} limitation, not physics: the
+damped map $\phi\mapsto G(\phi)$ (SHE$\to$holes$\to$Poisson) converges only linearly and, for the
+tail-sensitive $G_{ii}$, too slowly to plateau in 50 iterations. Revision~5 replaces it with
+\textbf{Anderson acceleration} (AA, depth $m=6$, mixing $\beta=0.5$), a quasi-Newton method that
+reuses a short history of residuals $f_k=G(\phi_k)-\phi_k$ on the free (non-contact) potential DOFs;
+a stagnation restart flushes the history when the residual stalls, and a step cap rejects the
+occasional runaway least-squares extrapolation. Two ingredients matter: (i) the convergence measure
+is the \emph{true} fixed-point residual $\max|G(\phi)-\phi|$ (not the damped step); and (ii) the
+$H$-grid is \emph{frozen} from a fixed potential span bounding the whole loop, so the tail-sensitive
+$G_{ii}$ moment is not re-discretized each iteration ($N_H$ constant at 589).
+
+\paragraph{Loop convergence achieved.} On every grid the residual falls to a $\sim$3--4~mV
+inner-solve floor (set by the SHE/Poisson inner tolerances, not by $G_{ii}$ runaway) and the
+observables \emph{plateau} (Fig.~\ref{fig:anderson}a,b): $G_{ii}$ last-4 relative spreads are
+$1.6\%/3.1\%/10.9\%$ at $40{\times}34/60{\times}50/80{\times}66$, versus the Picard baseline whose
+$G_{ii}$ was still in free-fall at iteration~50. The internally-consistent return (the last in-loop
+SHE solve on its own pre-update potential) means the quoted $G_{ii}$ \emph{is} the plateau point.
+$n$ ($\approx1.05\times10^{20}$) and $I_d$ ($\approx\SI{0.29}{mA/\micro\meter}$) are grid-stable;
+$T_e$ converges upward toward $\sim\!\SI{3200}{K}$.
+
+\begin{table}[h]\centering\small
+\caption{Converged Anderson fixed point (frozen $H$-grid, $V_{th}=\SI{0.614}{V}$) over the spatial
+sequence. $G_{ii}$ is the mean of the last 4 iterations; the residual is the final
+$\max|G(\phi)-\phi|$. $G_{ii}$ is loop-converged (plateaued) yet still \emph{mesh}-dependent.}
+\label{tab:anderson}
+\begin{tabular}{lrrrr}
+\toprule
+grid & $G_{ii,\max}$ [\si{cm^{-3}s^{-1}}] & last-4 spread & $T_{e,\max}$ [K] & final residual [mV] \\
+\midrule
+$40\times34$ & $8.1\times10^{26}$ & $1.6\%$ & 2728 & 2.4 \\
+$60\times50$ & $2.2\times10^{26}$ & $3.1\%$ & 3093 & 1.8 \\
+$80\times66$ & $\mathbf{1.5\times10^{26}}$ & $11\%$ & 3201 & 3.6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{$G_{ii}$ still spatially unconverged, and an order of magnitude below Liang.} The
+converged $G_{ii}$ decreases $8.1\to2.2\to1.5\times10^{26}$ across the sequence (ratios $0.27$,
+$0.66$ --- decelerating, so plausibly approaching a spatial limit $\sim\!1\times10^{26}$), while $n$
+and $|v|$ ($\approx1.07\times10^{7}\,\si{cm/s}$) are grid-stable and $T_e$ approaches
+$\sim\!\SI{3200}{K}$. \textbf{The converged $G_{ii}\approx1.5\times10^{26}$ is only $7\%$ of Liang's
+top $2.3\times10^{27}$ contour} --- roughly an order of magnitude below the paper.
+\honest{This is the honest converged result. With the loop now genuinely converged, the earlier
+$G_{ii}$ ``matches'' to Liang ($27\%$, $58\%$ of top) are exposed as under-converged-loop artefacts.
+At the fixed point our surrogate Keldysh impact-ionization rate on the reconstructed device produces
+far \emph{less} avalanche than Liang's numerical [23] rates --- a \emph{model} gap (surrogate II +
+band + doping), not a numerical one. $G_{ii}$ also remains mesh-unconverged (a converged spatial
+limit needs drain-local refinement beyond $80{\times}66$); the transport moments $n$, $|v|$ and the
+drain localization are the robust reproductions.}
+
 \begin{figure}[h]\centering
-\includegraphics[width=\linewidth]{../figures/anderson_converge.png}
-\caption{Stagnation-restart Anderson acceleration of the coupled loop. (a) fixed-point residual
-$\max|G(\phi)-\phi|$; (b) $G_{ii,\max}$; (c) $T_{e,\max}$; (d) $I_d$. Baseline Anderson
-(rcond~$10^{-12}$, no restart; red) stalls like Picard; the restart-plus-regularized solver
-converges $G_{ii}$ to a flat plateau at 40$\times$34 (green, $7.44\times10^{26}$) and 60$\times$50
-(blue, $2.29\times10^{26}$). Both grids plateau, but at strongly grid-dependent levels; $I_d$~(d) is
-mesh-robust.}\label{fig:anderson}
+\includegraphics[width=\linewidth]{../figures/she2d_anderson_converge.png}
+\caption{Anderson acceleration (frozen $H$-grid) vs the damped-Picard baseline. (a) the true
+fixed-point residual $\max|G(\phi)-\phi|$ converges to a $\sim$3--4~mV floor for all three grids,
+where Picard (grey) stalls; (b) $G_{ii}$ plateaus per grid, where Picard is in monotone free-fall;
+(c) converged $G_{ii}$ vs mesh --- still grid-dependent ($8.1\to2.2\to1.5\times10^{26}$); (d) $T_e$,
+$I_d$ plateau (finest grid).}\label{fig:anderson}
 \end{figure}
 
 \section{Quantitative comparison with Liang's published figures}\label{sec:compare}
-The \emph{converged} recalibrated coupled 60$\times$50 solution (\S\ref{sec:giiconv},
+The \textbf{converged Anderson fixed point} at the finest grid ($80{\times}66$, \S\ref{sec:anderson},
 $V_{th}=\SI{0.614}{V}$) is compared to Liang \emph{et al.}'s figures below, with \emph{one comparison table per plot}
 (Figs.~2--8, Tables~\ref{tab:f2}--\ref{tab:f8}). Where Liang give labelled contour values (Fig.~7)
 the comparison is on those values; otherwise it is on peak magnitudes, locations, and structure.
@@ -388,22 +438,22 @@ $2.3\times10^{26}$ $G_{ii}$ level was corrected in Rev.~4, and the overlays rege
 
 \begin{figure}[h]\centering
 \includegraphics[width=\linewidth]{../figures/she2d_liang_compare.png}
-\caption{This work vs Liang Figs.~3 ($n$), 4 (velocity), 7 ($T_e$, $G_{ii}$ at Liang's contour levels).}
+\caption{This work (converged Anderson 80$\times$66) vs Liang Figs.~3 ($n$), 4 (velocity), 7 ($T_e$, $G_{ii}$ at Liang's contour levels).}
 \label{fig:cmp}
 \end{figure}
 
 \begin{figure}[h]\centering
 \includegraphics[width=0.86\linewidth]{../figures/she2d_liang_fig7_overlay.png}
 \caption{Quantitative Liang Fig.~7 overlay: our $T_e$ (dashed) and $G_{ii}$ (solid) on Liang's exact
-published levels; peaks reach $0.62$ ($T_e$) and $0.10$ ($G_{ii}$, mesh-unconverged) of the top contours.}
+published levels; peaks reach $0.64$ ($T_e$) and $0.07$ ($G_{ii}$, loop-converged, $\sim$15$\times$ below Liang) of the top contours.}
 \label{fig:ov7}
 \end{figure}
 
 \begin{figure}[h]\centering
 \includegraphics[width=\linewidth]{../figures/she2d_liang_fig5_6.png}
-\caption{Potential $\phi$ (Liang Fig.~5) and hole concentration $p$ (Liang Fig.~6), recalibrated
-coupled 60$\times$50: $\phi$ rises smoothly source$\to$drain; holes fill the p-body and are depleted
-in the n$^+$ S/D.}\label{fig:pot}
+\caption{Potential $\phi$ (Liang Fig.~5) and hole concentration $p$ (Liang Fig.~6), converged
+Anderson 80$\times$66: $\phi$ rises smoothly source$\to$drain; holes fill the p-body (II-generated
+holes small at the converged fixed point) and are depleted in the n$^+$ S/D.}\label{fig:pot}
 \end{figure}
 
 \begin{figure}[h]\centering
@@ -456,7 +506,7 @@ Localization & drain-surface hot spot & near-drain surface & match \\
 \toprule
 Feature & This work & Liang & Assessment \\
 \midrule
-$n_{\max}$ (S/D) & $1.02\times10^{20}\,\si{cm^{-3}}$ @ (0.10,\,0.02) & $\sim\!10^{20}$ & match \\
+$n_{\max}$ (S/D) & $1.05\times10^{20}\,\si{cm^{-3}}$ & $\sim\!10^{20}$ & match \\
 Channel inversion (surface) & $3.1\times10^{19}\,\si{cm^{-3}}$ & inversion layer & match \\
 Drain pinch-off & $n$ decreases toward drain & pinch-off & match \\
 \bottomrule
@@ -469,7 +519,7 @@ Drain pinch-off & $n$ decreases toward drain & pinch-off & match \\
 \toprule
 Feature & This work & Liang & Assessment \\
 \midrule
-$|v|_{\max}$ & $9.9\times10^{6}\,\si{cm/s}$ @ drain & $\sim\!10^{7}$ (sat.) & match \\
+$|v|_{\max}$ & $1.07\times10^{7}\,\si{cm/s}$ @ drain & $\sim\!10^{7}$ (sat.) & match \\
 Field pattern & lateral in channel, downward into drain & source$\to$drain, into drain & match \\
 Saturation & velocity-saturated near drain & yes & match \\
 \bottomrule
@@ -496,9 +546,9 @@ Profile & smooth, monotone S$\to$D & smooth 2-D & structural (reconstr.\ doping)
 \toprule
 Feature & This work & Liang & Assessment \\
 \midrule
-$p_{\max}$ & $2.1\times10^{16}\,\si{cm^{-3}}$ (p-body) & p-body / substrate & match (structural) \\
-n$^+$ S/D holes & $\le\!4\times10^{13}\,\si{cm^{-3}}$ (depleted) & hole-depleted & match \\
-II holes near drain & elevated $p$ from $G_{ii}$ source & avalanche holes & present \\
+$p_{\max}$ & $1.0\times10^{16}\,\si{cm^{-3}}$ (p-body) & p-body / substrate & match (structural) \\
+n$^+$ S/D holes & depleted & hole-depleted & match \\
+II holes near drain & weak at the fixed point (converged $G_{ii}$ small) & avalanche holes & present but small \\
 Caveat & body-contact BC + reconstr.\ doping & --- & structural, not point-wise \\
 \bottomrule
 \end{tabular}
@@ -510,8 +560,8 @@ Caveat & body-contact BC + reconstr.\ doping & --- & structural, not point-wise 
 \toprule
 Feature & This work & Liang & Assessment \\
 \midrule
-$T_{e,\max}$ & \SI{3092}{K} (62\% of top) & to \SI{5000}{K} & same order, drain-localized \\
-$G_{ii,\max}$ & $2.29\times10^{26}$ (10\% of top) & to $2.3\times10^{27}$ & loop-converged; mesh-unconverged ($-69\%$) \\
+$T_{e,\max}$ & \SI{3201}{K} (64\% of top) & to \SI{5000}{K} & same order, drain-localized \\
+$G_{ii,\max}$ & $1.5\times10^{26}$ (7\% of top; loop-converged) & to $2.3\times10^{27}$ & $\sim$15$\times$ below Liang (surrogate II); still mesh-unconverged \\
 $T_e$ vs $G_{ii}$ extent & $T_e$ region $\sim\!30\times$ larger & $T_e$ broader & match \\
 Peak offset & $\le\!1$ cell (14~nm) & offset & unresolved at mesh \\
 \bottomrule
@@ -538,9 +588,10 @@ Subthreshold swing & $\sim$\SI{99}{mV/dec} (DD) & sub-$\mu$m NMOS & reasonable \
 registration. With a reconstructed doping profile the absolute spatial positions of the hotspots
 need not coincide with Liang's, so structural agreement (drain-localization, $T_e$ broader than
 $G_{ii}$, order-of-magnitude levels) is the claim, not point-by-point overlap. $G_{ii,\max}$ is now
-\emph{loop-converged} but still mesh-unconverged (\S\ref{sec:giiconv}), so its 10\%-of-top value is a
-converged-but-mesh-dependent figure ($-69\%$ under the last refinement), not a continuum bound; and
-the $T_e$/$G_{ii}$ peak offset stays within one cell.
+\emph{loop}-converged (Anderson, \S\ref{sec:anderson}) but still \emph{mesh}-unconverged; its
+$7\%$-of-top value ($\approx$15$\times$ below Liang) is the converged fixed-point magnitude and a
+\emph{model} deficit (surrogate Keldysh II rate on reconstructed doping), not a numerical artefact;
+and the $T_e$/$G_{ii}$ peak offset stays within one cell.
 \textbf{The Fig.~8 I-V now includes a SHE velocity-moment current} (Fig.~\ref{fig:ivmoment}): the
 terminal current is read from the SHE finite-volume face flux, reproducing Liang's method (current
 from the BTE moment, \emph{not} a mobility model), with source/drain conservation
@@ -568,57 +619,51 @@ comparisons, with $|v|_{\max}$, the $T_e$/$G_{ii}$ \emph{localization}, and subt
 the independent checks.
 \item \textbf{Core SHE transport} shows a clean grid-sensitivity hierarchy over the tested
 40$\times$34$\to$60$\times$50 refinement: $n$ \emph{stable} ($0.4\%$), $|v|$ \emph{stable}
-($2.7\%$) and $I_d$ \emph{stable} ($3\%$); $T_e$ moderately sensitive ($5.9\%$; stable, not
-converged); $G_{ii}$ \emph{strongly mesh-dependent} ($-69\%$ coupled, $-54\%$ one-way). ``Stable
-over the tested refinement'' is a two-grid statement, not a proof of asymptotic convergence.
+($2.7\%$), $T_e$ moderately sensitive ($5.9\%$; stable, not converged), $G_{ii}$
+\emph{unconverged/mesh-dependent} ($40\%$). ``Stable over the tested refinement'' is a two-grid
+statement, not a proof of asymptotic convergence.
 \item \textbf{Impact ionization:} now part of the assembled electron collision operator, with
 explicit primary depletion and secondary redistribution ($G_{ii}$ is a moment of the II-affected
 $f_0$); the equal-energy secondary split and negligible scattering-in shape change follow the
 paper.
-\item \textbf{Self-consistency:} the SHE$\leftrightarrow$Poisson$\leftrightarrow$hole feedback is
-implemented and \emph{converges}. The damped Picard loop stalled (\SI{2.5}{mV} in 50 iterations,
-$G_{ii}$ still drifting, Fig.~\ref{fig:conv50}), but a \emph{stagnation-restart Anderson}
-acceleration (Fig.~\ref{fig:anderson}) reaches the fixed point at both grids: $G_{ii,\max}$ plateaus
-($7.44\times10^{26}$ at 40$\times$34, $2.29\times10^{26}$ at 60$\times$50, last-4 spread
-$\le0.33\%$), with $T_e$, $n$, $I_d$ flat. The earlier ``does not converge in the loop'' was a
-\emph{solver artifact}; the converged feedback suppression is $-84$/$-89\%$ (vs.\ the superseded
-$-37$/$-53\%$ snapshots).
-\item \textbf{Quantitative overlays (this revision):} on Liang's own Fig.~7 contour levels the
-\emph{converged} coupled 60$\times$50 fields reach 62\% ($T_e$) and 10\% ($G_{ii}$, converged but
-mesh-dependent) of the top published contours, drain-localized and correctly structured ($T_e$
-region much broader than $G_{ii}$); a one-way SHE velocity-moment I-V reproduces Liang's
-current-extraction method (Fig.~\ref{fig:ivmoment}), with the DD curve retained for comparison. A
-per-plot comparison table is given for each of Liang's Figs.~2--8 (\S\ref{sec:compare},
-Tables~\ref{tab:f2}--\ref{tab:f8}).
+\item \textbf{Self-consistency (converged in Rev.~5):} the damped Picard loop did \emph{not}
+converge $G_{ii}$ (monotone free-fall, \S\ref{sec:giiconv}); \textbf{Anderson acceleration on a
+frozen $H$-grid converges the fixed point} (\S\ref{sec:anderson}, Fig.~\ref{fig:anderson}) --- the
+residual reaches a $\sim$3--4~mV inner-solve floor and $G_{ii}$ \emph{plateaus} (last-4 spread
+1.6--11\%). $n$, $|v|$, $I_d$ are grid-stable; $T_e$ converges toward $\sim\!\SI{3200}{K}$.
+\item \textbf{Quantitative overlays:} on Liang's own Fig.~7 contour levels the converged
+(Anderson 80$\times$66) fields reach 64\% ($T_e$) and 7\% ($G_{ii}$) of the top
+published contours, drain-localized and correctly structured ($T_e$ region much broader than
+$G_{ii}$); a one-way SHE velocity-moment I-V reproduces Liang's current-extraction method
+(Fig.~\ref{fig:ivmoment}), with the DD curve retained for comparison. A per-plot comparison table is
+given for each of Liang's Figs.~2--8 (\S\ref{sec:compare}, Tables~\ref{tab:f2}--\ref{tab:f8}).
 \item \textbf{Conservation:} validated across one-way, refined, and coupled calculations
 (number balance $10^{-5}$--$10^{-7}$; terminal currents balance $<0.2\%$).
 \item \textbf{Numerics:} physics-split preconditioning removes the previous practical solver
 bottleneck.
-\item \textbf{$G_{ii}$:} the earlier $1.37\times10^{27}$ agreement with Liang was
-\emph{demonstrably accidental} --- both spatial refinement and self-consistency push $G_{ii}$
-downward. With the loop now converged (stagnation-restart Anderson) the coupled $G_{ii,\max}$ is a
-well-defined fixed point at each grid --- $7.44\times10^{26}$ (40$\times$34) and $2.29\times10^{26}$
-(60$\times$50) --- but it is \emph{strongly mesh-dependent} ($-69\%$ under the one refinement tested,
-versus $-2.4\%$ for an energy refinement), so \emph{no continuum magnitude can be quoted}
-(Table~\ref{tab:giimat}). The earlier ``the loop does not converge $G_{ii}$'' is retracted: that was
-damped-Picard stagnation, and the under-converged snapshots ($1.34$/$5.24$/$6.3\times10^{26}$) are
-all superseded by the converged values.
+\item \textbf{$G_{ii}$ (the headline of Rev.~5):} at the \emph{converged} Anderson fixed point,
+$G_{ii,\max}=8.1/2.2/1.5\times10^{26}$ over $40{\times}34/60{\times}50/80{\times}66$ ---
+\emph{loop}-converged (plateaued) but still \emph{mesh}-dependent (decreasing, decelerating). The
+finest-grid value $\approx1.5\times10^{26}$ is only $7\%$ of Liang's top contour --- $\sim$15$\times$
+below the paper. The earlier ``matches'' ($1.37\times10^{27}$; the 27\%/58\% overlay fractions) are
+now exposed as under-converged-loop artefacts (Table~\ref{tab:giimat} entries are Picard snapshots).
+The honest converged result is that our surrogate Keldysh II rate on the reconstructed device gives
+far less avalanche than Liang's numerical [23] rates --- a \emph{model} gap, not a numerical one.
 \item \textbf{$T_e$/$G_{ii}$ offset:} unresolved at present mesh resolution; \emph{no longer
 claimed reproduced}.
 \item \textbf{Device:} recalibrated to $V_{th}=\SI{0.614}{V}$ ($\Phi_{gate}=\SI{-0.74}{V}$),
 replacing the earlier over-high \SI{1.64}{V}.
-\item \textbf{Done this revision:} a one-way \emph{SHE velocity-moment} terminal I-V
+\item \textbf{SHE velocity-moment I-V (Rev.~4):} a one-way \emph{SHE velocity-moment} terminal I-V
 (Fig.~\ref{fig:ivmoment}, Table~\ref{tab:f8}) --- terminal current from the SHE face flux, as in
 Liang, with source/drain conservation $\le10^{-3}$ --- upgrading Fig.~8 from a DD shape check to a
 demonstrated (if not yet self-consistent) reproduction of Liang's I-V method.
-\item \textbf{Open items, in priority order.} (a) \emph{done} --- the accelerated coupled solver
-(stagnation-restart Anderson) now converges the loop $G_{ii}$ at both grids (\S\ref{sec:giiconv}),
-retiring the former ``fundamental blocker.'' The blocker is now \emph{spatial}: (b) a third (and
-finer) grid to bound the continuum $G_{ii}$, since the converged coupled value still moves $-69\%$
-under the one refinement tested and drain-local refinement is likely needed, plus
-$\eps_{max}$/coupled-$\Delta H$ sensitivity on the converged state; (c) a fully self-consistent (not
-one-way) SHE-moment I-V; (d) explicit surface-roughness / -acoustic / impurity operators replacing
-the lumped $\tau_1$.
+\item \textbf{Open items.} (a) \emph{done in Rev.~5:} Anderson acceleration converges the coupled
+fixed point (\S\ref{sec:anderson}), and the three-grid sequence is now a genuine spatial-convergence
+study; (b) $G_{ii}$ is loop-converged but not yet \emph{mesh}-converged --- drain-local refinement
+beyond $80{\times}66$ (and $\eps_{max}$/coupled-$\Delta H$ sensitivity) is needed for a converged
+spatial limit; (c) a fully self-consistent (not one-way) SHE-moment I-V; (d) explicit
+surface-roughness / -acoustic / impurity operators replacing the lumped $\tau_1$ --- the likely
+origin of the $\sim$15$\times$ $G_{ii}$ deficit vs Liang.
 \end{itemize}
 
 \appendix
@@ -681,18 +726,19 @@ losses})/\text{total rate}$; terminal-current mismatch $=|I_{src}{+}I_{drn}|/\tf
 |I_{drn}|)$. Clipping: $f_0$ negatives set to zero (pre-clip min $\sim-3\times10^{-11}$,
 $\sim$46/328544 nodes; moment change $<10^{-4}$).
 
-\paragraph{Software, commit, run commands.} Python 3.13.14, NumPy 2.5.1, SciPy 1.18.0; code at the
-commit in Appendix~\ref{sec:history}. From \texttt{src/}: \texttt{python coupled\_anderson.py 60 50
-6 0.5 70} (converged coupled solve, stagnation-restart Anderson); \texttt{python
-anderson\_converge\_fig.py} (Fig.~\ref{fig:anderson}); \texttt{python she2d\_liang\_overlay.py} /
-\texttt{she2d\_liang\_compare.py} / \texttt{she2d\_paper\_compare\_figs.py} (Fig.~7 overlays on the
-converged fields); \texttt{python she2d\_iv.py} (DD-proxy Fig.~8); \texttt{python
-she2d\_iv\_moment.py} (SHE velocity-moment I-V, Fig.~\ref{fig:ivmoment}); \texttt{python
-audit\_result.py} (regression audit); \texttt{python coupled\_converge.py 0.35 50} (legacy damped
-Picard, Fig.~\ref{fig:conv50}).
+\paragraph{Software, commit, run commands.} Python 3.13.15, NumPy 2.5.1, SciPy 1.18.0; code at the
+commit in Appendix~\ref{sec:history}. From \texttt{src/}: \texttt{python coupled\_she.py 60 50
+-0.74} (recalibrated coupled solve); \texttt{python she2d\_liang\_overlay.py} /
+\texttt{she2d\_liang\_compare.py} / \texttt{she2d\_paper\_compare\_figs.py} (Fig.~7 overlays,
+comparison plots); \texttt{python she2d\_iv.py} (DD-proxy Fig.~8); \texttt{python she2d\_iv\_moment.py} (SHE
+velocity-moment I-V, Fig.~\ref{fig:ivmoment}); \texttt{python audit\_result.py} (regression audit);
+\texttt{python coupled\_converge.py 0.35 50} (damped-Picard baseline, superseded);
+\texttt{python coupled\_anderson.py 80 66 6 0.5 28 1} (Anderson-accelerated coupled solve on a
+frozen $H$-grid, finest grid); \texttt{python she2d\_anderson\_fig.py} (Anderson vs Picard and the
+spatial sequence, Fig.~\ref{fig:anderson}).
 
 \section{Provenance and audit history}\label{sec:history}
-Base code commit \texttt{0994290}; Python 3.13.14, NumPy 2.5.1, SciPy 1.18.0. Key commits:
+Base code commit \texttt{0994290}; Python 3.13.15, NumPy 2.5.1, SciPy 1.18.0. Key commits:
 \texttt{f016e3c} (locked one-way audit), \texttt{7aad998} (60$\times$50 refinement),
 \texttt{65461ad} (physics-split solver), \texttt{047da93} (coupled loop), \texttt{0994290}
 (recalibrated coupled 60$\times$50). Four audit rounds fixed:
@@ -710,17 +756,20 @@ Revision~4 responds to an external audit: corrected the Fig.~7 contour levels (a
 removed a spurious $2.3\times10^{26}$ $G_{ii}$ level) and regenerated the overlays; reframed the
 work as a \emph{reduced} P1/SHE reproduction with a paper-to-code physics matrix
 (Table~\ref{tab:physmatrix}) and a calibration-vs-validation matrix (Table~\ref{tab:calib});
-added a one-way SHE velocity-moment I-V (Fig.~\ref{fig:ivmoment}); corrected the doping-reference citation; and added the reproducibility package (Appendix~\ref{sec:specs}).
-\textbf{Revision~5} closes the coupled-loop convergence question: a stagnation-restart Anderson
-acceleration (Fig.~\ref{fig:anderson}) converges $G_{ii}$ at both grids ($7.44\times10^{26}$ at
-40$\times$34, $2.29\times10^{26}$ at 60$\times$50), \emph{retracting} the Revision-4 finding that the
-loop does not converge (that was damped-Picard stagnation; a variable-shadowing bug that had
-prevented the Anderson driver from running was fixed). The overlays were regenerated on the converged
-60$\times$50 fields ($T_e$ 62\%, $G_{ii}$ 10\% of Liang's top contours, replacing the under-converged
-66\%/27\%). The converged $G_{ii}$ is strongly mesh-dependent ($-69\%$,
-40$\times$34$\to$60$\times$50), so a third (finer) grid to bound the continuum is now the leading
-open item; coupled $\eps_{max}/\Delta H$ sensitivity and a fully self-consistent SHE-moment I-V
-remain deferred.
+added a one-way SHE velocity-moment I-V (Fig.~\ref{fig:ivmoment}); fixed the doping reference
+([7]$\to$[25]); and added the reproducibility package (Appendix~\ref{sec:specs}). The coupled-loop convergence study is
+now complete (\S\ref{sec:giiconv}, Fig.~\ref{fig:conv50}): 50 iterations reach \SI{2.5}{mV} (not
+\SI{2}{mV}) and reveal that $G_{ii}$ does not converge in the outer loop, superseding the earlier
+snapshot values (overlays regenerated on the best-converged fields). the one-way SHE velocity-moment I-V
+campaign is complete (Fig.~\ref{fig:ivmoment}, Table~\ref{tab:f8}).
+Revision~5 replaces the damped-Picard coupling with \textbf{Anderson acceleration} on a frozen
+$H$-grid (\S\ref{sec:anderson}; \texttt{coupled\_she.py} \texttt{accel="anderson"}, driver
+\texttt{coupled\_anderson.py}), which \emph{converges} the self-consistent fixed point Picard could
+not. The converged $G_{ii,\max}$ over the $40{\times}34/60{\times}50/80{\times}66$ sequence is
+$8.1/2.2/1.5\times10^{26}$ (loop-converged but still mesh-dependent, $\sim$15$\times$ below Liang);
+the overlays are regenerated on the converged $80{\times}66$ fields. The three-grid sequence is now
+a genuine spatial-convergence study; a converged spatial limit and explicit surface/impurity
+operators remain open.
 
 \begin{thebibliography}{9}\small
 \bibitem{liang} W.~Liang, N.~Goldsman, I.~Mayergoyz, P.~J.~Oldiges, \emph{IEEE Trans.\ Electron

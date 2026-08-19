@@ -1,0 +1,37 @@
+outer  0  dphi=5.042e-02 V  NH=589  nmax=2.033e+20  pmax=9.656e+16  Temax=3549 K  Gmax=1.281e+27  Id=5.554e-04 A/um  bal=1.66e-04  (124.0s)
+outer  1  dphi=4.170e-02 V  NH=589  nmax=1.499e+20  pmax=5.354e+16  Temax=3597 K  Gmax=1.078e+27  Id=4.068e-04 A/um  bal=5.40e-04  (116.7s)
+outer  2  dphi=3.687e-02 V  NH=589  nmax=1.072e+20  pmax=2.568e+16  Temax=3655 K  Gmax=7.831e+26  Id=2.442e-04 A/um  bal=-1.52e-04  (130.6s)
+outer  3  dphi=3.270e-02 V  NH=589  nmax=1.033e+20  pmax=3.145e+16  Temax=3652 K  Gmax=8.147e+26  Id=2.566e-04 A/um  bal=-1.20e-04  (126.2s)
+outer  4  dphi=2.850e-02 V  NH=589  nmax=1.038e+20  pmax=3.179e+16  Temax=3644 K  Gmax=7.965e+26  Id=2.532e-04 A/um  bal=-8.15e-04  (125.7s)
+outer  5  dphi=2.228e-02 V  NH=589  nmax=1.144e+20  pmax=2.838e+16  Temax=3605 K  Gmax=7.556e+26  Id=2.612e-04 A/um  bal=4.20e-04  (124.0s)
+outer  6  dphi=1.642e-02 V  NH=589  nmax=1.098e+20  pmax=2.442e+16  Temax=3579 K  Gmax=6.927e+26  Id=2.676e-04 A/um  bal=3.66e-04  (122.6s)
+outer  7  dphi=1.300e-02 V  NH=589  nmax=1.060e+20  pmax=2.194e+16  Temax=3548 K  Gmax=6.423e+26  Id=2.809e-04 A/um  bal=2.30e-04  (127.8s)
+outer  8  dphi=1.098e-02 V  NH=589  nmax=1.076e+20  pmax=1.952e+16  Temax=3519 K  Gmax=5.795e+26  Id=2.864e-04 A/um  bal=-1.87e-04  (129.0s)
+outer  9  dphi=9.803e-03 V  NH=589  nmax=1.062e+20  pmax=1.774e+16  Temax=3486 K  Gmax=5.246e+26  Id=2.885e-04 A/um  bal=-2.64e-04  (137.1s)
+outer 10  dphi=8.995e-03 V  NH=589  nmax=1.061e+20  pmax=1.592e+16  Temax=3455 K  Gmax=4.729e+26  Id=2.908e-04 A/um  bal=5.17e-05  (131.4s)
+outer 11  dphi=8.214e-03 V  NH=589  nmax=1.044e+20  pmax=1.394e+16  Temax=3428 K  Gmax=4.276e+26  Id=2.925e-04 A/um  bal=1.26e-04  (129.0s)
+outer 12  dphi=7.435e-03 V  NH=589  nmax=1.066e+20  pmax=1.274e+16  Temax=3405 K  Gmax=3.878e+26  Id=2.939e-04 A/um  bal=2.71e-04  (134.1s)
+outer 13  dphi=6.758e-03 V  NH=589  nmax=1.050e+20  pmax=1.148e+16  Temax=3383 K  Gmax=3.544e+26  Id=2.952e-04 A/um  bal=-3.50e-05  (135.1s)
+outer 14  dphi=6.224e-03 V  NH=589  nmax=1.041e+20  pmax=1.044e+16  Temax=3349 K  Gmax=3.200e+26  Id=2.959e-04 A/um  bal=-9.90e-07  (129.5s)
+outer 15  dphi=5.692e-03 V  NH=589  nmax=1.050e+20  pmax=1.000e+16  Temax=3333 K  Gmax=2.909e+26  Id=2.964e-04 A/um  bal=1.07e-04  (134.8s)
+outer 16  dphi=5.237e-03 V  NH=589  nmax=1.054e+20  pmax=1.000e+16  Temax=3312 K  Gmax=2.660e+26  Id=2.970e-04 A/um  bal=-4.18e-05  (125.3s)
+outer 17  dphi=4.872e-03 V  NH=589  nmax=1.059e+20  pmax=1.000e+16  Temax=3287 K  Gmax=2.428e+26  Id=2.972e-04 A/um  bal=1.30e-04  (133.7s)
+outer 18  dphi=4.450e-03 V  NH=589  nmax=1.065e+20  pmax=1.000e+16  Temax=3262 K  Gmax=2.196e+26  Id=2.969e-04 A/um  bal=4.17e-06  (126.3s)
+outer 19  dphi=4.019e-03 V  NH=589  nmax=1.076e+20  pmax=1.000e+16  Temax=3244 K  Gmax=1.979e+26  Id=2.956e-04 A/um  bal=9.84e-04  (122.9s)
+outer 20  dphi=3.799e-03 V  NH=589  nmax=1.073e+20  pmax=1.000e+16  Temax=3225 K  Gmax=1.782e+26  Id=2.948e-04 A/um  bal=4.74e-04  (122.6s)
+outer 21  dphi=3.883e-03 V  NH=589  nmax=1.071e+20  pmax=1.000e+16  Temax=3204 K  Gmax=1.587e+26  Id=2.932e-04 A/um  bal=-3.65e-04  (120.0s)
+outer 22  dphi=3.738e-03 V  NH=589  nmax=1.079e+20  pmax=1.000e+16  Temax=3189 K  Gmax=1.462e+26  Id=2.915e-04 A/um  bal=7.47e-04  (126.4s)
+outer 23  dphi=3.732e-03 V  NH=589  nmax=1.079e+20  pmax=1.000e+16  Temax=3197 K  Gmax=1.511e+26  Id=2.924e-04 A/um  bal=-2.81e-04  (119.0s)
+outer 24  dphi=3.719e-03 V  NH=589  nmax=1.078e+20  pmax=1.000e+16  Temax=3192 K  Gmax=1.471e+26  Id=2.911e-04 A/um  bal=6.46e-04  (118.3s)
+outer 25  dphi=3.463e-03 V  NH=589  nmax=1.109e+20  pmax=1.000e+16  Temax=3177 K  Gmax=1.376e+26  Id=2.918e-04 A/um  bal=4.77e-05  (122.7s)
+outer 26  dphi=3.589e-03 V  NH=589  nmax=1.068e+20  pmax=1.000e+16  Temax=3196 K  Gmax=1.514e+26  Id=2.922e-04 A/um  bal=-2.91e-04  (111.8s)
+outer 27  dphi=3.593e-03 V  NH=589  nmax=1.052e+20  pmax=1.000e+16  Temax=3201 K  Gmax=1.537e+26  Id=2.920e-04 A/um  bal=-2.88e-04  (111.2s)
+
+=== Anderson AA(6) beta=0.50  80x66 (Phi_gate=-0.74)  [frozen H-grid] ===
+reached tol 1e-4?  False   final raw residual = 3.593e-03 V  in 28 iters
+residual: first=5.042e-02 -> last=3.593e-03
+Gii_max : first=1.281e+27 -> last=1.537e+26
+Gii last-4 relative spread = 1.09e-01  (PLATEAU if small; Picard 50-iter stayed ~4e-2, still falling)
+Te_max=3201 K  Id=2.920e-04 A/um  n_max=1.052e+20
+saved data/she2d_coupled_anderson_80x66_frozenH.npz
+consistency: saved Gii_max 1.5369e+26 == trajectory-last 1.5369e+26 (same iterate; residual 3.593e-03 V)

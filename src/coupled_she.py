@@ -26,7 +26,7 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                   dH_eV=0.0125, max_outer=12, phi_damp=0.25,
                   tol_phi=2e-3, she_tol=1e-8, Phi_gate=0.30, verbose=True,
                   accel="picard", aa_depth=6, aa_beta=0.5, freeze_H=False,
-                  aa_restart=6, aa_rcond=1e-8):
+                  aa_restart=6, aa_rcond=1e-8, aa_step_cap=5.0):
     """Coupled SHE<->Poisson<->hole outer iteration.
 
     accel="picard"   : damped Picard, phi <- phi + phi_damp*(G(phi)-phi)  (default; unchanged).
@@ -105,6 +105,15 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                 dX = np.column_stack([X_hist[-i] - X_hist[-i - 1] for i in range(1, m + 1)])
                 gamma, *_ = np.linalg.lstsq(dF, f, rcond=aa_rcond)
                 x_new = xk + aa_beta * f - (dX + aa_beta * dF) @ gamma
+                # Safeguard: cap a runaway AA extrapolation to aa_step_cap x the damped-Picard
+                # step. The least-squares extrapolation occasionally produces a bad iterate (seen
+                # as a late residual/n spike); clipping its length keeps AA acceleration while
+                # rejecting the overshoot. Does not trigger on well-behaved (clean-plateau) runs.
+                step = x_new - xk
+                pn = float(np.linalg.norm(aa_beta * f))
+                sn = float(np.linalg.norm(step))
+                if pn > 0.0 and sn > aa_step_cap * pn:
+                    x_new = xk + (aa_step_cap * pn / sn) * step
             phi = phi.copy()
             phi[free] = x_new
             phi[ps.dirichlet] = phi_target[ps.dirichlet]

@@ -20,7 +20,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_60x50.npz")  # converged Anderson result (Rev 5)
+D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_80x66.npz")  # converged Anderson result, finest grid (Rev 5)
 d = np.load(D)
 x, y, Te, Gii = d["x"], d["y"], d["Te"], d["Gii"]
 
@@ -67,7 +67,7 @@ ax2.set_ylabel("peak value / Liang's top contour")
 ax2.set_title("magnitude comparison")
 ax2.set_ylim(0, 1.3); ax2.legend(fontsize=8); ax2.grid(alpha=0.3, axis="y")
 
-fig.suptitle("Quantitative overlay vs Liang et al. Fig. 7 (recalibrated coupled 60x50, V$_{th}$=0.614 V)",
+fig.suptitle("Quantitative overlay vs Liang et al. Fig. 7 (recalibrated coupled 80x66, V$_{th}$=0.614 V)",
              fontsize=12)
 fig.tight_layout()
 out = os.path.join(os.path.dirname(__file__), "..", "figures", "she2d_liang_fig7_overlay.png")

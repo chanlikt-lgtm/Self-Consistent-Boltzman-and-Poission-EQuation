@@ -2,26 +2,29 @@
 \contentsline {part}{I\hspace {1em}Method derivation and validated foundation}{3}{part.1}%
 \contentsline {section}{\numberline {2}First-order SHE equation}{3}{section.2}%
 \contentsline {section}{\numberline {3}Reconstructed device, taxonomy, foundation}{3}{section.3}%
-\contentsline {part}{II\hspace {1em}The 2-D SHE core, impact ionization, and self-consistency}{3}{part.2}%
+\contentsline {part}{II\hspace {1em}The 2-D SHE core, impact ionization, and self-consistency}{4}{part.2}%
 \contentsline {section}{\numberline {4}Assembled operator, impact ionization, and moments}{4}{section.4}%
 \contentsline {paragraph}{Impact ionization in the electron BTE.}{4}{section*.5}%
 \contentsline {section}{\numberline {5}Numerics: physics-split preconditioner}{5}{section.5}%
 \contentsline {section}{\numberline {6}Numerical audit of the one-way baseline}{5}{section.6}%
 \contentsline {section}{\numberline {7}Grid refinement (40$\times $34 vs 60$\times $50, one-way)}{5}{section.7}%
 \contentsline {section}{\numberline {8}Self-consistent SHE$\leftrightarrow $Poisson$\leftrightarrow $hole loop}{6}{section.8}%
-\contentsline {section}{\numberline {9}$G_{ii}$ convergence matrix and device recalibration}{7}{section.9}%
-\contentsline {paragraph}{Device recalibration and the converged coupled loop.}{7}{section*.10}%
-\contentsline {section}{\numberline {10}Quantitative comparison with Liang's published figures}{8}{section.10}%
-\contentsline {part}{III\hspace {1em}Assessment}{13}{part.3}%
-\contentsline {section}{\numberline {11}Conclusions, classified}{14}{section.11}%
-\contentsline {section}{\numberline {A}Reproducibility package}{16}{appendix.A}%
-\contentsline {paragraph}{Constants.}{16}{section*.26}%
-\contentsline {paragraph}{Geometry ($\mu $m).}{16}{section*.27}%
-\contentsline {paragraph}{Doping [\si {cm^{-3}}].}{16}{section*.28}%
-\contentsline {paragraph}{Mesh \& energy grid.}{16}{section*.29}%
-\contentsline {paragraph}{Boundary conditions.}{16}{section*.30}%
-\contentsline {paragraph}{SHE / scattering.}{16}{section*.31}%
-\contentsline {paragraph}{Hole / DD proxy.}{16}{section*.32}%
-\contentsline {paragraph}{Solvers, norms, clipping.}{17}{section*.33}%
-\contentsline {paragraph}{Software, commit, run commands.}{17}{section*.34}%
-\contentsline {section}{\numberline {B}Provenance and audit history}{17}{appendix.B}%
+\contentsline {section}{\numberline {9}$G_{ii}$ convergence matrix and device recalibration}{6}{section.9}%
+\contentsline {paragraph}{Device recalibration and coupled-loop convergence study.}{7}{section*.10}%
+\contentsline {section}{\numberline {10}Anderson-accelerated coupled fixed point}{8}{section.10}%
+\contentsline {paragraph}{Loop convergence achieved.}{9}{section*.12}%
+\contentsline {paragraph}{$G_{ii}$ still spatially unconverged, and an order of magnitude below Liang.}{9}{section*.14}%
+\contentsline {section}{\numberline {11}Quantitative comparison with Liang's published figures}{9}{section.11}%
+\contentsline {part}{III\hspace {1em}Assessment}{14}{part.3}%
+\contentsline {section}{\numberline {12}Conclusions, classified}{15}{section.12}%
+\contentsline {section}{\numberline {A}Reproducibility package}{17}{appendix.A}%
+\contentsline {paragraph}{Constants.}{17}{section*.29}%
+\contentsline {paragraph}{Geometry ($\mu $m).}{17}{section*.30}%
+\contentsline {paragraph}{Doping [\si {cm^{-3}}].}{17}{section*.31}%
+\contentsline {paragraph}{Mesh \& energy grid.}{17}{section*.32}%
+\contentsline {paragraph}{Boundary conditions.}{17}{section*.33}%
+\contentsline {paragraph}{SHE / scattering.}{17}{section*.34}%
+\contentsline {paragraph}{Hole / DD proxy.}{17}{section*.35}%
+\contentsline {paragraph}{Solvers, norms, clipping.}{18}{section*.36}%
+\contentsline {paragraph}{Software, commit, run commands.}{18}{section*.37}%
+\contentsline {section}{\numberline {B}Provenance and audit history}{18}{appendix.B}%

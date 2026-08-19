@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_60x50.npz")  # converged Anderson result (Rev 5)
+D = os.path.join(os.path.dirname(__file__), "..", "data", "she2d_coupled_anderson_80x66.npz")  # converged Anderson result, finest grid (Rev 5)
 d = np.load(D)
 x, y, n, Te, Gii, vx, vy = d["x"], d["y"], d["n"], d["Te"], d["Gii"], d["vx"], d["vy"]
 X, Y = np.meshgrid(x, y)
@@ -46,7 +46,7 @@ cs = a.contour(x, y, np.maximum(Gii, 1e20), levels=GII_LEVELS, colors="lime", li
 a.invert_yaxis(); a.set_title("G$_{ii}$ log$_{10}$[cm$^{-3}$s$^{-1}$] (Liang Fig. 7 levels)"); fig.colorbar(pcm, ax=a)
 a.set_xlabel("x [um]"); a.set_ylabel("y [um]")
 
-fig.suptitle("Recalibrated coupled 60x50 (V$_{th}$=0.614 V) vs Liang et al. Figs. 3/4/7", fontsize=12)
+fig.suptitle("Recalibrated coupled 80x66 (V$_{th}$=0.614 V) vs Liang et al. Figs. 3/4/7", fontsize=12)
 fig.tight_layout()
 out = os.path.join(os.path.dirname(__file__), "..", "figures", "she2d_liang_compare.png")
 fig.savefig(out, dpi=135); print("wrote", out)

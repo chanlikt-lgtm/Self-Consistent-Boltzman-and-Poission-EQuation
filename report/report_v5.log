@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.8)  17 AUG 2026 08:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.8.8)  19 AUG 2026 22:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -507,7 +507,7 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 33.
 (C:\Users\User\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (53.53552pt too wide) in paragraph at lines 33--33
+Overfull \hbox (22.61882pt too wide) in paragraph at lines 33--33
  [][] 
  []
 
@@ -519,43 +519,43 @@ Overfull \hbox (53.53552pt too wide) in paragraph at lines 33--33
 \openout4 = `report_v5.toc'.
 
  [2]
-Underfull \hbox (badness 10000) in paragraph at lines 140--140
+Underfull \hbox (badness 10000) in paragraph at lines 141--141
 []|\OT1/cmr/bx/n/10 lumped sur-ro-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 142--142
-[]|\OT1/cmr/bx/n/10 loop-converged,
+Underfull \hbox (badness 10000) in paragraph at lines 143--143
+[]|\OT1/cmr/bx/n/10 loop-conv.,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 142--143
-[]|\OT1/cmr/m/n/10 converged $2\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 29 \OMS/cmsy/m
-/n/10 ^^B \OT1/cmr/m/n/10 10[]$ (cou-pled
+Underfull \hbox (badness 4913) in paragraph at lines 143--144
+[]|\OT1/cmr/m/n/10 Anderson fixed point $1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 5 \
+OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 10[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 156--157
+Underfull \hbox (badness 10000) in paragraph at lines 157--158
 []|\OT1/cmr/bx/n/10 present \OT1/cmr/m/n/10 (re-
  []
 
 
-Underfull \hbox (badness 1769) in paragraph at lines 157--158
+Underfull \hbox (badness 1769) in paragraph at lines 158--159
 []|\OT1/cmr/bx/n/10 present \OT1/cmr/m/n/10 (sur-ro-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 158--158
+Underfull \hbox (badness 10000) in paragraph at lines 159--159
 []|\OT1/cmr/m/n/10 Ionized im-pu-rity (Brooks--
  []
 
 
-Underfull \hbox (badness 1769) in paragraph at lines 161--162
+Underfull \hbox (badness 1769) in paragraph at lines 162--163
 []|\OT1/cmr/bx/n/10 present \OT1/cmr/m/n/10 (sur-ro-
  []
 
 
-Underfull \hbox (badness 1377) in paragraph at lines 162--162
+Underfull \hbox (badness 1377) in paragraph at lines 163--163
 []|\OT1/cmr/m/n/10 in BTE (trap oc-cu-
  []
 
@@ -563,44 +563,44 @@ Underfull \hbox (badness 1377) in paragraph at lines 162--162
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 174--175
+Underfull \hbox (badness 10000) in paragraph at lines 175--176
 []|\OT1/cmr/m/n/10 Independent com-par-i-son
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--176
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
 []|\OT1/cmr/m/n/10 extracted $\OML/cmm/m/it/10 I[]$\OT1/cmr/m/n/10 --$\OML/cmm/
 m/it/10 V[]$
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--177
+Underfull \hbox (badness 10000) in paragraph at lines 177--178
 []|\OT1/cmr/m/n/10 subthreshold swing
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--177
+Underfull \hbox (badness 10000) in paragraph at lines 177--178
 \OT1/cmr/m/n/10 ($\OMS/cmsy/m/n/10 ^^X$$\OT1/cmr/m/n/10 99$$[]\OML/cmm/m/it/10 
 =[]$\OT1/cmr/m/n/10 ); over-lay
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 177--177
+Underfull \hbox (badness 10000) in paragraph at lines 178--178
 []|$\OML/cmm/m/it/10 N[] \OT1/cmr/m/n/10 =
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 177--178
+Underfull \hbox (badness 10000) in paragraph at lines 178--179
 []|\OT1/cmr/m/n/10 surface in-ver-sion den-sity
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 178--178
+Underfull \hbox (badness 10000) in paragraph at lines 179--179
 []|\OT1/cmr/m/n/10 bulk mo-bil-ity /
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 180--180
+Underfull \hbox (badness 10000) in paragraph at lines 181--181
 []|\OT1/cmr/m/n/10 Keldysh-type sur-ro-
  []
 
@@ -608,79 +608,79 @@ Underfull \hbox (badness 10000) in paragraph at lines 180--180
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 [3] [4]
-Underfull \hbox (badness 10000) in paragraph at lines 232--232
+Underfull \hbox (badness 10000) in paragraph at lines 233--233
 []|$\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7044
 \OML/cmm/m/it/10 = \OT1/cmr/m/n/10 + 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7071 \O
 MS/cmsy/m/n/10 ^^B
  []
 
 
-Underfull \hbox (badness 2865) in paragraph at lines 235--236
+Underfull \hbox (badness 2865) in paragraph at lines 236--237
 []|\OT1/cmr/m/n/10 46/328544 tiny neg-a-
  []
 
 <../figures/she2d_moments.png, id=147, 939.51pt x 650.43pt>
 File: ../figures/she2d_moments.png Graphic file (type png)
 <use ../figures/she2d_moments.png>
-Package pdftex.def Info: ../figures/she2d_moments.png  used on input line 241.
+Package pdftex.def Info: ../figures/she2d_moments.png  used on input line 242.
 (pdftex.def)             Requested size: 452.9679pt x 313.59232pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 247.
+(hyperref)                removing `math shift' on input line 248.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\times' on input line 247.
+(hyperref)                removing `\times' on input line 248.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 247.
+(hyperref)                removing `math shift' on input line 248.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 247.
+(hyperref)                removing `math shift' on input line 248.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\times' on input line 247.
+(hyperref)                removing `\times' on input line 248.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 247.
+(hyperref)                removing `math shift' on input line 248.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 268.
+(hyperref)                removing `math shift' on input line 269.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leftrightarrow' on input line 268.
+(hyperref)                removing `\leftrightarrow' on input line 269.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 268.
+(hyperref)                removing `math shift' on input line 269.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 268.
+(hyperref)                removing `math shift' on input line 269.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\leftrightarrow' on input line 268.
+(hyperref)                removing `\leftrightarrow' on input line 269.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 268.
+(hyperref)                removing `math shift' on input line 269.
 
 [5]
-<../figures/she2d_coupled_convergence.png, id=159, 1084.05pt x 317.988pt>
+<../figures/she2d_coupled_convergence.png, id=158, 1084.05pt x 317.988pt>
 File: ../figures/she2d_coupled_convergence.png Graphic file (type png)
 <use ../figures/she2d_coupled_convergence.png>
 Package pdftex.def Info: ../figures/she2d_coupled_convergence.png  used on inpu
-t line 289.
+t line 288.
 (pdftex.def)             Requested size: 452.9679pt x 132.86989pt.
 
 
@@ -688,15 +688,15 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 297.
+(hyperref)                removing `math shift' on input line 296.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `subscript' on input line 297.
+(hyperref)                removing `subscript' on input line 296.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 297.
+(hyperref)                removing `math shift' on input line 296.
 
 [6 <../figures/she2d_moments.png>] [7 <../figures/she2d_coupled_convergence.png
 >]
@@ -704,98 +704,92 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 File: ../figures/she2d_converge_60x50.png Graphic file (type png)
 <use ../figures/she2d_converge_60x50.png>
 Package pdftex.def Info: ../figures/she2d_converge_60x50.png  used on input lin
-e 361.
+e 359.
 (pdftex.def)             Requested size: 452.9679pt x 288.25993pt.
-<../figures/anderson_converge.png, id=194, 794.97pt x 549.252pt>
-File: ../figures/anderson_converge.png Graphic file (type png)
-<use ../figures/anderson_converge.png>
-Package pdftex.def Info: ../figures/anderson_converge.png  used on input line 3
-70.
-(pdftex.def)             Requested size: 452.9679pt x 312.96794pt.
+ [8 <../figures/she2d_converge_60x50.png>]
+<../figures/she2d_anderson_converge.png, id=200, 867.24pt x 614.02733pt>
+File: ../figures/she2d_anderson_converge.png Graphic file (type png)
+<use ../figures/she2d_anderson_converge.png>
+Package pdftex.def Info: ../figures/she2d_anderson_converge.png  used on input 
+line 421.
+(pdftex.def)             Requested size: 452.9679pt x 320.71082pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../figures/she2d_liang_compare.png, id=198, 939.51pt x 650.43pt>
+<../figures/she2d_liang_compare.png, id=204, 939.51pt x 650.43pt>
 File: ../figures/she2d_liang_compare.png Graphic file (type png)
 <use ../figures/she2d_liang_compare.png>
 Package pdftex.def Info: ../figures/she2d_liang_compare.png  used on input line
- 390.
+ 440.
 (pdftex.def)             Requested size: 452.9679pt x 313.59232pt.
-[8 <../figures/she2d_converge_60x50.png>]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../figures/she2d_liang_fig7_overlay.png, id=206, 1011.78pt x 375.804pt>
+<../figures/she2d_liang_fig7_overlay.png, id=205, 1011.78pt x 375.804pt>
 File: ../figures/she2d_liang_fig7_overlay.png Graphic file (type png)
 <use ../figures/she2d_liang_fig7_overlay.png>
 Package pdftex.def Info: ../figures/she2d_liang_fig7_overlay.png  used on input
- line 396.
+ line 446.
 (pdftex.def)             Requested size: 389.55266pt x 144.69359pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../figures/she2d_liang_fig5_6.png, id=207, 939.51pt x 332.442pt>
+<../figures/she2d_liang_fig5_6.png, id=206, 939.51pt x 332.442pt>
 File: ../figures/she2d_liang_fig5_6.png Graphic file (type png)
 <use ../figures/she2d_liang_fig5_6.png>
 Package pdftex.def Info: ../figures/she2d_liang_fig5_6.png  used on input line 
-403.
+453.
 (pdftex.def)             Requested size: 452.9679pt x 160.2805pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../figures/she2d_fig2_distribution.png, id=208, 1156.32pt x 375.804pt>
+<../figures/she2d_fig2_distribution.png, id=207, 1156.32pt x 375.804pt>
 File: ../figures/she2d_fig2_distribution.png Graphic file (type png)
 <use ../figures/she2d_fig2_distribution.png>
 Package pdftex.def Info: ../figures/she2d_fig2_distribution.png  used on input 
-line 410.
+line 460.
 (pdftex.def)             Requested size: 371.43698pt x 120.71274pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../figures/she2d_iv_fig8.png, id=209, 867.24pt x 332.442pt>
+<../figures/she2d_iv_fig8.png, id=208, 867.24pt x 332.442pt>
 File: ../figures/she2d_iv_fig8.png Graphic file (type png)
 <use ../figures/she2d_iv_fig8.png>
-Package pdftex.def Info: ../figures/she2d_iv_fig8.png  used on input line 416.
+Package pdftex.def Info: ../figures/she2d_iv_fig8.png  used on input line 466.
 (pdftex.def)             Requested size: 452.9679pt x 173.6368pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../figures/she2d_iv_moment.png, id=210, 867.24pt x 332.442pt>
+<../figures/she2d_iv_moment.png, id=209, 867.24pt x 332.442pt>
 File: ../figures/she2d_iv_moment.png Graphic file (type png)
 <use ../figures/she2d_iv_moment.png>
-Package pdftex.def Info: ../figures/she2d_iv_moment.png  used on input line 422
+Package pdftex.def Info: ../figures/she2d_iv_moment.png  used on input line 472
 .
 (pdftex.def)             Requested size: 452.9679pt x 173.6368pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[9 <../figures/anderson_converge.png>] [10 <../figures/she2d_liang_compare.png>
- <../figures/she2d_liang_fig7_overlay.png>] [11 <../figures/she2d_liang_fig5_6.
-png> <../figures/she2d_fig2_distribution.png> <../figures/she2d_iv_fig8.png>]
-[12 <../figures/she2d_iv_moment.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 445--445
+[9] [10 <../figures/she2d_anderson_converge.png>] [11 <../figures/she2d_liang_c
+ompare.png> <../figures/she2d_liang_fig7_overlay.png>] [12 <../figures/she2d_li
+ang_fig5_6.png> <../figures/she2d_fig2_distribution.png> <../figures/she2d_iv_f
+ig8.png>] [13 <../figures/she2d_iv_moment.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 495--495
 []|\OT1/cmr/m/n/10 hot, non-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 459--459
-[]|$\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 02 \OMS/cmsy/m/n/10 ^^B 
-\OT1/cmr/m/n/10 10[] [][]$ @
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 460--460
+Underfull \hbox (badness 10000) in paragraph at lines 510--510
 []|\OT1/cmr/m/n/10 Channel in-ver-sion
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 474--474
+Underfull \hbox (badness 10000) in paragraph at lines 524--524
 []|\OT1/cmr/m/n/10 velocity-saturated near
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 485--485
+Underfull \hbox (badness 10000) in paragraph at lines 535--535
 []|$\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 35 \
 OMS/cmsy/m/n/10 ! \OT1/cmr/m/n/10 +3\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 59$ V
  []
@@ -804,85 +798,83 @@ OMS/cmsy/m/n/10 ! \OT1/cmr/m/n/10 +3\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 59$ V
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 2961) in paragraph at lines 500--500
-[]|$\OMS/cmsy/m/n/10 ^^T  \OT1/cmr/m/n/10 4 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/1
-0 10[] [][]$ (de-
- []
-
-
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 2460) in paragraph at lines 513--514
+Underfull \hbox (badness 2460) in paragraph at lines 563--564
 []|\OT1/cmr/m/n/10 same or-der, drain-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 514--515
-[]|\OT1/cmr/m/n/10 loop-converged;
+Underfull \hbox (badness 2126) in paragraph at lines 564--565
+[]|$\OMS/cmsy/m/n/10 ^^X$\OT1/cmr/m/n/10 15$\OMS/cmsy/m/n/10 ^^B$ \OT1/cmr/m/n/
+10 be-low Liang
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 514--515
-\OT1/cmr/m/n/10 mesh-unconverged
+Underfull \hbox (badness 2302) in paragraph at lines 564--565
+\OT1/cmr/m/n/10 (sur-ro-gate II); still
  []
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 527--527
+Underfull \hbox (badness 10000) in paragraph at lines 577--577
 []|\OT1/cmr/m/n/10 BTE ve-loc-ity
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 527--528
+Underfull \hbox (badness 10000) in paragraph at lines 577--578
 []|\OT1/cmr/m/it/10 method re-pro-duced
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 528--528
+Underfull \hbox (badness 10000) in paragraph at lines 578--578
 []|\OT1/cmr/m/n/10 triode$\OMS/cmsy/m/n/10 !$\OT1/cmr/m/n/10 sat, $\OML/cmm/m/i
 t/10 V[]$\OT1/cmr/m/n/10 -ordered
  []
 
 
-Underfull \hbox (badness 1389) in paragraph at lines 530--530
+Underfull \hbox (badness 1389) in paragraph at lines 580--580
 []|\OT1/cmr/m/n/10 0.51--0.54 (sub.), 0.60--0.96
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 530--531
+Underfull \hbox (badness 10000) in paragraph at lines 580--581
 []|\OT1/cmr/m/n/10 SHE be-low DD
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 531--532
+Underfull \hbox (badness 10000) in paragraph at lines 581--582
 []|\OT1/cmr/m/n/10 genuine ter-mi-nal
  []
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[13
+[14
 
 ]
-Overfull \hbox (1.46451pt too wide) in paragraph at lines 569--574
+Overfull \hbox (1.46451pt too wide) in paragraph at lines 620--625
 []\OT1/cmr/bx/n/10.95 Core SHE trans-port \OT1/cmr/m/n/10.95 shows a clean grid
 -sensitivity hi-er-ar-chy over the tested 40$\OMS/cmsy/m/n/10.95 ^^B$\OT1/cmr/m
 /n/10.95 34$\OMS/cmsy/m/n/10.95 !$\OT1/cmr/m/n/10.95 60$\OMS/cmsy/m/n/10.95 ^^B
 $\OT1/cmr/m/n/10.95 50
  []
 
-
-Overfull \hbox (3.88411pt too wide) in paragraph at lines 578--586
-\OT1/cmr/m/n/10.95 damped Pi-card loop stalled ($2\OML/cmm/m/it/10.95 :\OT1/cmr
-/m/n/10.95 5$$[]$ in 50 it-er-a-tions, $\OML/cmm/m/it/10.95 G[]$ \OT1/cmr/m/n/1
-0.95 still drift-ing, Fig. [][]3[][]), but a \OT1/cmr/m/it/10.95 stagnation-
+[15]
+Overfull \hbox (5.62994pt too wide) in paragraph at lines 644--652
+[]$\OML/cmm/m/it/10.95 G[]$ \OT1/cmr/bx/n/10.95 (the head-line of Rev. 5): \OT1
+/cmr/m/n/10.95 at the \OT1/cmr/m/it/10.95 con-verged \OT1/cmr/m/n/10.95 An-der-
+son fixed point, $\OML/cmm/m/it/10.95 G[] \OT1/cmr/m/n/10.95 = 8\OML/cmm/m/it/1
+0.95 :\OT1/cmr/m/n/10.95 1\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 2\OML/cmm/m/i
+t/10.95 :\OT1/cmr/m/n/10.95 2\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 1\OML/cmm/
+m/it/10.95 :\OT1/cmr/m/n/10.95 5 \OMS/cmsy/m/n/10.95 ^^B
  []
 
-[14] [15]
-Overfull \hbox (15.03954pt too wide) in paragraph at lines 652--657
+[16]
+Overfull \hbox (15.03954pt too wide) in paragraph at lines 697--702
  []\OT1/cmr/bx/n/10.95 Mesh & en-ergy grid.[] $\OML/cmm/m/it/10.95 x \OT1/cmr/m
 /n/10.95 = [](0\OML/cmm/m/it/10.95 ; L[]; N[]\OT1/cmr/m/n/10.95 )$; surface-ref
 ined $\OML/cmm/m/it/10.95 y \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 L[] s[]$\O
@@ -891,14 +883,14 @@ t/10.95 ; \OT1/cmr/m/n/10.95 1\OML/cmm/m/it/10.95 ; N[]\OT1/cmr/m/n/10.95 )$.
  []
 
 
-Overfull \hbox (14.34132pt too wide) in paragraph at lines 658--663
+Overfull \hbox (14.34132pt too wide) in paragraph at lines 703--708
 \OT1/cmr/m/n/10.95 Robin ($\OML/cmm/m/it/10.95 "[]=t[]$\OT1/cmr/m/n/10.95 ); Ne
 u-mann on free edges. SHE: con-tact Maxwellian $\OML/cmm/m/it/10.95 f[] \OT1/cm
 r/m/n/10.95 = \OML/cmm/m/it/10.95 n[]e[]=  [] Ze[]dH$\OT1/cmr/m/n/10.95 ;
  []
 
 
-Overfull \hbox (46.98297pt too wide) in paragraph at lines 671--676
+Overfull \hbox (46.98297pt too wide) in paragraph at lines 716--721
 \OML/cmm/m/it/10.95 p$\OT1/cmr/m/n/10.95 : $44\OML/cmm/m/it/10.95 :\OT1/cmr/m/n
 /10.95 9\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 470\OML/cmm/m/it/10.95 :\OT1/cm
 r/m/n/10.95 5\OML/cmm/m/it/10.95 =\OT1/cmr/m/n/10.95 2\OML/cmm/m/it/10.95 :\OT1
@@ -910,65 +902,80 @@ t/10.95 :\OT1/cmr/m/n/10.95 07[]10[]\OML/cmm/m/it/10.95 ; ^^L[][]\OT1/cmr/m/n/1
 1/cmr/m/n/10.95 37[]10[]\OML/cmm/m/it/10.95 ; ^^L[][]\OT1/cmr/m/n/10.95 1$),
  []
 
-[16]
-Overfull \hbox (45.85754pt too wide) in paragraph at lines 684--693
-\OT1/cmr/m/n/10.95 (Fig. [][]4[][]); \OT1/cmtt/m/n/10.95 python she2d[]liang[]o
-verlay.py \OT1/cmr/m/n/10.95 / \OT1/cmtt/m/n/10.95 she2d[]liang[]compare.py \OT
-1/cmr/m/n/10.95 / \OT1/cmtt/m/n/10.95 she2d[]paper[]compare[]figs.py
+[17]
+Overfull \hbox (77.09547pt too wide) in paragraph at lines 729--739
+\OT1/cmr/m/n/10.95 cou-pled solve); \OT1/cmtt/m/n/10.95 python she2d[]liang[]ov
+erlay.py \OT1/cmr/m/n/10.95 / \OT1/cmtt/m/n/10.95 she2d[]liang[]compare.py \OT1
+/cmr/m/n/10.95 / \OT1/cmtt/m/n/10.95 she2d[]paper[]compare[]figs.py
  []
 
 
-Overfull \hbox (3.6833pt too wide) in paragraph at lines 695--724
+Overfull \hbox (49.87534pt too wide) in paragraph at lines 729--739
+\OT1/cmr/m/n/10.95 (Fig. 7 over-lays, com-par-i-son plots); \OT1/cmtt/m/n/10.95
+ python she2d[]iv.py \OT1/cmr/m/n/10.95 (DD-proxy Fig. 8); \OT1/cmtt/m/n/10.95 
+python she2d[]iv[]moment.py
+ []
+
+
+Overfull \hbox (36.29616pt too wide) in paragraph at lines 729--739
+\OT1/cmtt/m/n/10.95 coupled[]converge.py 0.35 50 \OT1/cmr/m/n/10.95 (damped-Pic
+ard base-line, su-per-seded); \OT1/cmtt/m/n/10.95 python coupled[]anderson.py
+ []
+
+
+Overfull \hbox (3.6833pt too wide) in paragraph at lines 741--773
 \OT1/cmr/m/n/10.95 miss-ing specs, junc-tion ge-om-e-try, $\OML/cmm/m/it/10.95 
 N[]$ \OT1/cmr/m/n/10.95 con-ver-gence, the reducible-collision zero-field-$\OML
 /cmm/m/it/10.95 T[]$ \OT1/cmr/m/n/10.95 bug (acous-
  []
 
-[17] (report_v5.aux)
+[18] [19] (report_v5.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `report_v5.out' has not changed.
-(rerunfilecheck)             Checksum: 19FC2FA7BD7CAD367AA24E6C76C8A113;3881.
+(rerunfilecheck)             Checksum: 86F3A226E15E31205560A50DFB425787;4141.
  ) 
 Here is how much of TeX's memory you used:
- 16627 strings out of 467871
- 326193 string characters out of 5418861
- 741081 words of memory out of 5000000
- 45263 multiletter control sequences out of 15000+600000
- 645788 words of font info for 106 fonts, out of 8000000 for 9000
+ 16640 strings out of 467871
+ 326387 string characters out of 5418861
+ 741379 words of memory out of 5000000
+ 45268 multiletter control sequences out of 15000+600000
+ 646492 words of font info for 108 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,15n,80p,1157b,1210s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1
+ <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcbx1
 095.pk> <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\
-tcrm1000.pk><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
-fonts/cm/cmbx10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/pu
-blic/amsfonts/cm/cmbx12.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/cm/cmbx7.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX
-/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/User/AppData/Local/Programs
-/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/User/AppData/Local/
-Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/User/AppDat
-a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pfb><C:/Users/Use
-r/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Us
-ers/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb
-><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cm
-mi8.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
-s/cm/cmr10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/
-amsfonts/cm/cmr12.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/
-public/amsfonts/cm/cmr6.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/
-type1/public/amsfonts/cm/cmr7.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/
-fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/User/AppData/Local/Programs/M
-iKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/User/AppData/Local/Pr
-ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/User/AppData/L
-ocal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users/User/Ap
-pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Users
-/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti12.pfb><
-C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt
-10.pfb>
-Output written on report_v5.pdf (17 pages, 2896161 bytes).
+tcrm1095.pk> <C:\Users\User\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dp
+i600\tcrm1000.pk><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/publi
+c/amsfonts/cm/cmbx10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/typ
+e1/public/amsfonts/cm/cmbx12.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/f
+onts/type1/public/amsfonts/cm/cmbx7.pfb><C:/Users/User/AppData/Local/Programs/M
+iKTeX/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/User/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmbxti10.pfb><C:/Users/User/AppData
+/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/User
+/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Us
+ers/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi12.pf
+b><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
+mmi6.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/cm/cmmi7.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmmi8.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmr10.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/User/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/User/AppData/Local/Program
+s/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/User/AppData/Local/P
+rograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users/User/AppData/L
+ocal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/User/A
+ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users
+/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C
+:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti1
+0.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/
+cm/cmti12.pfb><C:/Users/User/AppData/Local/Programs/MiKTeX/fonts/type1/public/a
+msfonts/cm/cmtt10.pfb>
+Output written on report_v5.pdf (19 pages, 2966336 bytes).
 PDF statistics:
- 439 PDF objects out of 1000 (max. 8388607)
- 75 named destinations out of 1000 (max. 500000)
- 179 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 470 PDF objects out of 1000 (max. 8388607)
+ 81 named destinations out of 1000 (max. 500000)
+ 187 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -25,8 +25,8 @@
 
 \title{\textbf{Side-by-Side Comparison:\\
 Deterministic SHE-Boltzmann MOSFET Reproduction vs.\ Liang \emph{et al.} (1997)}}
-\author{\small Companion to report Revision~4. Bias $V_{gs}=V_{ds}=\SI{3}{V}$ (Figs.~2--7);
-recalibrated device $V_{th}=\SI{0.614}{V}$.}
+\author{\small Companion to report Revision~5. Bias $V_{gs}=V_{ds}=\SI{3}{V}$ (Figs.~2--7);
+converged Anderson 80$\times$66 fixed point, $V_{th}=\SI{0.614}{V}$.}
 \date{\today}
 
 \begin{document}
@@ -44,13 +44,13 @@ report; comparisons are structural (peak magnitude, location, profile), not pixe
 \pair{../figures/paper_fig3.png}{../figures/our_fig3.png}
 {Fig.~3 --- Electron concentration $n(x,y)$}
 {Both show $n\sim10^{20}\,\si{cm^{-3}}$ walls at source and drain with a deep channel dip and the
-onset of drain pinch-off. Our peak $n_{\max}=1.02\times10^{20}$; the wireframe uses $10^{19}$ units
+onset of drain pinch-off. Our peak $n_{\max}=1.05\times10^{20}$; the wireframe uses $10^{19}$ units
 (peak $\approx\!10$).}
 
 \pair{../figures/paper_fig4.png}{../figures/our_fig4.png}
 {Fig.~4 --- Average electron velocity}
 {The flow is lateral through the channel and turns downward into the drain; magnitude saturates at
-$|v|_{\max}=9.9\times10^{6}\,\si{cm/s}$ near the drain (Liang $\sim\!10^{7}$). Vectors are masked
+$|v|_{\max}=1.07\times10^{7}\,\si{cm/s}$ near the drain (Liang $\sim\!10^{7}$). Vectors are masked
 where $n<10^{13}\,\si{cm^{-3}}$.}
 
 \pair{../figures/paper_fig5.png}{../figures/our_fig5.png}
@@ -60,18 +60,20 @@ where $n<10^{13}\,\si{cm^{-3}}$.}
 
 \pair{../figures/paper_fig6.png}{../figures/our_fig6.png}
 {Fig.~6 --- Hole concentration $p(x,y)$}
-{Holes fill the p-body ($p\sim10^{16}\,\si{cm^{-3}}$) and are depleted in the n$^+$ S/D; impact
-ionization adds holes near the drain. Absolute positions depend on the reconstructed doping, so the
-agreement is structural.}
+{Holes fill the p-body ($p\sim10^{16}\,\si{cm^{-3}}$) and are depleted in the n$^+$ S/D; at the
+converged fixed point the impact-ionization hole source is small ($G_{ii}$ low). Absolute positions
+depend on the reconstructed doping, so the agreement is structural.}
 
 \pair{../figures/paper_fig7.png}{../figures/our_fig7.png}
 {Fig.~7 --- Electron temperature (dashed) and $G_{ii}$ (solid) contours}
-{On Liang's own drain-region axes and contour levels (best-converged 50-iteration fields): our
-$T_e$ reaches \SI{3323}{K} (66\% of the top \SI{5000}{K} contour) and $G_{ii}$ $6.3\times10^{26}$
-(27\% of the top $2.3\times10^{27}$), both drain-localized with $T_e$ far broader than $G_{ii}$.
-$G_{ii}$ is unconverged in both mesh \emph{and} coupling loop --- a 50-iteration study shows it
-decreasing monotonically with no plateau --- so the quoted value is a still-falling snapshot, not a
-continuum estimate or bound. The $T_e$/$G_{ii}$ peak offset stays within one cell.}
+{On Liang's own drain-region axes and contour levels (converged Anderson 80$\times$66 fixed point):
+our $T_e$ reaches \SI{3201}{K} (64\% of the top \SI{5000}{K} contour) and $G_{ii}$ $1.5\times10^{26}$
+(7\% of the top $2.3\times10^{27}$), both drain-localized with $T_e$ far broader than $G_{ii}$.
+With the coupling loop now converged (Anderson acceleration), $G_{ii}$ is loop-converged but still
+\emph{mesh}-unconverged (the 40$\times$34/60$\times$50/80$\times$66 sequence gives
+$8.1/2.2/1.5\times10^{26}$); the converged value is $\sim$15$\times$ below Liang's --- a \emph{model}
+deficit (surrogate Keldysh II rate on reconstructed doping), not a numerical artefact. The
+$T_e$/$G_{ii}$ peak offset stays within one cell.}
 
 \clearpage
 \subsection*{Fig.~2 --- Carrier energy distribution $\log_{10}f_0$ (three depths)}

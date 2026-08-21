@@ -891,6 +891,17 @@ identical signatures + $H$-hash, computes the reversal ratio $S_{\mathrm{rev}}$,
 suppresses) the extrapolation. The three converged nodes and their logs are archived under
 \texttt{data/she2d\_richardson\_*.npz} and \texttt{data/richardson\_*.log}.
 
+\paragraph{Runtime and a plateau-gate note.} On a single workstation the essential end-to-end rerun
+is $\sim$26--27~h, dominated by the controlled trio ($\sim$23~h; the finest $141\times85$ node alone
+$\sim$12~h at $\sim$320~s/outer-iteration). The fine nodes run \emph{sequentially} --- at $\sim$5--6~GB
+each on a 26~GB machine, three at once leaves too little headroom for the sparse work arrays --- but
+they are independent, so across machines the critical path falls to the $\sim$12~h finest node. A
+faster diagnostic rerun could terminate the coarser nodes at looser plateau quality; because the
+observed reversal is orders of magnitude larger than the plateau uncertainty ($S_{\mathrm{rev}}\approx
+874$), this is not expected to alter the qualitative verdict --- though it is not verdict-neutral by
+construction. The archival result nevertheless uses the uniform $O(10^{-4})$ plateau gate on all three
+nodes.
+
 \section{Provenance and audit history}\label{sec:history}
 Base code commit \texttt{0994290}; Python 3.13.15, NumPy 2.5.1, SciPy 1.18.0. Key commits:
 \texttt{f016e3c} (locked one-way audit), \texttt{7aad998} (60$\times$50 refinement),

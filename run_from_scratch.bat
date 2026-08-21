@@ -40,12 +40,15 @@ call :stamp "STAGE 2/4: Rev 5 Anderson-accelerated coupled fixed point, 3 grids 
 call :stamp "STAGE 3/4: Rev 6 controlled spatial-convergence trio (~23 h, SEQUENTIAL, continue-until-plateau)"
 "%PY%" src\run_richardson_trio.py || goto :error
 
-call :stamp "STAGE 4/4: gated Richardson fit (S_rev verdict)"
+call :stamp "STAGE 4/5: gated Richardson fit (S_rev verdict)"
 "%PY%" src\richardson_fit.py data\she2d_richardson_71x58.npz data\she2d_richardson_100x70.npz data\she2d_richardson_141x85.npz || goto :error
+
+call :stamp "STAGE 5/5: auto-generate run-results report from THIS run's data"
+"%PY%" src\gen_run_report.py || goto :error
 
 set "PDFLATEX=C:\Users\User\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"
 if exist "%PDFLATEX%" (
-  call :stamp "optional: compiling report_v6_full.pdf"
+  call :stamp "optional: recompiling canonical report_v6_full.pdf"
   pushd report
   "%PDFLATEX%" --enable-installer --interaction=nonstopmode report_v6_full.tex >nul 2>&1
   "%PDFLATEX%" --enable-installer --interaction=nonstopmode report_v6_full.tex >nul 2>&1
@@ -53,7 +56,7 @@ if exist "%PDFLATEX%" (
   popd
 )
 
-call :stamp "=== DONE. Trio data in data\she2d_richardson_*.npz ; see data\richardson_trio_run.log and .csv ==="
+call :stamp "=== DONE. Run report: report\report_run_latest.pdf ; data: data\she2d_richardson_*.npz ; logs: data\richardson_trio_run.log + .csv ==="
 goto :eof
 
 :stamp

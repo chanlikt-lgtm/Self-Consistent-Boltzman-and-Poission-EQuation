@@ -1,0 +1,44 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}\usepackage{amsmath,booktabs,siunitx,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
+\setlength{\parindent}{0pt}
+\title{\textbf{Controlled Spatial-Convergence Trio --- Run Results}\\[3pt]
+\large\textit{Auto-generated from run data; companion to report\_v6\_full}}
+\date{2026-08-21 20:41}\author{}
+\begin{document}\maketitle\vspace{-2.2em}
+\begin{center}\fcolorbox{black}{green!14}{\parbox{0.92\linewidth}{\centering\textbf{NON-MONOTONE, $S_{\mathrm{rev}}=874\gg1$ --- Richardson suppressed, spatial convergence not demonstrated}}}\end{center}
+\section*{Run metadata}
+Generated \texttt{2026-08-21 20:41:54}; code commit \texttt{676e74f} (dirty). Nodes:
+\texttt{data/she2d\_richardson\_\{71x58,100x70,141x85\}.npz}.
+\section*{Comparability gates}
+\begin{tabular}{ll}\toprule
+mesh-law/solver signatures identical & \textbf{YES} \\
+frozen $H$-array SHA1 identical & \textbf{YES} (b4319bb03303) \\
+drain-$dx$ refinement ratios & $1.41436,\ 1.41437$ (target $\sqrt2=1.41421$) \\
+observable-plateau gate ($\le3e-04$, both $G_{ii}$ \& $G_{\mathrm{tot}}$) & \textbf{PASS} \\
+\bottomrule\end{tabular}
+\section*{Frozen trio (this run)}
+\begin{tabular}{lcccccc}\toprule
+ & drain $dx$ & $G_{ii,\max}$ & spread & $G_{\mathrm{tot}}$ & spread & $R_\phi$ \\
+node & (\si{\micro m}) & (\si{cm^{-3}s^{-1}}) & ($G_{ii}$) & (\si{cm^{-1}s^{-1}}) & ($G_{\mathrm{tot}}$) & (V) \\ \midrule
+$G_1$ (71$\times$58) & 0.0038 & $2.990\times10^{25}$ & $1.4e-04$ & $8.982\times10^{13}$ & $2.3e-04$ & $8.7e-05$ \\
+$G_2$ (100$\times$70) & 0.0027 & $2.135\times10^{25}$ & $2.9e-04$ & $6.027\times10^{13}$ & $2.2e-04$ & $5.8e-04$ \\
+$G_3$ (141$\times$85) & 0.0019 & $2.413\times10^{25}$ & $6.1e-05$ & $6.593\times10^{13}$ & $5.2e-05$ & $1.8e-04$ \\
+\bottomrule\end{tabular}\\[4pt]
+{\footnotesize spread $=(\max_4-\min_4)/\bar G_4$; plateau band $u=(\max_4-\min_4)/2$.}
+\section*{Verdict}
+$G_{ii,\max}$: $2.990 \to 2.135 \to 2.413 \times10^{25}$; $\Delta_{12}=+8.555e+24$, $\Delta_{23}=-2.781e+24$.
+\textbf{NON-MONOTONE, $S_{\mathrm{rev}}=874\gg1$ --- Richardson suppressed, spatial convergence not demonstrated.}\\[2pt]
+Reproduces archived Rev.\,6 ($2.990/2.135/2.413\times10^{25}$, $S_{\mathrm{rev}}\approx874$):
+\textbf{YES}.
+\section*{Timing / convergence}
+\begin{tabular}{lccc}\toprule
+node & wall / iters / s per iter & final $R_\phi$ (V) & $T_{e,\max}$ (K) \\ \midrule
+71$\times$58 & n/a & $8.7e-05$ & 3177 \\
+100$\times$70 & n/a & $5.8e-04$ & 3161 \\
+141$\times$85 & n/a & $1.8e-04$ & 3196 \\
+\bottomrule\end{tabular}\\[4pt]
+See \texttt{data/richardson\_trio\_run.log} and \texttt{richardson\_trio\_metrics.csv} for the full
+per-iteration history and any warnings. Scientific interpretation: report\_v6\_full, \S\,Controlled
+spatial-convergence.
+\end{document}

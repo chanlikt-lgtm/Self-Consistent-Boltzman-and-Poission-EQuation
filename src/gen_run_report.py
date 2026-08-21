@@ -16,7 +16,11 @@ HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 DATA = os.path.join(ROOT, "data"); REP = os.path.join(ROOT, "report")
 NODES = [(71, 58), (100, 70), (141, 85)]
 ARCH_G = [2.990e25, 2.135e25, 2.413e25]; ARCH_SREV = 874.0        # archived Rev.6 reference
-SPREAD_GATE = 3e-4
+SPREAD_GATE = 3e-4          # per-observable last-4 spread gate
+RPHI_FLOOR_V = 1.5e-3       # R_phi floor: final residual settled into the she_tol noise band
+SIG_MIN = 3.0              # S_rev threshold: reversal is "significant / resolved" if S_rev > this
+RATIO_TOL = 0.05          # |r_x - sqrt2| tolerance
+REPRO_TOL = 0.02          # archival reproducibility tolerance: |G_i - G_i^arch|/G_i^arch < this (2%)
 
 def npz(nx, ny): return os.path.join(DATA, "she2d_richardson_%dx%d.npz" % (nx, ny))
 
@@ -58,19 +62,60 @@ def main():
     hashes = {str(x["H_hash"]) for x in z if "H_hash" in x.files}
     laws = {(round(float(x["ratio"]), 4), round(float(x["W"]), 4), round(float(x["X_C"]), 4),
              round(float(x["dH_eV"]), 6), int(x["NH"]), float(x["she_tol"])) for x in z}
+    Rp4 = [np.asarray(x["last4_R_phi"], float) if "last4_R_phi" in x.files
+           else np.array([float(x["R_phi"])]) for x in z]
+
+    def rphi_floored(a):
+        return float(a[-1]) <= RPHI_FLOOR_V   # settled into the she_tol noise band
+
     rx = [dx[i] / dx[i + 1] for i in range(2)]
     d12, d23 = G[0] - G[1], G[1] - G[2]
     monotone = (d12 > 0 and d23 > 0) or (d12 < 0 and d23 < 0)
     Srev = abs(d23) / math.hypot(u[1], u[2]) if not monotone else float("nan")
-    gate_ok = all(sp[i] <= SPREAD_GATE and spt[i] <= SPREAD_GATE for i in range(3))
-    reproduced = (not monotone) and all(abs(G[i] - ARCH_G[i]) / ARCH_G[i] < 0.02 for i in range(3))
+
+    # --- comparability + plateau gates (the FULL rule) ---
+    sig_ok = len(laws) == 1
+    hash_ok = len(hashes) == 1
+    ratios_ok = all(abs(r - math.sqrt(2)) < RATIO_TOL for r in rx)
+    plateau_ok = all(sp[i] <= SPREAD_GATE and spt[i] <= SPREAD_GATE and rphi_floored(Rp4[i])
+                     for i in range(3))
+    gate_ok = plateau_ok
+    gates_ok = sig_ok and hash_ok and ratios_ok and plateau_ok
+    significant = (not monotone) and (Srev > SIG_MIN)
+    within_tol = all(abs(G[i] - ARCH_G[i]) / ARCH_G[i] < REPRO_TOL for i in range(3))
+
+    # --- state machine: GREEN / YELLOW / RED ---
+    if gates_ok and significant and within_tol:
+        state, color = "GREEN", "green!14"
+    elif gates_ok and significant:
+        state, color = "YELLOW", "yellow!18"
+    else:
+        state, color = "RED", "red!12"
+    reasons = []
+    if not sig_ok: reasons.append("mesh-law/solver signatures differ")
+    if not hash_ok: reasons.append("frozen $H$-grid hashes differ")
+    if not ratios_ok: reasons.append("refinement ratios off $\\sqrt2$")
+    if not plateau_ok: reasons.append("a node fails the plateau gate")
+    if monotone: reasons.append("sequence is monotone")
+    elif not significant: reasons.append("reversal unresolved ($S_{\\mathrm{rev}}\\le%.0f$)" % SIG_MIN)
+    if gates_ok and significant and not within_tol:
+        reasons.append("value(s) outside the %.0f\\%% archival tolerance" % (REPRO_TOL * 100))
+    reproduced = (state == "GREEN")
     times = node_time_s()
     commit = str(z[0]["git_commit"]) if "git_commit" in z[0].files else "?"
     dirty = str(z[0]["git_dirty"]) if "git_dirty" in z[0].files else "?"
 
-    verdict = ("NON-MONOTONE, $S_{\\mathrm{rev}}=%.0f\\gg1$ --- Richardson suppressed, spatial "
-               "convergence not demonstrated" % Srev) if not monotone else \
-              ("MONOTONE --- differs from the archived result; inspect nodes")
+    banner = {
+        "GREEN": "GREEN -- Rev.6 REPRODUCED: comparability + plateau gates pass, controlled trio "
+                 "significantly non-monotone ($S_{\\mathrm{rev}}{=}%.0f$), all values within "
+                 "%.0f\\%% of archival" % (Srev, REPRO_TOL * 100),
+        "YELLOW": "YELLOW -- non-monotone verdict holds ($S_{\\mathrm{rev}}{=}%.0f$) and all "
+                  "scientific gates pass, but %s" % (Srev, "; ".join(reasons)),
+        "RED": "RED -- Rev.6 verdict NOT reproduced / run INVALID: %s"
+               % ("; ".join(reasons) if reasons else "gate failure"),
+    }[state]
+    verdict_body = (("NON-MONOTONE, $S_{\\mathrm{rev}}=%.0f%s$" % (Srev, "\\gg1" if significant else ""))
+                    if not monotone else "MONOTONE (differs from the archived result)")
     trow = lambda i: ("$G_%d$ (%d$\\times$%d) & %.4f & $%.3f\\times10^{25}$ & $%.1e$ & $%.3f\\times10^{13}$"
                       " & $%.1e$ & $%.1e$ \\\\" % (i + 1, int(z[i]["Nx"]), int(z[i]["Ny"]), dx[i],
                       G[i] / 1e25, sp[i], Gt[i] / 1e13, spt[i], Rp[i]))
@@ -105,11 +150,15 @@ node & (\si{\micro m}) & (\si{cm^{-3}s^{-1}}) & ($G_{ii}$) & (\si{cm^{-1}s^{-1}}
 %s
 \bottomrule\end{tabular}\\[4pt]
 {\footnotesize spread $=(\max_4-\min_4)/\bar G_4$; plateau band $u=(\max_4-\min_4)/2$.}
-\section*{Verdict}
-$G_{ii,\max}$: $%.3f \to %.3f \to %.3f \times10^{25}$; $\Delta_{12}=%+.3e$, $\Delta_{23}=%+.3e$.
-\textbf{%s.}\\[2pt]
-Reproduces archived Rev.\,6 ($2.990/2.135/2.413\times10^{25}$, $S_{\mathrm{rev}}\approx%.0f$):
-\textbf{%s}.
+\section*{Verdict and classification}
+$G_{ii,\max}$: $%.3f \to %.3f \to %.3f \times10^{25}$; $\Delta_{12}=%+.3e$, $\Delta_{23}=%+.3e$ --- %s.\\[3pt]
+\textbf{Classification: %s.}\\[2pt]
+{\footnotesize Rule. \textbf{GREEN}: all comparability+plateau gates pass, sequence significantly
+non-monotone ($S_{\mathrm{rev}}>%.0f$), and every $G_i$ within %.0f\%% of archival
+($2.990/2.135/2.413\times10^{25}$). \textbf{YELLOW}: all scientific gates pass and still significantly
+non-monotone, but $\ge1$ value outside that tolerance. \textbf{RED}: verdict not reproduced or run
+invalid --- monotone sequence, unresolved reversal ($S_{\mathrm{rev}}\le%.0f$), $H$-hash/signature
+mismatch, or a node failing the plateau gate.}
 \section*{Timing / convergence}
 \begin{tabular}{lccc}\toprule
 node & wall / iters / s per iter & final $R_\phi$ (V) & $T_{e,\max}$ (K) \\ \midrule
@@ -121,13 +170,12 @@ See \texttt{data/richardson\_trio\_run.log} and \texttt{richardson\_trio\_metric
 per-iteration history and any warnings. Scientific interpretation: report\_v6\_full, \S\,Controlled
 spatial-convergence.
 \end{document}
-""" % ("green!14" if reproduced else ("red!12" if monotone else "yellow!18"),
-       verdict, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), esc(commit), esc(dirty),
-       "YES" if len(laws) == 1 else "NO", "YES" if len(hashes) == 1 else "NO",
-       esc(list(hashes)[0]) if hashes else "?", rx[0], rx[1], SPREAD_GATE, "PASS" if gate_ok else "FAIL",
+""" % (color, banner, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), esc(commit), esc(dirty),
+       "YES" if sig_ok else "NO", "YES" if hash_ok else "NO",
+       esc(list(hashes)[0]) if hashes else "?", rx[0], rx[1], SPREAD_GATE, "PASS" if plateau_ok else "FAIL",
        trow(0), trow(1), trow(2),
-       G[0] / 1e25, G[1] / 1e25, G[2] / 1e25, d12, d23, verdict, ARCH_SREV,
-       "YES" if reproduced else "NO -- differs, investigate",
+       G[0] / 1e25, G[1] / 1e25, G[2] / 1e25, d12, d23, verdict_body,
+       state, SIG_MIN, REPRO_TOL * 100, SIG_MIN,
        ttime("71x58"), Rp[0], Te[0], ttime("100x70"), Rp[1], Te[1], ttime("141x85"), Rp[2], Te[2])
 
     out_tex = os.path.join(REP, "report_run_latest.tex")

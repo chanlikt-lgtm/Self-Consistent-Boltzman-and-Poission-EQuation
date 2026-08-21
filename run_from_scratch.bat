@@ -28,22 +28,22 @@ if not exist "%PY%" set "PY=python"
 call :stamp "=== RUN START.  Interpreter: %PY%"
 "%PY%" -c "import numpy,scipy;print('numpy',numpy.__version__,'scipy',scipy.__version__)" || goto :error
 
-call :stamp "STAGE 1/4: foundation -> one-way SHE -> coupled -> Figs 2-8 overlays (~1.5-2 h)"
+call :stamp "STAGE 1/6: foundation -> one-way SHE -> coupled -> Figs 2-8 overlays (~1.5-2 h)"
 "%PY%" reproduce_all.py --full || goto :error
 
-call :stamp "STAGE 2/4: Rev 5 Anderson-accelerated coupled fixed point, 3 grids (~1.5 h)"
+call :stamp "STAGE 2/6: Rev 5 Anderson-accelerated coupled fixed point, 3 grids (~1.5 h)"
 "%PY%" src\coupled_anderson.py 40 34 6 0.5 40 1 || goto :error
 "%PY%" src\coupled_anderson.py 60 50 6 0.5 40 1 || goto :error
 "%PY%" src\coupled_anderson.py 80 66 6 0.5 40 1 || goto :error
 "%PY%" src\she2d_anderson_fig.py || goto :error
 
-call :stamp "STAGE 3/4: Rev 6 controlled spatial-convergence trio (~23 h, SEQUENTIAL, continue-until-plateau)"
+call :stamp "STAGE 3/6: Rev 6 controlled spatial-convergence trio (~23 h, SEQUENTIAL, continue-until-plateau)"
 "%PY%" src\run_richardson_trio.py || goto :error
 
-call :stamp "STAGE 4/5: gated Richardson fit (S_rev verdict)"
+call :stamp "STAGE 4/6: gated Richardson fit (S_rev verdict)"
 "%PY%" src\richardson_fit.py data\she2d_richardson_71x58.npz data\she2d_richardson_100x70.npz data\she2d_richardson_141x85.npz || goto :error
 
-call :stamp "STAGE 5/5: auto-generate run-results report from THIS run's data"
+call :stamp "STAGE 5/6: auto-generate run-results report from THIS run's data"
 "%PY%" src\gen_run_report.py || goto :error
 
 set "PDFLATEX=C:\Users\User\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"
@@ -56,7 +56,10 @@ if exist "%PDFLATEX%" (
   popd
 )
 
-call :stamp "=== DONE. Run report: report\report_run_latest.pdf ; data: data\she2d_richardson_*.npz ; logs: data\richardson_trio_run.log + .csv ==="
+call :stamp "STAGE 6/6: archive all plots + reports + data/logs into runs\<timestamp>\"
+"%PY%" src\archive_run.py || goto :error
+
+call :stamp "=== DONE. Snapshot: runs\<timestamp>\ (plots\, reports, MANIFEST.txt) ; run report: report\report_run_latest.pdf ==="
 goto :eof
 
 :stamp

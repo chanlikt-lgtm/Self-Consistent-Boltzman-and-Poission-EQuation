@@ -1,0 +1,9 @@
+# Per-run timestamped snapshots (plots/reports/data copies) -- large, not for version control.
+runs/
+
+# LaTeX build artifacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/report_run_latest.tex

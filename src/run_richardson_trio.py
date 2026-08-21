@@ -32,8 +32,9 @@ LOG_PATH = os.path.join(DATA, "richardson_trio_run.log")
 CSV_PATH = os.path.join(DATA, "richardson_trio_metrics.csv")
 
 SPREAD_GATE = 3e-4          # observable-plateau gate: O(1e-4), <= 3e-4, in BOTH G_ii and G_tot
+RPHI_FLOOR_V = 1.5e-3       # R_phi "at its floor": final residual settled into the she_tol noise band
 CHUNK = 60                  # outer iterations per driver invocation
-MAX_ROUNDS = 4              # continuations before giving up on a node (up to 240 iters)
+MAX_ROUNDS = 4              # HARD cap on continuation chunks/node (up to 240 iters); exceed => FAIL
 RAM_WARN_GB = 7.0           # warn if available RAM below this before a fine node
 SLOW_ITER_S = {71: 160, 100: 260, 141: 460}   # per-iter wall-time above which we warn (by Nx)
 
@@ -57,7 +58,22 @@ def read_metrics(Nx, Ny):
     z = np.load(node_npz(Nx, Ny))
     return dict(Gii=float(z["Gii_max"]), Gtot=float(z["G_tot"]), Te=float(z["Te_max"]),
                 Rphi=float(z["R_phi"]), sp=float(z["spread"]), spt=float(z["spread_Gtot"]),
-                niter=int(z["n_iter"]))
+                niter=int(z["n_iter"]),
+                last4_R=np.asarray(z["last4_R_phi"], float) if "last4_R_phi" in z.files
+                        else np.array([float(z["R_phi"])]))
+
+def rphi_floored(last4_R):
+    """R_phi 'at its floor': the final fixed-point residual has settled into the she_tol-set noise
+    band (<= RPHI_FLOOR_V), i.e. no longer descending by orders of magnitude. The observable-plateau
+    spreads (<= SPREAD_GATE in both G_ii and G_tot) are the primary convergence indicator; this is the
+    corroborating residual condition (report, sec:spatial). A gentle monotone drift WITHIN the band
+    (as on the tightest-converged 141x85 node) still counts as floored."""
+    a = np.asarray(last4_R, float)
+    return float(a[-1]) <= RPHI_FLOOR_V
+
+def full_gate(m):
+    """The FULL observable-plateau gate: spread_Gii<=gate AND spread_Gtot<=gate AND R_phi floored."""
+    return (m["sp"] <= SPREAD_GATE) and (m["spt"] <= SPREAD_GATE) and rphi_floored(m["last4_R"])
 
 def free_gb():
     if psutil is None:
@@ -112,7 +128,7 @@ def main():
                 spi = dt / max(m["niter"], 1)
                 dGii = (abs(m["Gii"] - prev_Gii) / m["Gii"]) if prev_Gii else float("nan")
                 prev_Gii = m["Gii"]
-                passed = (m["sp"] <= SPREAD_GATE and m["spt"] <= SPREAD_GATE)
+                passed = full_gate(m)
 
                 warns = []
                 if spi > SLOW_ITER_S.get(Nx, 1e9):
@@ -139,9 +155,14 @@ def main():
 
             node_dt = time.time() - node_t0
             if not passed:
-                log("%dx%d did NOT reach the plateau gate in %d rounds (%d iters); "
-                    "spread Gii/Gtot=%.2e/%.2e. Increase MAX_ROUNDS and continue from its npz."
-                    % (Nx, Ny, MAX_ROUNDS, cum_iters, m["sp"], m["spt"]), "WARN")
+                # HARD FAIL: the node did not reach the full plateau gate within the chunk cap.
+                # Fail the run rather than proceed on a non-plateaued (invalid) node.
+                log("%dx%d FAILED to reach the full plateau gate in %d chunks (%d iters): "
+                    "spread_Gii=%.2e spread_Gtot=%.2e R_phi_floored=%s. Aborting run. "
+                    "(Increase MAX_ROUNDS and continue warm-started from its npz to extend.)"
+                    % (Nx, Ny, MAX_ROUNDS, cum_iters, m["sp"], m["spt"],
+                       rphi_floored(m["last4_R"])), "ERROR")
+                sys.exit(3)
             log("%dx%d DONE: Gii=%.4e Gtot=%.4e R_phi=%.2e  (%d iters, %.1f h, gate=%s)"
                 % (Nx, Ny, m["Gii"], m["Gtot"], m["Rphi"], cum_iters, node_dt / 3600.0,
                    "PASS" if passed else "FAIL"))

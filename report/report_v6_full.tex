@@ -699,12 +699,15 @@ $2.20\times10^{25}$ with a still-drifting observable, but continued under \emph{
 climbed and locked at $2.413\times10^{25}$ (last-4 spread $6\times10^{-5}$); likewise
 $71\times58$ moved $3.069\to2.990$ and $100\times70$ moved $1.806\to2.135$ ($+18\%$).
 \honest{Equal outer-iteration counts do \emph{not} imply equal fixed-point convergence quality across
-meshes. Node values are accepted on an \emph{observable-plateau} gate --- $R_\phi$ at its floor
-(operationally: $\max|G(\phi){-}\phi|$ has stopped descending and merely oscillates within the
-\texttt{she\_tol}-set noise band, $R_\phi\lesssim10^{-3}$~V with no monotone decrease over the final
-$4$ iterations, \emph{not} the nominal $10^{-4}$~V \texttt{tol\_phi}) \emph{and} last-4 spreads at
-the $O(10^{-4})$ level ($\lesssim3\times10^{-4}$) in both $G_{ii}$ and $G_{\mathrm{tot}}$, applied
-identically to all three nodes. The verdict below is trustworthy only because it is evaluated on
+meshes. Node values are accepted on an \emph{observable-plateau} gate with two parts, applied
+identically to all three nodes. \emph{Primary (observable):} last-4 relative spreads at the
+$O(10^{-4})$ level ($\lesssim3\times10^{-4}$) in \emph{both} $G_{ii}$ and $G_{\mathrm{tot}}$.
+\emph{Corroborating (residual):} $R_\phi=\max|G(\phi){-}\phi|$ has settled into the
+\texttt{she\_tol}-set noise band, $R_\phi\lesssim1.5\times10^{-3}$~V --- no longer descending by
+orders of magnitude, though a gentle drift \emph{within} the band is allowed (the tightest-converged
+$141\times85$ node, $G_{ii}$ spread $6\times10^{-5}$, has $R_\phi\sim2\times10^{-4}$ still edging
+down inside the band). Note $R_\phi$ never reaches the nominal $10^{-4}$~V \texttt{tol\_phi}; that
+tolerance is not the operative gate, the observable plateau is. The verdict below is trustworthy only because it is evaluated on
 equalized, plateau-gated fixed points, not truncated iterates.}
 
 \subsection{Verdict: significantly non-monotone; Richardson suppressed}

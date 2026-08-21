@@ -55,7 +55,8 @@ The robust reproductions are the transport moments ($n$, $|v|$). \textbf{Revisio
 damped-Picard coupling with Anderson acceleration on a frozen $H$-grid, which \emph{converges} the
 self-consistent fixed point that Picard could not} (\S\ref{sec:anderson}, Fig.~\ref{fig:anderson}):
 on each grid the true residual $\max|G(\phi){-}\phi|$ falls to a $\sim$3--4~mV inner-solve floor and
-$G_{ii}$ \emph{plateaus} (last-4 spread 1.6--11\%), where the 50-iteration Picard baseline left
+$G_{ii}$ settles to a residual-floor last-iterate value (last-4 spread 1.6--11\%; not yet the
+Rev.~6 observable plateau), where the 50-iteration Picard baseline left
 $G_{ii}$ in monotone free-fall. This separates two distinct questions: the \emph{nonlinear-loop}
 convergence is now resolved, but the converged fixed-point $G_{ii}$ is \emph{still spatially
 unconverged} --- over the $40{\times}34\!\to\!60{\times}50\!\to\!80{\times}66$ sequence it decreases
@@ -416,9 +417,11 @@ $80{\times}66$ overlays that follow are legitimate historical Rev.~5 fields whos
 must not be read as an equally-flattened node.}
 
 \begin{table}[h]\centering\small
-\caption{Converged Anderson fixed point (frozen $H$-grid, $V_{th}=\SI{0.614}{V}$) over the spatial
-sequence. $G_{ii}$ is the mean of the last 4 iterations; the residual is the final
-$\max|G(\phi)-\phi|$. $G_{ii}$ is loop-converged (plateaued) yet still \emph{mesh}-dependent.}
+\caption{Rev.~5 Anderson residual-floor states (frozen $H$-grid, $V_{th}=\SI{0.614}{V}$) over the
+uniform sequence. $G_{ii}$ is the last-4-mean after fixed-point-\emph{residual} convergence; the
+residual is the final $\max|G(\phi)-\phi|$. These are residual-floor last-iterate values, \emph{not}
+Rev.~6-quality observable-plateau nodes (the $80{\times}66$ last-4 spread $10.9\%$ fails the
+$\lesssim3\times10^{-4}$ gate of \S\ref{sec:spatial}); $G_{ii}$ is also \emph{mesh}-dependent.}
 \label{tab:anderson}
 \begin{tabular}{lrrrr}
 \toprule
@@ -442,7 +445,7 @@ $58\%$ of top) are exposed as under-converged-\emph{loop} artefacts --- that muc
 uniform ratios as ``plausibly approaching a spatial limit $\sim\!10^{26}$'' and attributed the
 deficit to a \emph{model} gap ``not a numerical one.'' Rev.~6 shows both readings are not defensible:
 the uniform grids were themselves drain-under-resolved, and the \emph{controlled} refinement is
-\emph{significantly non-monotone}, so the spatial error is unbounded and the numerical vs.\ model
+\emph{significantly non-monotone}, so no spatial-error bound is established by this study and the numerical vs.\ model
 split cannot be assigned from this data. The robust reproductions here remain the transport moments
 $n$, $|v|$ and the drain localization; the absolute $G_{ii}$ magnitude and its attribution are
 deferred to \S\ref{sec:spatial}.}
@@ -451,9 +454,10 @@ deferred to \S\ref{sec:spatial}.}
 \includegraphics[width=\linewidth]{../figures/she2d_anderson_converge.png}
 \caption{Anderson acceleration (frozen $H$-grid) vs the damped-Picard baseline. (a) the true
 fixed-point residual $\max|G(\phi)-\phi|$ converges to a $\sim$3--4~mV floor for all three grids,
-where Picard (grey) stalls; (b) $G_{ii}$ plateaus per grid, where Picard is in monotone free-fall;
-(c) converged $G_{ii}$ vs mesh --- still grid-dependent ($8.1\to2.2\to1.5\times10^{26}$); (d) $T_e$,
-$I_d$ plateau (finest grid).}\label{fig:anderson}
+where Picard (grey) stalls; (b) $G_{ii}$ settles to a per-grid \emph{residual-floor} last-iterate
+value, where Picard is in monotone free-fall (this is fixed-point-residual convergence, not the
+Rev.~6 observable-plateau gate); (c) that last-iterate $G_{ii}$ vs mesh --- still grid-dependent
+($8.1\to2.2\to1.5\times10^{26}$); (d) $T_e$, $I_d$ settle (finest grid).}\label{fig:anderson}
 \end{figure}
 
 \section{Quantitative comparison with Liang's published figures}\label{sec:compare}
@@ -674,6 +678,10 @@ $G_2$ ($100\times70$) & 0.002689 & $2.135\times10^{25}$ & $2.9\times10^{-4}$ & $
 $G_3$ ($141\times85$) & 0.001901 & $2.413\times10^{25}$ & $6.1\times10^{-5}$ & $6.593\times10^{13}$ & $5.2\times10^{-5}$ & $1.8\times10^{-4}$\\
 \bottomrule
 \end{tabular}
+\\[3pt]
+{\footnotesize Over the last 4 outer iterations, with $\bar G_4$ their mean:
+$\mathrm{spread}=(\max_4-\min_4)/\bar G_4$ (the tabulated relative figure) and the plateau band
+$u=(\max_4-\min_4)/2$ (absolute) used in $S_{\mathrm{rev}}$ below.}
 \end{center}
 Comparability is enforced by the driver (fail-fast): one imposed common span
 (COMMON\_PHI\_SPAN $=[-0.60,3.65]$~V, bounding the measured $\phi\in[-0.348,3.586]$~V) fixes the
@@ -726,7 +734,7 @@ What would sharpen \emph{why} the drain avalanche resists monotone convergence: 
 family (fixed $y$-mesh, systematic drain-$x$ refinement) to separate $x$/$y$ discretization error, or
 a finite-surface-slope $y$-law for a globally isotropic study. Physics-model changes (surrogate
 impact-ionization rate, reconstructed doping) are \emph{important candidate sources} of the absolute
-gap --- but with the spatial error unbounded they cannot be called its dominant cause --- and are
+gap --- but with no spatial-error bound established by this study they cannot be called its dominant cause --- and are
 deferred until the numerical characterization along further refinement paths is done.
 
 \part{Assessment}
@@ -755,8 +763,9 @@ paper.
 \item \textbf{Self-consistency (converged in Rev.~5):} the damped Picard loop did \emph{not}
 converge $G_{ii}$ (monotone free-fall, \S\ref{sec:giiconv}); \textbf{Anderson acceleration on a
 frozen $H$-grid converges the fixed point} (\S\ref{sec:anderson}, Fig.~\ref{fig:anderson}) --- the
-residual reaches a $\sim$3--4~mV inner-solve floor and $G_{ii}$ \emph{plateaus} (last-4 spread
-1.6--11\%). $n$, $|v|$, $I_d$ are grid-stable; $T_e$ converges toward $\sim\!\SI{3200}{K}$.
+residual reaches a $\sim$3--4~mV inner-solve floor and $G_{ii}$ settles to a residual-floor
+last-iterate value (last-4 spread 1.6--11\%; not the Rev.~6 observable plateau). $n$, $|v|$, $I_d$ are
+grid-stable; $T_e$ converges toward $\sim\!\SI{3200}{K}$.
 \item \textbf{Quantitative overlays:} on Liang's own Fig.~7 contour levels the converged
 (Anderson 80$\times$66) fields reach 64\% ($T_e$) and 7\% ($G_{ii}$) of the top
 published contours, drain-localized and correctly structured ($T_e$ region much broader than
@@ -769,12 +778,13 @@ given for each of Liang's Figs.~2--8 (\S\ref{sec:compare}, Tables~\ref{tab:f2}--
 bottleneck.
 \item \textbf{$G_{ii}$ fixed-point convergence (Rev.~5):} Rev.~5's firm result is a
 \emph{convergence-of-the-nonlinear-loop} statement --- at the Anderson fixed point $G_{ii,\max}$
-\emph{plateaus} on each mesh ($8.1/2.2/1.5\times10^{26}$ over $40/60/80$), where damped Picard left it
+settles to a residual-floor last-iterate value on each mesh ($8.1/2.2/1.5\times10^{26}$ over
+$40/60/80$; last-4 spreads up to $10.9\%$, \emph{not} Rev.~6 observable plateaus), where damped Picard left it
 in free-fall, and the earlier ``matches'' ($1.37\times10^{27}$; 27\%/58\% fractions) are exposed as
 under-converged-loop artefacts (Table~\ref{tab:giimat} entries are Picard snapshots). What Rev.~5 did
 \emph{not} establish --- and what Rev.~5 wrongly asserted --- is the attribution of the absolute
 $G_{ii}$ deficit: its ``$\sim$15$\times$ below Liang, a model gap not a numerical one'' is
-\emph{superseded} by Rev.~6 (next bullet), which shows the spatial error is unbounded and the
+\emph{superseded} by Rev.~6 (next bullet), which shows no spatial-error bound is established and the
 numerical/model split cannot be assigned from the tested refinements.
 \item \textbf{Spatial convergence of $G_{ii}$ (the headline of Rev.~6, \S\ref{sec:spatial}):} a
 \emph{controlled} self-similar trio $71{\times}58/100{\times}70/141{\times}85$ (fixed grading law,
@@ -802,7 +812,7 @@ controlled family (fixed $y$-mesh, drain-$x$ refinement) or a finite-surface-slo
 (d) $\eps_{max}$/coupled-$\Delta H$ sensitivity; (e) a fully self-consistent (not one-way) SHE-moment
 I-V; (f) explicit surface-roughness / -acoustic / impurity operators replacing the lumped $\tau_1$ ---
 important candidate sources of the order-$10^{2}$ $G_{ii}$ deficit vs Liang (not established as its
-origin, since the spatial error is unbounded).
+origin, since no spatial-error bound is established by this study).
 \end{itemize}
 
 \appendix
@@ -883,12 +893,26 @@ tolerances, git provenance) and hard-failing if a node is not sanctioned, if $r_
 $\sqrt2$, or if a converged $\phi$ leaves the common span. \texttt{solve\_coupled} gained
 \texttt{phi\_init}/\texttt{p\_init} warm-start and \texttt{phi\_span\_H\_override}; $G_{\mathrm{tot}}$
 is tracked per outer iteration from the same $G_{ii}$ field as $G_{ii,\max}$ with nodal
-control-volume weights. Run (sequentially): \texttt{python coupled\_drain\_richardson.py 71 58 80
-[warm.npz]} (and \texttt{100 70}, \texttt{141 85}); each saves \texttt{she2d\_richardson\_NxxNy.npz}
-with the full diagnostic vector (last-4 $G_{ii,\max}$/$G_{\mathrm{tot}}$/$R_\phi$, $dx/dy$, $H$-hash,
-provenance). Then \texttt{python richardson\_fit.py 71x58.npz 100x70.npz 141x85.npz} gates on
-identical signatures + $H$-hash, computes the reversal ratio $S_{\mathrm{rev}}$, and reports (or
-suppresses) the extrapolation. The three converged nodes and their logs are archived under
+control-volume weights. Each invocation \texttt{python coupled\_drain\_richardson.py Nx Ny
+maxouter [warm.npz]} runs \texttt{maxouter} outer iterations and saves
+\texttt{she2d\_richardson\_NxxNy.npz} with the full diagnostic vector (last-4
+$G_{ii,\max}$/$G_{\mathrm{tot}}$/$R_\phi$, $dx/dy$, $H$-hash, provenance).
+
+\emph{Exact reproduction procedure (this is essential --- a fixed budget does not converge these
+nodes).} The archival nodes were produced by ``continue unchanged until the plateau gate passes'':
+run a node, then \emph{continue} it warm-started from its \emph{own} saved npz under byte-identical
+settings until $R_\phi$ is at its floor and the last-4 relative spreads are $\lesssim3\times10^{-4}$
+in \emph{both} $G_{ii}$ and $G_{\mathrm{tot}}$. Nodes are warm-start chained
+($100\times70$ from the converged $71\times58$, $141\times85$ from the converged $100\times70$). This
+procedure is scripted end-to-end: \texttt{python run\_richardson\_trio.py} (which drives the three
+nodes in 60-iteration chunks, checking the gate after each and continuing as needed) followed by
+\texttt{python richardson\_fit.py data/she2d\_richardson\_\{71x58,100x70,141x85\}.npz}; the whole
+pipeline from scratch is \texttt{run\_from\_scratch.bat}. For the record, the archival nodes reached
+the gate at $\approx$130/150/140 total outer iterations for $71\times58$/$100\times70$/$141\times85$
+respectively (the initial 60-iteration values were biased transients, shifting up to $+18\%$ on
+continuation --- see the runtime note). \texttt{richardson\_fit.py} gates on identical signatures
+$+$ $H$-hash, computes the reversal ratio $S_{\mathrm{rev}}$, and reports (or suppresses) the
+extrapolation. The three converged nodes and their logs are archived under
 \texttt{data/she2d\_richardson\_*.npz} and \texttt{data/richardson\_*.log}.
 
 \paragraph{Runtime and a plateau-gate note.} On a single workstation the essential end-to-end rerun
@@ -944,8 +968,13 @@ $O(10^{-4})$) is \emph{significantly non-monotone} ($2.990/2.135/2.413\times10^{
 $S_{\mathrm{rev}}\approx874$), so no continuum $G_{ii}$ can be inferred from this trio and spatial
 convergence is not demonstrated. A prominent secondary finding is that the earlier 60-iteration node
 values were materially biased fixed-point transients (up to $+18\%$), motivating an
-observable-plateau validity gate. This work was prepared on the local
-\texttt{claude/init-e9d010} working tree based on \texttt{676e74f}; it has no external audit round yet.
+observable-plateau validity gate. \emph{Threshold provenance:} an interim Rev.~5.1 draft stated the
+observable-plateau gate as ``sub-$10^{-4}$''; on review it was standardized to the final operational
+form $O(10^{-4})$, $\lesssim3\times10^{-4}$, applied identically to all three nodes and to both
+$G_{ii}$ and $G_{\mathrm{tot}}$ (this admits $G_2$'s $2.9\times10^{-4}$ $G_{ii}$ spread). The verdict
+is insensitive to this distinction: $S_{\mathrm{rev}}\approx874$ exceeds any plateau-band choice in
+this range by orders of magnitude. This work was prepared on the local \texttt{claude/init-e9d010}
+working tree based on \texttt{676e74f}; it has no external audit round yet.
 
 \begin{thebibliography}{9}\small
 \bibitem{liang} W.~Liang, N.~Goldsman, I.~Mayergoyz, P.~J.~Oldiges, \emph{IEEE Trans.\ Electron

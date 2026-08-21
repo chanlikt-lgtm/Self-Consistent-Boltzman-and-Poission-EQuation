@@ -45,8 +45,11 @@ TRIO = [
     (141, 85, "she2d_richardson_100x70.npz"),
 ]
 
-_logf = open(LOG_PATH, "a", buffering=1, encoding="utf-8")
+_logf = None
 def log(msg, level="INFO"):
+    global _logf
+    if _logf is None:                       # open lazily, so importing the module has no side-effect
+        _logf = open(LOG_PATH, "a", buffering=1, encoding="utf-8")
     line = "%s [%s] %s" % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), level, msg)
     print(line, flush=True)
     _logf.write(line + "\n")

@@ -1,0 +1,52 @@
+E:\claude\CEDA\liang1997_she_bte_mosfet_repro\src\coupled_drain_refine.py:10: SyntaxWarning: invalid escape sequence '\i'
+  last-4 G_ii plateau spread; and the INTEGRATED generation G_tot = \int G_ii dA (less sensitive to
+drain-graded mesh: Nx=100 Ny=70  min dx=0.0027 um @ drain  (uniform 80x66 dx=0.0101)  min dy=0.00034 um
+  total cells=7000 (uniform 80x66=5280); drain dx is 3.8x finer than uniform 80x66
+outer  0  dphi=5.179e-02 V  NH=589  nmax=2.285e+20  pmax=1.575e+16  Temax=3574 K  Gmax=2.896e+26  Id=5.643e-04 A/um  bal=2.51e-04  (199.6s)
+outer  1  dphi=4.222e-02 V  NH=589  nmax=1.610e+20  pmax=1.169e+16  Temax=3625 K  Gmax=2.575e+26  Id=4.182e-04 A/um  bal=-1.01e-05  (219.8s)
+outer  2  dphi=3.661e-02 V  NH=589  nmax=1.057e+20  pmax=1.000e+16  Temax=3707 K  Gmax=2.076e+26  Id=2.431e-04 A/um  bal=-3.06e-04  (176.0s)
+outer  3  dphi=3.242e-02 V  NH=589  nmax=1.034e+20  pmax=1.000e+16  Temax=3702 K  Gmax=2.151e+26  Id=2.553e-04 A/um  bal=6.24e-04  (190.5s)
+outer  4  dphi=2.505e-02 V  NH=589  nmax=1.052e+20  pmax=1.000e+16  Temax=3688 K  Gmax=2.084e+26  Id=2.486e-04 A/um  bal=4.83e-05  (198.8s)
+outer  5  dphi=1.897e-02 V  NH=589  nmax=1.056e+20  pmax=1.000e+16  Temax=3654 K  Gmax=1.980e+26  Id=2.593e-04 A/um  bal=-2.90e-04  (188.5s)
+outer  6  dphi=1.548e-02 V  NH=589  nmax=1.102e+20  pmax=1.000e+16  Temax=3617 K  Gmax=1.831e+26  Id=2.657e-04 A/um  bal=-2.40e-04  (199.7s)
+outer  7  dphi=1.366e-02 V  NH=589  nmax=1.049e+20  pmax=1.000e+16  Temax=3580 K  Gmax=1.640e+26  Id=2.716e-04 A/um  bal=-5.10e-04  (202.4s)
+outer  8  dphi=1.236e-02 V  NH=589  nmax=1.056e+20  pmax=1.000e+16  Temax=3542 K  Gmax=1.455e+26  Id=2.761e-04 A/um  bal=-4.20e-04  (197.8s)
+outer  9  dphi=1.131e-02 V  NH=589  nmax=1.050e+20  pmax=1.000e+16  Temax=3508 K  Gmax=1.276e+26  Id=2.794e-04 A/um  bal=3.77e-05  (194.3s)
+outer 10  dphi=1.039e-02 V  NH=589  nmax=1.055e+20  pmax=1.000e+16  Temax=3476 K  Gmax=1.121e+26  Id=2.820e-04 A/um  bal=1.30e-04  (195.0s)
+outer 11  dphi=9.483e-03 V  NH=589  nmax=1.042e+20  pmax=1.000e+16  Temax=3447 K  Gmax=1.001e+26  Id=2.841e-04 A/um  bal=-5.18e-05  (190.2s)
+outer 12  dphi=8.674e-03 V  NH=589  nmax=1.040e+20  pmax=1.000e+16  Temax=3420 K  Gmax=8.977e+25  Id=2.855e-04 A/um  bal=-1.02e-05  (189.1s)
+outer 13  dphi=7.915e-03 V  NH=589  nmax=1.038e+20  pmax=1.000e+16  Temax=3396 K  Gmax=8.102e+25  Id=2.868e-04 A/um  bal=-1.43e-04  (190.6s)
+outer 14  dphi=7.227e-03 V  NH=589  nmax=1.041e+20  pmax=1.000e+16  Temax=3371 K  Gmax=7.338e+25  Id=2.875e-04 A/um  bal=-8.39e-05  (186.6s)
+outer 15  dphi=6.599e-03 V  NH=589  nmax=1.059e+20  pmax=1.000e+16  Temax=3351 K  Gmax=6.688e+25  Id=2.881e-04 A/um  bal=-9.61e-05  (193.2s)
+outer 16  dphi=5.953e-03 V  NH=589  nmax=1.072e+20  pmax=1.000e+16  Temax=3329 K  Gmax=6.086e+25  Id=2.882e-04 A/um  bal=-7.93e-05  (194.7s)
+outer 17  dphi=5.432e-03 V  NH=589  nmax=1.080e+20  pmax=1.000e+16  Temax=3309 K  Gmax=5.522e+25  Id=2.879e-04 A/um  bal=-3.44e-05  (194.6s)
+outer 18  dphi=4.939e-03 V  NH=589  nmax=1.072e+20  pmax=1.000e+16  Temax=3291 K  Gmax=5.042e+25  Id=2.878e-04 A/um  bal=-1.47e-04  (200.4s)
+outer 19  dphi=4.568e-03 V  NH=589  nmax=1.076e+20  pmax=1.000e+16  Temax=3270 K  Gmax=4.579e+25  Id=2.872e-04 A/um  bal=-4.39e-04  (183.5s)
+outer 20  dphi=4.333e-03 V  NH=589  nmax=1.085e+20  pmax=1.000e+16  Temax=3253 K  Gmax=4.150e+25  Id=2.857e-04 A/um  bal=-1.62e-04  (180.5s)
+outer 21  dphi=4.080e-03 V  NH=589  nmax=1.087e+20  pmax=1.000e+16  Temax=3235 K  Gmax=3.799e+25  Id=2.851e-04 A/um  bal=-1.33e-04  (178.8s)
+outer 22  dphi=3.941e-03 V  NH=589  nmax=1.084e+20  pmax=1.000e+16  Temax=3219 K  Gmax=3.441e+25  Id=2.835e-04 A/um  bal=-1.42e-04  (178.5s)
+outer 23  dphi=3.807e-03 V  NH=589  nmax=1.106e+20  pmax=1.000e+16  Temax=3205 K  Gmax=3.171e+25  Id=2.831e-04 A/um  bal=-8.12e-05  (176.0s)
+outer 24  dphi=3.528e-03 V  NH=589  nmax=1.117e+20  pmax=1.000e+16  Temax=3191 K  Gmax=2.950e+25  Id=2.830e-04 A/um  bal=-1.09e-04  (175.5s)
+outer 25  dphi=3.485e-03 V  NH=589  nmax=1.134e+20  pmax=1.000e+16  Temax=3192 K  Gmax=2.866e+25  Id=2.821e-04 A/um  bal=-1.14e-04  (176.3s)
+outer 26  dphi=3.327e-03 V  NH=589  nmax=1.082e+20  pmax=1.000e+16  Temax=3182 K  Gmax=2.660e+25  Id=2.811e-04 A/um  bal=-2.53e-05  (171.4s)
+outer 27  dphi=3.213e-03 V  NH=589  nmax=1.073e+20  pmax=1.000e+16  Temax=3173 K  Gmax=2.492e+25  Id=2.805e-04 A/um  bal=-1.33e-04  (172.4s)
+outer 28  dphi=3.060e-03 V  NH=589  nmax=1.072e+20  pmax=1.000e+16  Temax=3164 K  Gmax=2.342e+25  Id=2.799e-04 A/um  bal=-1.45e-04  (169.9s)
+outer 29  dphi=3.173e-03 V  NH=589  nmax=1.074e+20  pmax=1.000e+16  Temax=3156 K  Gmax=2.204e+25  Id=2.795e-04 A/um  bal=-1.11e-04  (169.1s)
+outer 30  dphi=3.184e-03 V  NH=589  nmax=1.039e+20  pmax=1.000e+16  Temax=3148 K  Gmax=2.097e+25  Id=2.792e-04 A/um  bal=-2.24e-04  (167.9s)
+outer 31  dphi=3.455e-03 V  NH=589  nmax=1.098e+20  pmax=1.000e+16  Temax=3144 K  Gmax=2.023e+25  Id=2.798e-04 A/um  bal=-2.13e-04  (169.0s)
+outer 32  dphi=2.772e-03 V  NH=589  nmax=1.127e+20  pmax=1.000e+16  Temax=3149 K  Gmax=2.009e+25  Id=2.812e-04 A/um  bal=-1.90e-04  (167.0s)
+outer 33  dphi=2.765e-03 V  NH=589  nmax=1.116e+20  pmax=1.000e+16  Temax=3149 K  Gmax=1.989e+25  Id=2.807e-04 A/um  bal=2.55e-05  (177.3s)
+outer 34  dphi=2.765e-03 V  NH=589  nmax=1.098e+20  pmax=1.000e+16  Temax=3148 K  Gmax=2.046e+25  Id=2.809e-04 A/um  bal=-1.93e-04  (172.0s)
+outer 35  dphi=2.547e-03 V  NH=589  nmax=1.092e+20  pmax=1.000e+16  Temax=3144 K  Gmax=1.960e+25  Id=2.812e-04 A/um  bal=-1.26e-04  (178.3s)
+outer 36  dphi=2.662e-03 V  NH=589  nmax=1.077e+20  pmax=1.000e+16  Temax=3136 K  Gmax=1.872e+25  Id=2.812e-04 A/um  bal=-1.24e-04  (179.1s)
+outer 37  dphi=3.488e-03 V  NH=589  nmax=1.080e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.796e+25  Id=2.814e-04 A/um  bal=-9.73e-05  (180.1s)
+outer 38  dphi=3.228e-03 V  NH=589  nmax=1.081e+20  pmax=1.000e+16  Temax=3124 K  Gmax=1.734e+25  Id=2.818e-04 A/um  bal=-1.91e-04  (167.6s)
+outer 39  dphi=3.282e-03 V  NH=589  nmax=1.078e+20  pmax=1.000e+16  Temax=3119 K  Gmax=1.678e+25  Id=2.822e-04 A/um  bal=-1.69e-04  (167.8s)
+
+=== DRAIN-REFINED 4th point (frozen H, Anderson) ===
+Gii_max = 1.678e+25 at (x=0.589, y=0.000) um
+Te_max  = 3119 K   n_max = 1.078e+20
+final residual = 3.282e-03 V   last-4 Gii plateau spread = 1.09e-01
+G_tot = int Gii dA = 4.7916e+13 cm^-1 s^-1  (integrated generation)
+vs uniform 80x66 Gii_max=1.47e26:  Delta_mesh = 776.0%
+saved data/she2d_coupled_anderson_drainrefined.npz

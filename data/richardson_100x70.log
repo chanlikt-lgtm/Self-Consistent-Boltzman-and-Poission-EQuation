@@ -1,0 +1,90 @@
+pre-solve ratio check  r_x=['1.4144', '1.4144']  r_y(surf)=['1.4104', '1.4249']  r_y(@0.020um)=['1.1674', '1.2229']  (target sqrt2=1.4142, tol 0.05)
+WARNING: avalanche-depth dy ratios ['1.1674', '1.2229'] deviate from sqrt2 -- single-h G_tot extrapolation is surface-isotropic only; treat depth-sensitive G_tot fit with caution.
+==============================================================================
+RICHARDSON NODE MANIFEST (must be identical across the sequence except Nx,Ny,dx,dy)
+  mesh law     : ratio=6.000  W=0.090 um  X_C=0.600 um   (x graded, y = Ly*s^1.8)
+  grid         : Nx=100 Ny=70  (x-intervals=99, y-intervals=69, cells=7000)
+  measured     : drain dx=0.002689 um  surface dy=0.000343 um  dy@0.020um=0.003738 um  h_rep=0.000960 um
+  energy grid  : dH=0.0125 eV  eps_max=3.020 eV  COMMON frozen H-span=(-0.6, 3.65) V (identical all grids)
+  SHE solve    : she_tol=1.0e-08
+  Anderson     : depth=6  beta=0.50  step_cap=5.0  restart=6
+  outer loop   : max_outer=60   tol_phi=1.0e-04
+  stopping     : max|G(phi)-phi| over free DOFs < tol_phi (Anderson true fixed-point residual)
+  last-4 spread: (max-min)/mean of the last 4 outer-iteration Gii_max values
+  init policy  : DD Gummel warm-up, then override with warm-start npz
+  warm source  : she2d_coupled_anderson_drainrefined_cont.npz
+  provenance   : git 676e74f (dirty)
+  bias         : Vg=Vd=3 V  Vs=Vb=0   Phi_gate=-0.740 V
+==============================================================================
+warm-started from she2d_coupled_anderson_drainrefined_cont.npz (interpolated phi,p)
+outer  0  dphi=2.763e-03 V  NH=591  nmax=1.012e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.763e+25  Id=2.864e-04 A/um  bal=-1.37e-04  (180.8s)
+outer  1  dphi=1.162e-03 V  NH=591  nmax=1.011e+20  pmax=1.000e+16  Temax=3131 K  Gmax=1.812e+25  Id=2.941e-04 A/um  bal=-1.91e-04  (180.0s)
+outer  2  dphi=9.695e-04 V  NH=591  nmax=1.011e+20  pmax=1.000e+16  Temax=3131 K  Gmax=1.816e+25  Id=2.944e-04 A/um  bal=-2.21e-04  (179.9s)
+outer  3  dphi=1.171e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3131 K  Gmax=1.819e+25  Id=2.946e-04 A/um  bal=-2.08e-04  (177.5s)
+outer  4  dphi=6.915e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3131 K  Gmax=1.824e+25  Id=2.951e-04 A/um  bal=-2.55e-04  (175.7s)
+outer  5  dphi=6.968e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3131 K  Gmax=1.826e+25  Id=2.951e-04 A/um  bal=-2.42e-04  (183.5s)
+outer  6  dphi=7.001e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3132 K  Gmax=1.828e+25  Id=2.953e-04 A/um  bal=-2.42e-04  (180.0s)
+outer  7  dphi=7.019e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3132 K  Gmax=1.830e+25  Id=2.953e-04 A/um  bal=-2.59e-04  (173.1s)
+outer  8  dphi=1.173e-03 V  NH=591  nmax=1.011e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.811e+25  Id=2.942e-04 A/um  bal=-2.73e-04  (174.6s)
+outer  9  dphi=9.567e-04 V  NH=591  nmax=1.011e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.808e+25  Id=2.940e-04 A/um  bal=-2.48e-04  (173.3s)
+outer 10  dphi=2.002e-03 V  NH=591  nmax=1.011e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.806e+25  Id=2.941e-04 A/um  bal=-2.22e-04  (173.5s)
+outer 11  dphi=1.434e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.812e+25  Id=2.946e-04 A/um  bal=-2.35e-04  (179.3s)
+outer 12  dphi=1.208e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.814e+25  Id=2.948e-04 A/um  bal=-2.52e-04  (182.6s)
+outer 13  dphi=1.498e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.811e+25  Id=2.945e-04 A/um  bal=-2.64e-04  (192.0s)
+outer 14  dphi=1.570e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.809e+25  Id=2.944e-04 A/um  bal=-2.63e-04  (192.8s)
+outer 15  dphi=1.601e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.807e+25  Id=2.943e-04 A/um  bal=-2.14e-04  (185.2s)
+outer 16  dphi=1.602e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.807e+25  Id=2.943e-04 A/um  bal=-2.14e-04  (182.5s)
+outer 17  dphi=1.121e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.813e+25  Id=2.948e-04 A/um  bal=-2.36e-04  (182.1s)
+outer 18  dphi=1.030e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.814e+25  Id=2.949e-04 A/um  bal=-2.32e-04  (180.8s)
+outer 19  dphi=1.262e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.810e+25  Id=2.946e-04 A/um  bal=-2.28e-04  (182.1s)
+outer 20  dphi=1.421e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.806e+25  Id=2.943e-04 A/um  bal=-1.67e-04  (183.4s)
+outer 21  dphi=1.471e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.802e+25  Id=2.941e-04 A/um  bal=-1.75e-04  (182.5s)
+outer 22  dphi=1.341e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.796e+25  Id=2.940e-04 A/um  bal=-1.78e-04  (189.9s)
+outer 23  dphi=8.914e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.802e+25  Id=2.946e-04 A/um  bal=-1.73e-04  (192.3s)
+outer 24  dphi=8.670e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.802e+25  Id=2.946e-04 A/um  bal=-1.67e-04  (190.5s)
+outer 25  dphi=1.068e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.799e+25  Id=2.944e-04 A/um  bal=-1.83e-04  (182.8s)
+outer 26  dphi=1.841e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.787e+25  Id=2.935e-04 A/um  bal=-1.38e-04  (181.9s)
+outer 27  dphi=1.794e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.783e+25  Id=2.933e-04 A/um  bal=-1.44e-04  (182.6s)
+outer 28  dphi=2.130e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.787e+25  Id=2.933e-04 A/um  bal=-1.28e-04  (184.3s)
+outer 29  dphi=1.047e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.791e+25  Id=2.939e-04 A/um  bal=-1.59e-04  (182.5s)
+outer 30  dphi=9.076e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.794e+25  Id=2.943e-04 A/um  bal=-1.79e-04  (182.9s)
+outer 31  dphi=1.445e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.788e+25  Id=2.936e-04 A/um  bal=-1.36e-04  (188.4s)
+outer 32  dphi=1.444e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.781e+25  Id=2.930e-04 A/um  bal=-1.44e-04  (192.8s)
+outer 33  dphi=1.395e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.779e+25  Id=2.929e-04 A/um  bal=-1.41e-04  (192.5s)
+outer 34  dphi=1.891e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.796e+25  Id=2.936e-04 A/um  bal=-1.89e-04  (183.9s)
+outer 35  dphi=1.093e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.802e+25  Id=2.942e-04 A/um  bal=-1.72e-04  (182.5s)
+outer 36  dphi=9.680e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.805e+25  Id=2.944e-04 A/um  bal=-1.71e-04  (179.4s)
+outer 37  dphi=1.135e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.801e+25  Id=2.941e-04 A/um  bal=-1.73e-04  (175.3s)
+outer 38  dphi=1.347e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.795e+25  Id=2.936e-04 A/um  bal=-1.83e-04  (175.4s)
+outer 39  dphi=1.338e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.794e+25  Id=2.936e-04 A/um  bal=-1.99e-04  (175.8s)
+outer 40  dphi=1.449e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.801e+25  Id=2.938e-04 A/um  bal=-1.82e-04  (175.1s)
+outer 41  dphi=1.022e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.807e+25  Id=2.944e-04 A/um  bal=-1.94e-04  (175.5s)
+outer 42  dphi=9.521e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.808e+25  Id=2.945e-04 A/um  bal=-2.04e-04  (175.5s)
+outer 43  dphi=1.213e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.805e+25  Id=2.943e-04 A/um  bal=-1.79e-04  (175.5s)
+outer 44  dphi=1.189e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.802e+25  Id=2.940e-04 A/um  bal=-1.78e-04  (174.8s)
+outer 45  dphi=1.123e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.800e+25  Id=2.939e-04 A/um  bal=-1.66e-04  (177.2s)
+outer 46  dphi=1.339e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.794e+25  Id=2.937e-04 A/um  bal=-1.84e-04  (175.5s)
+outer 47  dphi=9.249e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.800e+25  Id=2.943e-04 A/um  bal=-1.82e-04  (176.6s)
+outer 48  dphi=9.223e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.800e+25  Id=2.943e-04 A/um  bal=-1.82e-04  (175.3s)
+outer 49  dphi=1.105e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.799e+25  Id=2.942e-04 A/um  bal=-1.84e-04  (176.3s)
+outer 50  dphi=3.009e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.788e+25  Id=2.933e-04 A/um  bal=-1.32e-04  (176.5s)
+outer 51  dphi=2.734e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.791e+25  Id=2.934e-04 A/um  bal=-1.74e-04  (176.9s)
+outer 52  dphi=2.217e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.795e+25  Id=2.936e-04 A/um  bal=-1.74e-04  (174.4s)
+outer 53  dphi=9.887e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.801e+25  Id=2.942e-04 A/um  bal=-1.65e-04  (176.4s)
+outer 54  dphi=9.716e-04 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.801e+25  Id=2.943e-04 A/um  bal=-1.65e-04  (176.8s)
+outer 55  dphi=1.009e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.800e+25  Id=2.942e-04 A/um  bal=-1.66e-04  (176.0s)
+outer 56  dphi=1.757e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.791e+25  Id=2.934e-04 A/um  bal=-1.85e-04  (177.6s)
+outer 57  dphi=1.509e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3129 K  Gmax=1.790e+25  Id=2.934e-04 A/um  bal=-1.51e-04  (177.5s)
+outer 58  dphi=3.057e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.800e+25  Id=2.936e-04 A/um  bal=-1.85e-04  (185.8s)
+outer 59  dphi=1.038e-03 V  NH=591  nmax=1.010e+20  pmax=1.000e+16  Temax=3130 K  Gmax=1.806e+25  Id=2.943e-04 A/um  bal=-1.82e-04  (192.4s)
+
+realized H-grid: NH=591  H-domain=[-3.7000, 3.6750] eV  H-array sha1=b4319bb03303  (COMMON frozen grid; must match across trio)
+=== self-similar node Nx=100 Ny=70  (converged in 60 outer iters) ===
+drain dx=0.002689 um  surface dy=0.000343 um  dy@0.020um=0.003738 um  h_rep=0.000960 um
+Gii_max = 1.8063e+25 at (x=0.5894, y=0.0000) um   avalanche y-FWHM=0.0025 um (local dy=0.001283)
+G_tot   = 5.0649e+13 cm^-1 s^-1
+Te_max  = 3130 K   n_max = 1.010e+20
+R_phi (final fixed-point residual) = 1.038e-03 V   last-4 spread: Gii=9.00e-03  Gtot=1.15e-02
+last 4 Gii_max: 1.7914e+25 1.7901e+25 1.7998e+25 1.8063e+25   (mean 1.7969e+25)
+last 4 G_tot  : 5.0119e+13 5.0072e+13 5.0443e+13 5.0649e+13   (mean 5.0320e+13)
+saved data/she2d_richardson_100x70.npz

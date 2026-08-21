@@ -26,7 +26,9 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                   dH_eV=0.0125, max_outer=12, phi_damp=0.25,
                   tol_phi=2e-3, she_tol=1e-8, Phi_gate=0.30, verbose=True,
                   accel="picard", aa_depth=6, aa_beta=0.5, freeze_H=False,
-                  aa_restart=6, aa_rcond=1e-8, aa_step_cap=5.0):
+                  aa_restart=6, aa_rcond=1e-8, aa_step_cap=5.0,
+                  x_mesh=None, y_mesh=None,
+                  phi_init=None, p_init=None, phi_span_H_override=None):
     """Coupled SHE<->Poisson<->hole outer iteration.
 
     accel="picard"   : damped Picard, phi <- phi + phi_damp*(G(phi)-phi)  (default; unchanged).
@@ -36,7 +38,13 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                        are on the raw residual in this mode.
     """
     pdev = DeviceParams()
-    x, y, X, Y = make_mesh(pdev, Nx=Nx, Ny=Ny)
+    if x_mesh is not None:
+        # Custom (e.g. drain-graded) tensor mesh: overrides make_mesh. The FV solver is
+        # non-uniform-aware, so a graded x concentrates resolution where G_ii lives.
+        x = np.asarray(x_mesh, dtype=float); y = np.asarray(y_mesh, dtype=float)
+        X, Y = np.meshgrid(x, y); Nx, Ny = len(x), len(y)
+    else:
+        x, y, X, Y = make_mesh(pdev, Nx=Nx, Ny=Ny)
     Nd, Na, Nnet = build_doping(pdev, X, Y)
     ps = Poisson2D(x, y, Nnet, pdev, Phi_gate=Phi_gate)
     dd = DDSolver(ps)
@@ -44,6 +52,19 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
     # Drift-diffusion gives a robust initial electrostatic/hole state only.
     phi, n_dd, p_h = dd.solve(Vs=Vs, Vd=Vd, Vg=Vg, Vb=Vb,
                               max_gummel=90, tol=1e-5, verbose=False)
+    # Warm-start: override the DD initial guess with a previously converged (or near-converged)
+    # coupled state on the SAME mesh, so a continuation run finishes the slow plateau drift instead
+    # of retracing the whole trajectory. Contacts stay Dirichlet (set inside ps.solve each step).
+    if phi_init is not None:
+        phi = np.asarray(phi_init, dtype=float).copy()
+    if p_init is not None:
+        p_h = np.asarray(p_init, dtype=float).copy()
+
+    # Finite-volume cell-area weights (um^2 -> cm^2) for the integrated generation G_tot = int Gii dA,
+    # so G_tot is tracked every outer iteration (not just post-hoc) and its plateau can be audited.
+    _dxc = np.zeros(len(x)); _dxc[1:-1] = 0.5 * (x[2:] - x[:-2]); _dxc[0] = 0.5 * (x[1] - x[0]); _dxc[-1] = 0.5 * (x[-1] - x[-2])
+    _dyc = np.zeros(len(y)); _dyc[1:-1] = 0.5 * (y[2:] - y[:-2]); _dyc[0] = 0.5 * (y[1] - y[0]); _dyc[-1] = 0.5 * (y[-1] - y[-2])
+    _area_cm2 = np.outer(_dyc, _dxc) * 1e-8
 
     history = []
     she = None
@@ -52,7 +73,24 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
     best_raw, stall = np.inf, 0     # stagnation tracking for Anderson restart
     # Freeze the H-grid across the outer loop: a fixed span bounding the loop's phi range keeps
     # NH constant, so the tail-sensitive Gii moment is not re-discretized each iteration.
-    phi_span_H = (float(phi.min()) - 0.25, float(phi.max()) + 0.05) if freeze_H else None
+    # phi_span_H_override lets a caller impose ONE COMMON span across several runs (e.g. a spatial
+    # Richardson sequence), so the frozen H-grid is byte-identical across meshes and no energy-
+    # discretization change is smuggled into a spatial-only study. The caller must ensure the span
+    # bounds every run's phi range (checked below).
+    if phi_span_H_override is not None:
+        phi_span_H = (float(phi_span_H_override[0]), float(phi_span_H_override[1]))
+        # HARD FAIL: if the imposed common span does not bound this mesh's phi, the "common" energy
+        # domain no longer safely covers -q*phi..eps_max-q*phi for this solution. Abort and require a
+        # wider common span for ALL grids -- do NOT silently proceed on an under-covering H-grid.
+        if phi.min() < phi_span_H[0] or phi.max() > phi_span_H[1]:
+            raise ValueError(
+                "phi range [%.4f, %.4f] V leaves imposed common H-span %s V -- widen COMMON_PHI_SPAN "
+                "for ALL grids and rerun the whole sequence (energy domain must bound every mesh)."
+                % (phi.min(), phi.max(), phi_span_H))
+    elif freeze_H:
+        phi_span_H = (float(phi.min()) - 0.25, float(phi.max()) + 0.05)
+    else:
+        phi_span_H = None
     conv = None                     # last in-loop SHE state (for internally-consistent return)
     for it in range(max_outer):
         t0 = time.time()
@@ -133,6 +171,7 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
             "p_max_cm3": float(p_h.max()),
             "Te_max_K": float(Te.max()),
             "Gii_max_cm3s": float(Gii.max()),
+            "G_tot_cm1s": float(np.sum(Gii * _area_cm2)),
             "relative_number_balance": float(cons["relative_number_balance"]),
             "drain_current_A_per_um": float(cons["drain_current_A_per_um"]),
             "seconds": float(time.time() - t0),

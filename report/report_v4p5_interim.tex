@@ -1,0 +1,282 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\newcommand{\Gii}{G_{ii,\max}}
+\newcommand{\Gtot}{G_{\mathrm{tot}}}
+\newcommand{\honest}[1]{\par\medskip\noindent{\setlength{\fboxsep}{7pt}%
+\colorbox{yellow!22}{\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}%
+\small\textbf{Honesty note.} #1\end{minipage}}}\par\medskip}
+\newcommand{\status}[1]{\par\medskip\noindent{\setlength{\fboxsep}{7pt}%
+\colorbox{blue!8}{\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}%
+\small\textbf{Live status.} #1\end{minipage}}}\par\medskip}
+
+\title{\textbf{Note (Revision~5.1):\\
+Controlled Spatial-Convergence Study of the Drain-Localized\\
+Impact-Ionization Rate in the SHE--Boltzmann MOSFET Reproduction}\\[5pt]
+\large\textit{Resolved --- the controlled trio is genuinely non-monotone; Richardson suppressed}}
+\author{Reproduction study, follow-up to Revision~5 \quad\small(code commit \texttt{676e74f}+dirty; Python 3.13.15, NumPy 2.5.1)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Revision~5 established that Anderson acceleration converges the coupled
+SHE$\leftrightarrow$Poisson$\leftrightarrow$hole fixed point on each fixed mesh, but that the
+tail-sensitive impact-ionization rate $\Gii$ remained \emph{spatially} mesh-dependent. This interim
+note documents the controlled spatial-convergence campaign that followed, now complete. Five results
+are firm: (i) the earlier uniform $40\times34\to60\times50\to80\times66$ sequence was itself
+\emph{under-resolving} the drain avalanche, so its values were inflated; (ii) a single further
+drain-refined mesh cannot settle the question because refining resolution and changing the drain
+grading law are confounded; (iii) a properly controlled self-similar trio
+$71\times58\to100\times70\to141\times85$ --- fixed grading law, byte-identical frozen energy grid
+(SHA1-verified), $\sqrt2$ interval refinement --- is the first sequence capable of answering grid
+stability cleanly; (iv) the nominal 60-outer-iteration budget \emph{materially} truncated the
+nonlinear settling on the finer meshes, so node values must be accepted on an observable-plateau
+gate, not an iteration count; and (v) with all three nodes equalized to $\sim\!10^{-4}$ relative
+plateau quality, the controlled trio is \textbf{genuinely non-monotone}
+($2.990\to2.135\to2.413\times10^{25}$~cm$^{-3}$s$^{-1}$): the down-then-up reversal exceeds the
+combined plateau band by a factor $\sim\!870$, so \emph{no} Richardson continuum extrapolation is
+admissible. The drain-localized $\Gii$ is therefore \emph{not} in an asymptotic spatial-convergence
+regime along this refinement path; the model gap to Liang's top contour remains order $10^{2}$ and is
+stated only as a not-converged tested-grid quantity.
+\end{abstract}
+
+\status{\textbf{Resolved.} All three controlled nodes are converged to comparable
+($\sim\!10^{-4}$) plateau quality. The trio is \textbf{genuinely non-monotone}; the reversal is
+numerically unambiguous ($S_{\mathrm{rev}}\approx870$), so \textbf{Richardson extrapolation is
+suppressed} and no continuum $\Gii$ is quoted from this trio.}
+
+\section{Scope and the three-way convergence distinction}
+The quantity under study is the peak impact-ionization generation rate $\Gii$ (and its
+cross-sectional integral $\Gtot=\int G_{ii}\,dA$) at the drain of the $0.35\,\mu$m LDD NMOS at
+$V_{gs}=V_{ds}=3$~V, $V_{th}=0.614$~V. Three distinct notions of ``convergence'' must be kept
+separate:
+\begin{itemize}[nosep]
+  \item \textbf{Coupling (fixed-point) convergence} --- does the nonlinear outer loop reach its
+  fixed point on a \emph{given} mesh? \emph{Resolved} in Rev.~5 by Anderson acceleration.
+  \item \textbf{Spatial (mesh) convergence} --- does the plateaued node value stop moving as the
+  real-space mesh is refined? \emph{The subject of this note.}
+  \item \textbf{Energy-grid sensitivity} --- dependence on $\Delta H$, $\epsilon_{\max}$, and the
+  frozen $H$-domain. Small ($\sim2.4\%$ one-way $\Delta H$ in Rev.~5); here energy-grid variation is
+  \emph{removed as a between-mesh confounder} by construction (one common frozen $H$-grid across all
+  meshes) --- which does not eliminate energy-discretization error itself, only its variation across
+  the trio.
+\end{itemize}
+
+\section{The uniform sequence was under-resolved}
+The uniform-mesh drain sequence used in Rev.~5 is:
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+grid & drain $dx$ ($\mu$m) & $\Gii$ (cm$^{-3}$s$^{-1}$) & $\Gtot$ (cm$^{-1}$s$^{-1}$)\\
+\midrule
+$40\times34$ & 0.020  & $8.04\times10^{26}$ & $3.10\times10^{15}$\\
+$60\times50$ & 0.013  & $2.20\times10^{26}$ & $8.27\times10^{14}$\\
+$80\times66$ & 0.0101 & $1.54\times10^{26}$ & $5.81\times10^{14}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+$\Gii$ and $\Gtot$ fall by the \emph{same} factors ($-73\%$ then $-30\%$), so the mesh dependence is
+in the total avalanche magnitude, not merely peak-cell placement: coarse grids over-populate the
+high-energy tail at the under-resolved drain hotspot. A drain-graded $100\times70$ mesh
+(drain $dx=0.0027\,\mu$m, $\sim\!3.8\times$ finer at the drain) plateaus at $\Gii=1.80\times10^{25}$
+--- roughly an order of magnitude below the ``finest uniform'' $80\times66$ --- confirming the
+uniform values were inflated by drain under-resolution.
+
+\section{Why one further mesh is not enough: a confounded fifth point}
+A second drain-refined mesh ($140\times84$, drain $dx=0.00126\,\mu$m) plateaus cleanly at
+$\Gii=2.72\times10^{25}$ --- \emph{above} the $100\times70$ value. Taken at face value this looks
+non-monotone, but that mesh changed \emph{two} things at once: it refined resolution \emph{and}
+altered the drain grading (ratio $6\!\to\!10$, width $W=0.09\!\to\!0.06\,\mu$m). The $+51\%$ change
+cannot be attributed to resolution alone.
+\honest{This is exactly why a heterogeneous refinement sequence cannot establish spatial
+convergence: resolution and node-distribution effects are entangled. Richardson extrapolation on such
+a sequence would be meaningless. The remedy is a \emph{self-similar} family in which only $N_x,N_y$
+change.}
+
+\section{The controlled self-similar trio}
+We fix the grading law (ratio $=6$, $W=0.09\,\mu$m, $X_C=0.60\,\mu$m; $y=L_y s^{1.8}$) and refine
+only resolution, choosing node counts so that the \emph{measured} drain $dx$ and surface $dy$ both
+refine by $\approx\sqrt2$:
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+node & $N_x\times N_y$ & drain $dx$ ($\mu$m) & surface $dy$ ($\mu$m) & $r_x$ & $r_{y,\mathrm{surf}}$\\
+\midrule
+$G_1$ & $71\times58$  & 0.00380 & 0.000484 & --- & ---\\
+$G_2$ & $100\times70$ & 0.00269 & 0.000343 & 1.4144 & 1.410\\
+$G_3$ & $141\times85$ & 0.00190 & 0.000241 & 1.4144 & 1.425\\
+\bottomrule
+\end{tabular}
+\end{center}
+The middle node coincides with the drain-refined $100\times70$ mesh, anchoring the sequence.
+
+\paragraph{Comparability guards (enforced by the driver, fail-fast).}
+\begin{itemize}[nosep]
+  \item \textbf{One common frozen energy grid.} A single imposed span (COMMON\_PHI\_SPAN $=[-0.60,
+  3.65]$~V, bounding the measured $\phi\in[-0.348,3.586]$~V) fixes the $H$-grid so it is
+  \emph{byte-identical} across all meshes; the realized $H$-array is SHA1-hashed
+  (\texttt{b4319bb03303} on all nodes) and the extrapolation script refuses to run if the hashes
+  differ. A converged $\phi$ leaving the span is a hard abort. This removes any smuggled
+  energy-discretization change from a spatial-only study.
+  \item \textbf{Identical solver settings} --- $\Delta H=12.5$~meV, $\epsilon_{\max}=3.02$~eV,
+  \texttt{she\_tol}$=10^{-8}$, Anderson depth 6, $\beta=0.5$, step-cap 5, restart 6, same stopping
+  rule and last-4 plateau definition --- printed as a run manifest before every solve.
+  \item \textbf{Measured spacings recorded} (drain $dx$, surface $dy$, and $dy$ at the avalanche
+  depth), with a warning that the depth spacing refines at $\approx1.2$, \emph{not} $\sqrt2$: the
+  sequence is surface-isotropic (appropriate for the surface-localized $\Gii$) but not globally
+  isotropic (relevant for the depth-sampling $\Gtot$).
+\end{itemize}
+
+\section{Methodological finding: iteration budget vs.\ plateau}
+The finest node exposed a systematic issue. At the nominal 60-iteration cap, $141\times85$ read
+$\Gii\approx2.20\times10^{25}$ with a still-drifting observable; continued under \emph{identical}
+settings it climbed and locked at $2.413\times10^{25}$ (last-4 spread $6\times10^{-5}$). Likewise
+$71\times58$ moved from $3.069$ to $2.990\times10^{25}$ on continuation.
+\honest{Equal outer-iteration counts do \emph{not} imply equal fixed-point convergence quality
+across meshes: the finer mesh needs substantially more nonlinear iterations to settle. Node values
+must therefore be accepted on an \emph{observable-plateau} gate --- $R_\phi$ at its floor
+\emph{and} last-4 spreads at the $O(10^{-4})$ level ($\lesssim3\times10^{-4}$) in both $\Gii$ and
+$\Gtot$, applied identically to all three nodes --- not on a fixed iteration budget. Operationally,
+``$R_\phi$ at its floor'' means the true fixed-point residual $\max|G(\phi)-\phi|$ has stopped
+descending and merely oscillates within a noise band set by the inner solve
+(\texttt{she\_tol}$=10^{-8}$): here $R_\phi\lesssim10^{-3}$~V with no monotone decrease over the last
+several iterations, rather than a value still trending downward. (The final $R_\phi$ never reaches the
+nominal $10^{-4}$~V \texttt{tol\_phi}; that tolerance is not the operative gate --- the observable
+plateau is.) This is itself a
+reportable numerical lesson, and it is why the coarser nodes are re-flattened before any differencing.}
+
+\section{Frozen nodes (all equalized)}
+\begin{center}
+\begin{tabular}{lcccccc}
+\toprule
+ & drain $dx$ & $\Gii$ & spread & $\Gtot$ & spread & $R_\phi$\\
+node & ($\mu$m) & (cm$^{-3}$s$^{-1}$) & ($\Gii$) & (cm$^{-1}$s$^{-1}$) & ($\Gtot$) & (V)\\
+\midrule
+$G_1$ ($71\times58$)  & 0.003803 & $2.990\times10^{25}$ & $1.5\times10^{-4}$ & $8.983\times10^{13}$ & $2.3\times10^{-4}$ & $8.7\times10^{-5}$\\
+$G_2$ ($100\times70$) & 0.002689 & $2.135\times10^{25}$ & $2.9\times10^{-4}$ & $6.027\times10^{13}$ & $2.2\times10^{-4}$ & $5.8\times10^{-4}$\\
+$G_3$ ($141\times85$) & 0.001901 & $2.413\times10^{25}$ & $6.1\times10^{-5}$ & $6.593\times10^{13}$ & $5.2\times10^{-5}$ & $1.8\times10^{-4}$\\
+\bottomrule
+\end{tabular}
+\\[3pt]
+{\footnotesize Both observables carry an independent plateau gate. $\Gtot$ plateau half-ranges are
+$u_i^{\Gtot}=\{1.02,\,0.66,\,0.17\}\times10^{10}$~cm$^{-1}$s$^{-1}$; combined
+$\sqrt{(u_2^{\Gtot})^2+(u_3^{\Gtot})^2}=6.84\times10^{9}$.}
+\end{center}
+All last-4 spreads --- in \emph{both} $\Gii$ ($6.1\times10^{-5}$, $1.5\times10^{-4}$,
+$2.9\times10^{-4}$) and $\Gtot$ ($2.3\times10^{-4}$, $2.2\times10^{-4}$, $5.2\times10^{-5}$) --- are at
+the $O(10^{-4})$ level (gate $\lesssim3\times10^{-4}$, applied identically to both observables on all
+three nodes), so every node passes the same plateau gate ($\Gii$ plateau bands $u_i\sim10^{21}$).
+The equalization was essential and consequential: on continuation $G_2$ rose from its 60-iteration
+value $1.806$ to $2.135\times10^{25}$ ($+18\%$), $G_1$ fell $3.069\to2.990$, and $G_3$ rose
+$2.20\to2.413$. Comparing the equalized fixed points --- not the truncated ones --- is what makes the
+verdict below defensible.
+
+\section{Analysis framework and applied verdict}
+The evaluation order was fixed \emph{before} $G_2$ converged, and was not changed by the outcome:
+\begin{enumerate}[nosep]
+  \item \textbf{Monotonicity with numerical significance.} With signed corrections
+  $\Delta_{12}=G_1-G_2$, $\Delta_{23}=G_2-G_3$ and per-node plateau bands $u_i$ (last-4 half-range),
+  a sign reversal is judged by the \emph{heuristic} ratio
+  \[
+    S_{\mathrm{rev}}=\frac{|\Delta_{\mathrm{reversal}}|}{\sqrt{u_i^2+u_j^2}}
+    \qquad(\text{reversal-to-plateau-uncertainty ratio, \emph{not} a statistical }\sigma).
+  \]
+  $S_{\mathrm{rev}}\gg1$: the reversal far exceeds residual fixed-point drift $\Rightarrow$ genuinely
+  non-monotone $\Rightarrow$ suppress extrapolation. $S_{\mathrm{rev}}\lesssim O(1)$: unresolved by
+  plateau precision $\Rightarrow$ read as grid stability near the finest nodes.
+  \item \textbf{Contraction (only if monotone).} Require $|\Delta_{23}|<|\Delta_{12}|$.
+  \item \textbf{Richardson (only if contracting).} With near-constant ratio $r\approx\sqrt2$,
+  \[
+    p=\frac{\ln|\Delta_{12}/\Delta_{23}|}{\ln r},\qquad
+    G_\infty=G_3+\frac{G_3-G_2}{r^{\,p}-1},
+  \]
+  computed by an authoritative unequal-ratio 3-point solve on the full-precision measured spacings
+  (drain-$dx$ ratios $1.41436,\,1.41437$, i.e.\ $\sqrt2$ to $4\times10^{-4}$) with the
+  $\sqrt2$ closed form as a transparency cross-check. Because only three controlled meshes exist,
+  $G_\infty$ is reported \emph{as a bundle} with $p$, the correction ratio $|\Delta_{23}|/|\Delta_{12}|$,
+  and the two-$h$ agreement --- as evidence of asymptotic behaviour, not proof of the continuum value.
+\end{enumerate}
+
+\paragraph{Applied verdict.} The converged trio is
+\[
+  G_1=2.990\times10^{25},\quad G_2=2.135\times10^{25},\quad G_3=2.413\times10^{25}\ \mathrm{cm^{-3}s^{-1}},
+\]
+with signed corrections $\Delta_{12}=+8.55\times10^{24}$ (decrease) and $\Delta_{23}=-2.78\times10^{24}$
+(increase): \textbf{down then up}. The middle node lies below \emph{both} neighbours, so the sequence
+is non-monotone. The reversal magnitude relative to the plateau band is
+\[
+  S_{\mathrm{rev}}=\frac{|\Delta_{23}|}{\sqrt{u_2^2+u_3^2}}
+  =\frac{2.78\times10^{24}}{3.2\times10^{21}}\approx874\gg1,
+\]
+i.e.\ the upturn exceeds the residual fixed-point drift by nearly three orders of magnitude. The
+integral $\Gtot$ behaves identically: with $G_2^{\Gtot}=6.027\times10^{13}$,
+$G_3^{\Gtot}=6.593\times10^{13}$ ($|\Delta_{23}^{\Gtot}|=5.65\times10^{12}$) and combined plateau band
+$6.84\times10^{9}$ (from the $\Gtot$ half-ranges in \S6),
+$S_{\mathrm{rev}}^{\Gtot}=5.65\times10^{12}/6.84\times10^{9}\approx826$. All comparability gates pass:
+mesh-law/solver signatures identical, frozen $H$-array SHA1 \texttt{b4319bb03303} identical on all
+three, and (full-precision measured spacings) $r_x=1.41436,\,1.41437$,
+$r_{y,\mathrm{surf}}=1.410,\,1.425$.
+\honest{The controlled trio is \emph{genuinely non-monotone}, not merely unconverged. Because the
+non-monotonicity survived equalizing all three fixed points to $\sim\!10^{-4}$ quality, it cannot be
+dismissed as unequal convergence quality. This sign-changing trio does not support the assumed
+leading-order single-power Richardson model, so \textbf{extrapolation is suppressed}: no continuum
+$\Gii$ is inferred from this trio. This is the defensible ceiling of the spatial study along this refinement path.}
+
+\section{Model gap (a not-converged tested-grid statement)}
+Across the controlled trio the converged nodes span
+$\Gii=2.135$--$2.990\times10^{25}$~cm$^{-3}$s$^{-1}$; the finest mesh gives $2.413\times10^{25}$.
+Relative to Liang's top published $G_{ii}$ contour ($2.3\times10^{27}$~cm$^{-3}$s$^{-1}$) this is a
+factor $77$--$108$, i.e.\ order $10^{2}$, below.
+\honest{Because the controlled sequence is non-monotone, no converged spatial value and no continuum
+extrapolation can be \emph{inferred from this trio} to anchor a final model gap. The order-$10^{2}$
+figure is a \emph{tested-grid} statement over the drain refinements performed, not a continuum/model
+gap. The remaining discrepancy is \emph{consistent with a substantial model/physics discrepancy after
+the tested spatial refinements} (surrogate Keldysh impact-ionization rate on reconstructed doping,
+as in Rev.~5), but it cannot yet be called definitively physics-dominated because the spatial error
+is not bounded by a continuum study. What the present study does show firmly is that the
+\emph{numerical} spatial contribution is larger and more subtle than a smooth monotone convergence
+would imply.}
+
+\section{Conclusions and outlook}
+\begin{itemize}[nosep]
+  \item \textbf{Coupling convergence:} resolved (Anderson, per mesh).
+  \item \textbf{Spatial convergence: not demonstrated.} The controlled three-grid sequence is
+  \emph{significantly} non-monotone ($2.990\to2.135\to2.413\times10^{25}$, $S_{\mathrm{rev}}\approx874$),
+  so no continuum value can be inferred from this refinement trio. This does \emph{not} establish that
+  a continuum limit fails to exist --- finer self-similar meshes could still enter a monotone
+  asymptotic regime; it establishes that this trio has not entered one. The non-monotonicity itself is
+  a firm, numerically-resolved result.
+  \item \textbf{Energy grid:} energy-grid \emph{variation} removed as a between-mesh confounder (one
+  common frozen $H$-grid, SHA1-identical) --- not a claim that energy-discretization error is zero.
+  \item \textbf{Model gap:} order $10^{2}$ below Liang's top contour ($77$--$108\times$), stated as a
+  not-converged tested-grid quantity; consistent with a substantial model/physics discrepancy after
+  the tested refinements, but not yet definitively physics-dominated (spatial error still unbounded).
+\end{itemize}
+\paragraph{What would be needed to go further.} Because $\Gii$ is a tail-sensitive moment at a
+near-singular drain hotspot, the natural next instruments are (a) a \emph{second} controlled family
+--- fixed $y$-mesh with systematic drain-$x$ refinement --- to separate $x$- and $y$-discretization
+error and test whether non-monotonicity is direction-specific; and (b) a mesh law with finite surface
+slope so all local $dy$ refine linearly, enabling a genuinely isotropic global study. Neither is
+required to state the present conclusion; both would sharpen \emph{why} the drain avalanche resists
+monotone spatial convergence. Physics-model changes (surrogate impact-ionization rate, reconstructed
+doping) remain the dominant lever on the absolute gap to Liang, and are deferred by design until the
+numerical characterization is complete.
+
+\honest{Methodological lesson to carry forward: a fixed outer-iteration budget does not guarantee
+comparable fixed-point quality across meshes. Here the coarser nodes had to be continued well beyond
+60 iterations, and their converged values shifted by up to $+18\%$; the non-monotonicity verdict is
+only trustworthy \emph{because} it was evaluated on equalized, plateau-gated fixed points with an
+explicit reversal-significance test ($S_{\mathrm{rev}}$), not on truncated iterates.}
+
+\end{document}

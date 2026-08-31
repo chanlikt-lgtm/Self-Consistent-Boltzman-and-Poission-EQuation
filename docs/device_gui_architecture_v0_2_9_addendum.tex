@@ -1,0 +1,177 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,xcolor,enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,columns=fullflexible,breaklines=true,frame=single,
+        xleftmargin=1em,framexleftmargin=1em}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
+\newcommand{\state}[1]{\textsc{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\title{\textbf{Device-Simulation GUI --- Architecture Spec v0.2.9 Delta}\\[3pt]
+\large Plateau-Measurement-Integrity Contract, \state{needs\_recheck} State, and the
+Audit-Correction / Supersession Pattern}
+\date{2026-08-23}\author{}
+\begin{document}\maketitle\vspace{-1.5em}
+
+\noindent\fcolorbox{black}{yellow!12}{\parbox{0.97\linewidth}{\small
+\textbf{Scope.} This delta specifies three items flagged for v0.2.9 that are not yet in the v0.2.8/v0.2.9
+master: (1) the \emph{Plateau-Measurement-Integrity Contract} (PMIC); (2) the explicit
+\state{needs\_recheck} verification state and its transitions; (3) the audit-correction / supersession
+pattern for defective-but-preserved evidence. It is written to be folded into the master spec's
+verification-checkpoint chapter. It is grounded in a concrete defect resolved in the backend
+(Liang-1997 SHE-BTE reproduction, 71$\times$58 node, 2026-08-23); that case is used as the worked
+example so the contract is testable, not aspirational.}}
+
+\section{Motivating defect (normative example)}
+A convergence observable (rate $G$) was accepted as ``plateaued'' when the relative spread of its last
+four values fell below a gate. The solver stopped each continuation \emph{chunk} on its own residual
+criterion \code{tol\_phi}. When the solution was already near its fixed point, a chunk stopped after a
+\emph{single} iteration; the ``last four'' then spanned one value, whose spread is identically $0$ ---
+a \textbf{degenerate false pass}. The physical value was fine; the \emph{measurement of acceptance} was
+not. The GUI must make this class of error unrepresentable.
+
+\section{Plateau-Measurement-Integrity Contract (PMIC)}
+\textbf{Intent.} A plateau verdict may be computed only over genuine, independent samples of the
+observable, accumulated across solver invocations, and never manufactured by an early solver stop.
+
+\subsection{Definitions}
+\begin{description}[leftmargin=1.4em,style=nextline]
+\item[Real iteration] one outer fixed-point update that actually advanced the observable; identified by
+a strictly increasing absolute iteration index \code{abs\_iter} on the node's cumulative trajectory.
+\item[Cumulative window] the last $W{=}4$ \emph{real} iterations of the node's trajectory, taken across
+chunk boundaries --- \emph{not} the last four of any single chunk.
+\item[Rolling buffer] the persisted, ordered list of the most recent $\le W$ real samples
+$\{(\code{abs\_iter},\,\text{observables})\}$, carried between solver invocations in the node sidecar.
+\item[\code{plateau\_evaluable}] a boolean: \textbf{false} until the buffer holds $W$ genuine samples.
+\end{description}
+
+\subsection{Normative rules (MUST)}
+\begin{enumerate}[leftmargin=1.6em]
+\item The plateau gate is evaluated over the cumulative window, not a chunk-local window.
+\item \code{plateau\_evaluable} is \textbf{false} while $\lvert\text{buffer}\rvert < W$; a node MUST NOT
+be certified while not evaluable, \emph{even if} a chunk-local spread would be $0$.
+\item The solver-stopping residual (\code{tol\_phi}) is \textbf{decoupled} from acceptance: it may end a
+chunk, but MUST NOT short-circuit or stand in for the observable plateau decision.
+\item The production spread statistic and thresholds are \textbf{fixed} and identical to the backend:
+$\operatorname{spread}(x)=(\max x-\min x)/\bar x$, gate $\le 3\times10^{-4}$ on \emph{both} rate
+observables, residual floored $\le 1.5\times10^{-3}$. The GUI MUST source these from one shared
+definition, never redefine them.
+\item \textbf{Buffer integrity (fail-closed).} On resume, \code{abs\_iter} across the buffer MUST be
+strictly increasing (hence duplicate-free). A violation aborts certification (a duplicated index could
+fabricate an artificial plateau); it is a hard error, not a warning.
+\item \textbf{Provenance.} Each certification records \code{buffer\_origin} $\in$
+\{\code{persisted\_sidecar}, \code{npz\_terminal\_reconstruction}, \code{empty\_fresh}\}, so the evidence
+path that certified the gate is auditable after the fact.
+\item A spread of $0$ is legitimate \emph{iff} \code{plateau\_evaluable} and the window holds $W$ distinct
+real iterations (e.g.\ four independent re-solves re-confirming one fixed point); it is forbidden
+otherwise.
+\end{enumerate}
+
+\subsection{Contract surface (data the GUI persists per node)}
+\begin{lstlisting}
+sidecar.plateau = {
+  buffer:           [ {abs_iter, <observables...>, residual}, ... up to W ],
+  plateau_evaluable: bool,          # false until |buffer| == W
+  passed:            bool,          # gate over the cumulative window
+  buffer_origin:     enum,          # persisted_sidecar | npz_terminal_reconstruction | empty_fresh
+  window_iters:      [abs_iter...], # the exact indices used (independently checkable)
+}
+\end{lstlisting}
+
+\subsection{Checkpoint hook}
+The plateau checkpoint (the master's convergence-ladder rung for a node) reports \state{pass} only when
+\code{plateau\_evaluable $\wedge$ passed}; it reports \state{not\_evaluable} (a distinct, non-failing,
+non-passing status) while the window is short; and it reports \state{fail} when evaluable and the gate is
+not met. \state{not\_evaluable} MUST drive ``continue accumulating'', never ``accept''.
+
+\section{The \state{needs\_recheck} verification state}
+\textbf{Intent.} A node whose \emph{acceptance evidence} is invalid --- as opposed to a node that has
+genuinely failed or genuinely passed --- occupies a first-class state that blocks downstream use without
+asserting a scientific failure.
+
+\subsection{State set and transitions}
+\begin{center}\small
+\begin{tabular}{lll}\toprule
+from & event & to \\ \midrule
+\state{accumulating} & \code{plateau\_evaluable $\wedge$ passed} & \state{certified} \\
+\state{accumulating} & evaluable $\wedge\,\neg$passed, cap reached & \state{failed} \\
+\state{certified} & audit finds evidence degenerate/ambiguous & \state{needs\_recheck} \\
+\state{needs\_recheck} & recheck yields evaluable genuine window, passed & \state{certified} \\
+\state{needs\_recheck} & recheck evaluable $\wedge\,\neg$passed & \state{failed} \\
+\state{needs\_recheck} & cannot establish a valid window under policy & \state{audit\_incomplete} \\
+\bottomrule\end{tabular}
+\end{center}
+
+\subsection{Normative rules (MUST)}
+\begin{enumerate}[leftmargin=1.6em]
+\item \state{needs\_recheck} is neither \state{pass} nor \state{fail}; the GUI MUST render it as its own
+badge and MUST block any campaign-level verdict (e.g.\ a GREEN/YELLOW classification, or an
+extrapolation) that depends on the node until it leaves this state.
+\item Entering \state{needs\_recheck} MUST NOT overwrite the original recorded metrics row; the original
+(defective) record is preserved verbatim (see \S\ref{sec:supersede}).
+\item A recheck MUST reuse the identical run definition (mesh, grids, physics, solver settings,
+thresholds) and change \emph{only} the acceptance measurement; it carries a new \code{run\_id} and names
+the prior checkpoint as \code{parent}. A pure safety cap (max continuation chunks) may be raised and MUST
+be labeled as such, never as a scientific-gate change.
+\item Reconstruction subtlety: a short terminal chunk does \emph{not} automatically imply
+\state{needs\_recheck}. If $\ge W$ genuine cumulative samples are retrievable (persisted buffer, or a
+full-window terminal reconstruction) the node is evaluable; \state{needs\_recheck} is entered only when a
+valid window is unretrievable or ambiguous.
+\end{enumerate}
+
+\section{Audit-correction / supersession pattern}\label{sec:supersede}
+\textbf{Intent.} Corrections are additive and immutable: nothing that was recorded is edited or deleted;
+a superseding record points back to what it replaces, and the chain is independently verifiable by hash.
+
+\subsection{Normative rules (MUST)}
+\begin{enumerate}[leftmargin=1.6em]
+\item \textbf{Preserve.} The original artifact (data checkpoint, metrics row, generated report) is kept
+byte-for-byte under an archival name; its content hash is recorded.
+\item \textbf{Supersede, don't overwrite.} A new \emph{audit-correction record} is emitted as a separate
+artifact carrying: \code{original\_status}, \code{audit\_status}, \code{reason}, the superseded
+artifact's \code{sha256}, the new \code{run\_id}/\code{parent}, and the corrected decision. The record
+itself gets a \code{sha256}.
+\item \textbf{Derive, don't mutate.} A reconstructed or corrected decision is emitted as its own artifact;
+source data files are never rewritten to ``fix'' a metric.
+\item \textbf{Label re-derived verdicts.} A classification recomputed after a measurement repair MUST be
+visibly labeled as re-derived (e.g.\ ``YELLOW --- re-derived after plateau-bookkeeping repair'') so it
+cannot be confused with the earlier defective output. Reports MUST present \emph{scientific reproduction}
+and \emph{numerical parity} as separate statements.
+\item \textbf{Lineage.} If a corrected node was a warm-start parent of another accepted node, the record
+states whether the corrected value moved materially; if it did not, dependent nodes are \emph{not}
+regenerated, and the record says so explicitly.
+\end{enumerate}
+
+\subsection{Audit-correction record (schema)}
+\begin{lstlisting}
+audit_correction = {
+  node, original_status, audit_status,   # e.g. PASS -> NEEDS_RECHECK
+  reason,                                # e.g. "degenerate_plateau_window"
+  superseded_artifact, superseded_sha256,
+  run_id, parent_checkpoint_sha256,
+  resolution: { new_status, evidence, window_iters, buffer_origin },
+  sha256                                 # of this record
+}
+\end{lstlisting}
+
+\section{Worked example (normative acceptance test for the GUI)}
+The GUI's verification layer MUST reproduce this sequence for the 71$\times$58 node:
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt]
+\item Original acceptance: terminal chunk ran $1$ real iteration; chunk-local spread $=0$ $\Rightarrow$
+\emph{defective} \state{certified}. Audit reclassifies to \state{needs\_recheck}; original row preserved;
+audit-correction record emitted (\code{reason=degenerate\_plateau\_window}).
+\item Recheck (new \code{run\_id}, same run definition, safety cap raised only): the node early-stops
+$1$ real iter/chunk. PMIC holds \state{not\_evaluable} at cumulative $n{=}1,2,3$ (indices $359,360,361$)
+and certifies at $n{=}4$ (index $362$): four distinct re-solves, both spreads $=0$ ($G_{ii}$ spread $=0$;
+$G_{\mathrm{tot}}$ spread $=0$), residual floored.
+\state{needs\_recheck} $\rightarrow$ \state{certified}.
+\item Campaign verdict recomputed on the certified nodes; classification labeled ``re-derived after
+plateau-bookkeeping repair''; scientific reproduction (significant non-monotone reversal) and numerical
+parity ($\pm2\%$ archival) reported separately; lineage note records the parent value was unchanged, so
+the dependent node is not regenerated.
+\end{enumerate}
+Any GUI build that would let step~1 stand as a pass, that mutates the original row in step~1, or that
+omits the re-derived label / parity separation in step~3, \textbf{fails} this acceptance test.
+
+\end{document}

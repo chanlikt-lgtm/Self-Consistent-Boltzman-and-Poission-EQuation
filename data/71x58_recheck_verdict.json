@@ -1,0 +1,55 @@
+{
+  "artifact": "71x58_recheck_verdict",
+  "created": "2026-08-23T16:33:51",
+  "run_id": null,
+  "parent_checkpoint_sha256": null,
+  "supersedes": "DEFECTIVE 1-iteration plateau PASS (NEEDS_RECHECK)",
+  "plateau": {
+    "certified": true,
+    "method": "cumulative 4 REAL iterations across chunks",
+    "abs_iters": [
+      359,
+      360,
+      361,
+      362
+    ],
+    "Gii_max": 3.075618509560635e+25,
+    "spread_Gii": 0.0,
+    "spread_Gtot": 0.0,
+    "R_phi": 3.94e-05,
+    "R_phi_floored": true,
+    "buffer_origin": "empty_fresh"
+  },
+  "trio": {
+    "Gii": [
+      3.075618509560635e+25,
+      2.136180155438723e+25,
+      2.3874289100492526e+25
+    ],
+    "archival": [
+      2.99e+25,
+      2.135e+25,
+      2.413e+25
+    ],
+    "dev_pct": {
+      "71x58": 2.863,
+      "100x70": 0.055,
+      "141x85": -1.06
+    },
+    "within_2pct": {
+      "71x58": false,
+      "100x70": true,
+      "141x85": true
+    },
+    "non_monotone": true,
+    "S_rev_Gii": 736.9,
+    "S_rev_Gtot": 524.1,
+    "archival_S_rev": 874.0,
+    "richardson": "SUPPRESSED (S_rev>>1)"
+  },
+  "state_machine": {
+    "verdict": "YELLOW",
+    "rule": "GREEN iff all |dev|<=2%% AND significant non-monotone reproduces; else YELLOW if verdict reproduces but an accepted value misses 2%%; else incomplete/failure",
+    "reason": "non-monotone reversal reproduces (S_rev=736.9, archival 874) but 71x58 dev=+2.86% exceeds 2% band"
+  }
+}

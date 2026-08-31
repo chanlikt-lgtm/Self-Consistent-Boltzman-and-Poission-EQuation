@@ -1,0 +1,47 @@
+{
+  "run_id": "recheck_71x58_20260823T161930_49efe4f5",
+  "kind": "narrow_71x58_audit_verification_rerun",
+  "created": "2026-08-23T16:19:30",
+  "scope": "ONLY 71x58 recomputes; 100x70 & 141x85 are certified-and-skipped (not rerun)",
+  "parent_checkpoint": {
+    "file": "she2d_richardson_71x58.npz",
+    "sha256": "e1ceb7a8236fc92f3c29669337c75a188a4a6060771563fbc19a4d223786d842",
+    "preserved_as": "she2d_richardson_71x58.defective_pass.parent.npz",
+    "preserved_sha256": "e1ceb7a8236fc92f3c29669337c75a188a4a6060771563fbc19a4d223786d842",
+    "status": "DEFECTIVE_PASS (degenerate 1-iteration plateau window) -- SUPERSEDED, not overwritten",
+    "Gii_max": 3.0756e+25,
+    "cum_iters_at_parent": 358,
+    "chunks_done_at_parent": 7
+  },
+  "unchanged": {
+    "mesh": "71x58",
+    "grading": "ratio=6.0,W=0.09,X_C=0.60",
+    "H_grid": "frozen (common H_hash)",
+    "common_phi_span": [
+      -0.6,
+      3.65
+    ],
+    "physics": "dH=0.0125eV, eps_max=3.02eV",
+    "solver": "she_tol=1e-8, CHUNK=60",
+    "thresholds": {
+      "SPREAD_GATE": 0.0003,
+      "RPHI_FLOOR_V": 0.0015
+    }
+  },
+  "only_change": "corrected cumulative-window plateau bookkeeping (last four REAL cumulative iterations, spanning chunk boundaries; plateau_evaluable=False until 4 genuine samples; tol_phi decoupled from acceptance). Buffer-integrity (strictly-increasing abs_iter) fail-closed. buffer_origin recorded (persisted_sidecar vs npz_terminal_reconstruction).",
+  "safety_cap": {
+    "MAX_ROUNDS": 16,
+    "note": "pure safety cap 4->8->16; NOT a scientific gate"
+  },
+  "code_snapshot_sha256_16": {
+    "plateau_gate.py": "58eb89472997fce1",
+    "run_richardson_trio.py": "1ee47f58c43bc0f6",
+    "coupled_drain_richardson.py": "76902fe1daa4f874"
+  },
+  "git_commit": "93edef9097e60488dad3d9596c6e6b236d22d0c7",
+  "git_dirty": true,
+  "post_steps": [
+    "richardson_fit.py on the three accepted npz ONLY",
+    "state machine: GREEN if all within 2% AND significant non-monotone reproduces; YELLOW if verdict reproduces but an accepted value misses 2%; else incomplete/failure"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "campaign_id": "2026-08-21-rev6-from-scratch-recovery-001",
+  "base_git_commit": "93edef9",
+  "working_tree_dirty": true,
+  "working_diff_sha256": "b27caeb5a190d006c7453d883afbf54e3c42eb43a8d1ee4b7fd8ca64e2a22d6c",
+  "code_snapshot_dir": "recovery_code_snapshot/",
+  "recovery_checkpoint": "she2d_richardson_71x58.npz",
+  "reconstructed_from_iters": 240,
+  "h_grid_sha1": "b4319bb03303",
+  "scientific_gates": {
+    "spread_max": 0.0003,
+    "rphi_floor_V": 0.0015,
+    "chunk": 60,
+    "max_rounds": 8
+  },
+  "execution_path": "Stages 3-6 run as a direct Python chain (run_richardson_trio -> richardson_fit -> gen_run_report -> archive_run); the revised run_from_scratch.bat was NOT the execution path and must be smoke-tested natively before being called validated.",
+  "note": "campaign_id/run_id NOT stamped into completed NPZs (preserve byte-for-byte); attach this external manifest as lineage.",
+  "created": "2026-08-22T07:26:07"
+}

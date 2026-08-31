@@ -28,14 +28,23 @@ if not exist "%PY%" set "PY=python"
 call :stamp "=== RUN START.  Interpreter: %PY%"
 "%PY%" -c "import numpy,scipy;print('numpy',numpy.__version__,'scipy',scipy.__version__)" || goto :error
 
-call :stamp "STAGE 1/6: foundation -> one-way SHE -> coupled -> Figs 2-8 overlays (~1.5-2 h)"
-"%PY%" reproduce_all.py --full || goto :error
+REM --- Stage-level resume: skip a stage whose completion sentinel already exists ---
+if exist "figures\she2d_iv_moment.png" (
+  call :stamp "STAGE 1/6: SKIP (sentinel figures\she2d_iv_moment.png present)"
+) else (
+  call :stamp "STAGE 1/6: foundation -> one-way SHE -> coupled -> Figs 2-8 overlays (~1.5-2 h)"
+  "%PY%" reproduce_all.py --full || goto :error
+)
 
-call :stamp "STAGE 2/6: Rev 5 Anderson-accelerated coupled fixed point, 3 grids (~1.5 h)"
-"%PY%" src\coupled_anderson.py 40 34 6 0.5 40 1 || goto :error
-"%PY%" src\coupled_anderson.py 60 50 6 0.5 40 1 || goto :error
-"%PY%" src\coupled_anderson.py 80 66 6 0.5 40 1 || goto :error
-"%PY%" src\she2d_anderson_fig.py || goto :error
+if exist "figures\she2d_anderson_converge.png" (
+  call :stamp "STAGE 2/6: SKIP (sentinel figures\she2d_anderson_converge.png present)"
+) else (
+  call :stamp "STAGE 2/6: Rev 5 Anderson-accelerated coupled fixed point, 3 grids (~1.5 h)"
+  "%PY%" src\coupled_anderson.py 40 34 6 0.5 40 1 || goto :error
+  "%PY%" src\coupled_anderson.py 60 50 6 0.5 40 1 || goto :error
+  "%PY%" src\coupled_anderson.py 80 66 6 0.5 40 1 || goto :error
+  "%PY%" src\she2d_anderson_fig.py || goto :error
+)
 
 call :stamp "STAGE 3/6: Rev 6 controlled spatial-convergence trio (~23 h, SEQUENTIAL, continue-until-plateau)"
 "%PY%" src\run_richardson_trio.py || goto :error
@@ -56,10 +65,10 @@ if exist "%PDFLATEX%" (
   popd
 )
 
-call :stamp "STAGE 6/6: archive all plots + reports + data/logs into runs\<timestamp>\"
+call :stamp "STAGE 6/6: archive all plots + reports + data/logs into runs (timestamped subdir)"
 "%PY%" src\archive_run.py || goto :error
 
-call :stamp "=== DONE. Snapshot: runs\<timestamp>\ (plots\, reports, MANIFEST.txt) ; run report: report\report_run_latest.pdf ==="
+call :stamp "=== DONE. Snapshot under runs (timestamped subdir): plots, reports, MANIFEST.txt; run report: report\report_run_latest.pdf ==="
 goto :eof
 
 :stamp

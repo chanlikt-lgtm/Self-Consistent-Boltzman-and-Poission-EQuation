@@ -1,0 +1,12 @@
+{
+  "what": "100x70 chunk-6 genuine last-4 plateau evidence, preserved before chunk-7 overwrite",
+  "cum_iters_at_chunk6": 420,
+  "chunk_index_0based": 6,
+  "Gii_max": 2.1286e+25,
+  "spread_Gii": 0.00051,
+  "spread_Gtot": 0.000507,
+  "R_phi": 0.000241,
+  "reason": "retain preceding genuine window (71x58 episode showed why); insurance if chunk 7 yields <4 real iters",
+  "sha256": "5657b44b9fd9fecbb58484e1bf4991e6f4860d834f31feccfad86c8bf876bd22",
+  "recorded": "2026-08-23T07:57:26"
+}

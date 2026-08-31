@@ -25,7 +25,7 @@
 Liang, Goldsman, Mayergoyz \& Oldiges (1997):\\
 2-D Deterministic SHE-Boltzmann MOSFET Simulation}\\[5pt]
 \large\textit{Complete report, Revision~6 --- Phase 1 (derivation) through the controlled spatial-convergence study of the impact-ionization rate}}
-\author{Reproduction study \quad\small(code commit \texttt{676e74f}+; Python 3.13.15, NumPy 2.5.1, SciPy 1.18.0)}
+\author{Reproduction study \quad\small(closeout commit \texttt{9fc32e9}; Python 3.13.15, NumPy 2.5.1, SciPy 1.18.0)}
 \date{\today}
 
 \begin{document}
@@ -44,9 +44,10 @@ place, and a physics-split preconditioner removes the previous solver bottleneck
 ($\sim$10~min~$\to$~$\sim$15~s on the 40$\times$34 problem). Established results: core
 transport ($n$, $|v|$) is validated and spatially robust ($T_e$ moderately grid-sensitive); the
 self-consistent feedback materially suppresses avalanche generation and drain current; conservation
-holds across one-way, refined, and coupled runs. Open items are stated
-precisely: the impact-ionization magnitude is \emph{not spatially converged} --- a
-$2\times2$ grid$\times$coupling study drives $G_{ii,\max}$ multiplicatively from
+holds across one-way, refined, and coupled runs. At the Rev-4/5 stage the remaining numerical issues
+were stated precisely (the closed Rev-6 campaign and its re-derived YELLOW closeout follow below): the
+impact-ionization magnitude was \emph{not spatially converged} --- a
+$2\times2$ grid$\times$coupling study drove $G_{ii,\max}$ multiplicatively from
 $1.35\times10^{27}$ to $5.24\times10^{26}\,\si{cm^{-3}s^{-1}}$ (the finest-tested coupled value,
 not a continuum estimate), while a one-way energy refinement to $\Delta H=\SI{6.25}{meV}$ moves it
 only $-2.4\%$ (negligible beside the spatial error); the $T_e$/$G_{ii}$ peak offset is unresolved;
@@ -75,17 +76,25 @@ Figs.~2--8.
 \textbf{Revision~6 carries out the controlled spatial-convergence study that Rev.~5 left open}
 (\S\ref{sec:spatial}). Two findings are firm. First, the earlier uniform sequence was itself
 \emph{under-resolving} the drain avalanche: a drain-graded $100\times70$ mesh drops $G_{ii,\max}$
-about an order of magnitude below the ``finest uniform'' $80\times66$, and the spatially-integrated
-$G_{\mathrm{tot}}$ falls in step, so this is a genuine avalanche-magnitude effect, not peak-cell
-placement. Second --- and decisively --- a properly \emph{controlled self-similar trio}
+several-fold ($\sim$7$\times$, against the plateaued trio $G_2=2.135\times10^{25}$) below the ``finest
+uniform'' $80\times66$, and the spatially-integrated $G_{\mathrm{tot}}$ falls in step, so this is a
+genuine avalanche-magnitude effect, not peak-cell placement. Second --- and decisively --- a properly \emph{controlled self-similar trio}
 $71{\times}58\to100{\times}70\to141{\times}85$ (fixed grading law, byte-identical frozen $H$-grid
-verified by SHA1, $\sqrt2$ interval refinement, all three fixed points converged to $O(10^{-4})$
-plateau quality) is \emph{significantly non-monotone}:
-$G_{ii,\max}=2.990\to2.135\to2.413\times10^{25}\,\si{cm^{-3}s^{-1}}$, with the down-then-up reversal
-exceeding the plateau bands by a heuristic ratio $S_{\mathrm{rev}}\approx874$ ($826$ for
-$G_{\mathrm{tot}}$). A sign-changing trio does not support the leading-order single-power Richardson
-model, so extrapolation is suppressed: \emph{spatial convergence is not demonstrated, and no
+verified by SHA1, $\sqrt2$ interval refinement, all three fixed points certified on genuine
+four-real-iteration observable-plateau windows at $O(10^{-4})$ quality) is \emph{significantly
+non-monotone}. Independently reproduced from scratch, the trio is
+$G_{ii,\max}=3.0756\to2.1362\to2.3874\times10^{25}\,\si{cm^{-3}s^{-1}}$, with the down-then-up reversal
+exceeding the plateau bands by a heuristic ratio $S_{\mathrm{rev}}=736.9$ ($524.1$ for
+$G_{\mathrm{tot}}$); this reproduces the archival Rev.~6 reference
+($2.990/2.135/2.413\times10^{25}$, $S_{\mathrm{rev}}\approx874$) within $2\%$ for two nodes and
+$+2.86\%$ for $71{\times}58$. A sign-changing trio does not support the leading-order single-power
+Richardson model, so extrapolation is suppressed: \emph{spatial convergence is not demonstrated, and no
 continuum $G_{ii}$ is inferred from this trio} (this does not prove a continuum limit fails to exist).
+The controlled-campaign classification is \textbf{YELLOW}, re-derived after a plateau-measurement
+bookkeeping repair --- the acceptance gate now evaluates the last four \emph{real} cumulative
+iterations (never a degenerate single-iteration window; \S\ref{sec:closeout}): the non-monotone
+verdict reproduces, while one accepted node ($71{\times}58$) lies outside the $2\%$ archival numerical
+band.
 A separate methodological result: a fixed outer-iteration budget does \emph{not} guarantee equal
 fixed-point quality across meshes --- the coarser nodes' 60-iteration values were biased transients
 that shifted by up to $+18\%$ on continuation, so node validity is gated on an observable plateau,
@@ -654,9 +663,10 @@ On the uniform grids $G_{ii,\max}$ and the cross-sectional integral
 $G_{\mathrm{tot}}=\int G_{ii}\,dA$ fall by the \emph{same} factors ($-73\%$ then $-30\%$), so the
 mesh dependence is in the total avalanche magnitude, not merely peak-cell placement: coarse grids
 over-populate the tail-sensitive moment at the under-resolved drain hotspot. A drain-graded
-$100\times70$ mesh (drain $dx=0.0027\,\mu$m) plateaus at $G_{ii,\max}=1.8\times10^{25}$ --- roughly
-an order of magnitude below the ``finest uniform'' $80\times66$ --- confirming the uniform values
-were inflated. A lone further mesh ($140\times84$) plateaus at $2.7\times10^{25}$, but it changed
+$100\times70$ mesh (drain $dx=0.0027\,\mu$m) plateaus at $G_{ii,\max}=1.8\times10^{25}$ --- an
+\emph{intermediate drain-refined result on its own per-mesh $H$-grid, not part of the common-$H$
+controlled trio below} --- several-fold ($\sim$7$\times$, against the trio $G_2=2.135\times10^{25}$)
+below the ``finest uniform'' $80\times66$, confirming the uniform values were inflated. A lone further mesh ($140\times84$) plateaus at $2.7\times10^{25}$, but it changed
 resolution \emph{and} the grading law at once (ratio $6\to10$, width $0.09\to0.06\,\mu$m); its
 $+51\%$ cannot be attributed to resolution.
 \honest{A heterogeneous refinement sequence cannot establish spatial convergence: resolution and
@@ -681,7 +691,9 @@ $G_3$ ($141\times85$) & 0.001901 & $2.413\times10^{25}$ & $6.1\times10^{-5}$ & $
 \\[3pt]
 {\footnotesize Over the last 4 outer iterations, with $\bar G_4$ their mean:
 $\mathrm{spread}=(\max_4-\min_4)/\bar G_4$ (the tabulated relative figure) and the plateau band
-$u=(\max_4-\min_4)/2$ (absolute) used in $S_{\mathrm{rev}}$ below.}
+$u=(\max_4-\min_4)/2$ (absolute) used in $S_{\mathrm{rev}}$ below. These are the \emph{archival Rev.~6
+reference} values; the trio was subsequently reproduced from scratch under corrected plateau
+bookkeeping (\S\ref{sec:closeout}), which is the report's current accepted result.}
 \end{center}
 Comparability is enforced by the driver (fail-fast): one imposed common span
 (COMMON\_PHI\_SPAN $=[-0.60,3.65]$~V, bounding the measured $\phi\in[-0.348,3.586]$~V) fixes the
@@ -707,11 +719,17 @@ $O(10^{-4})$ level ($\lesssim3\times10^{-4}$) in \emph{both} $G_{ii}$ and $G_{\m
 orders of magnitude, though a gentle drift \emph{within} the band is allowed (the tightest-converged
 $141\times85$ node, $G_{ii}$ spread $6\times10^{-5}$, has $R_\phi\sim2\times10^{-4}$ still edging
 down inside the band). Note $R_\phi$ never reaches the nominal $10^{-4}$~V \texttt{tol\_phi}; that
-tolerance is not the operative gate, the observable plateau is. The verdict below is trustworthy only because it is evaluated on
-equalized, plateau-gated fixed points, not truncated iterates.}
+tolerance is not the operative gate, the observable plateau is. This was the \emph{intended} Rev.~6
+plateau rule; the archival verdict (\S\ref{sec:archverdict}) was evaluated on equalized, plateau-gated
+fixed points, not truncated iterates. \emph{A subsequent audit found the archival $71{\times}58$
+acceptance \textbf{implementation} violated this rule} --- it measured the last-4 spread on a single
+driver chunk, which under an early solver stop could contain one real iteration and yield a degenerate
+zero spread; the corrected cumulative-window gate and the recertified acceptance evidence are in
+\S\ref{sec:closeout}.}
 
-\subsection{Verdict: significantly non-monotone; Richardson suppressed}
-With signed corrections $\Delta_{12}=G_1{-}G_2=+8.55\times10^{24}$ (decrease) and
+\subsection{Archival Rev-6 verdict: significantly non-monotone; Richardson suppressed}\label{sec:archverdict}
+\emph{(Archival reference values, retained as historical context; the current accepted result is the
+from-scratch reproduction in \S\ref{sec:closeout}.)} With signed corrections $\Delta_{12}=G_1{-}G_2=+8.55\times10^{24}$ (decrease) and
 $\Delta_{23}=G_2{-}G_3=-2.78\times10^{24}$ (increase), the sequence goes \textbf{down then up}: the
 middle node lies below both neighbours. A sign reversal is judged against the per-node plateau bands
 $u_i$ (last-4 half-range) by the \emph{heuristic} reversal-to-plateau-uncertainty ratio
@@ -723,7 +741,7 @@ The upturn exceeds the residual fixed-point drift by nearly three orders of magn
 $G_{\mathrm{tot}}$ behaves identically ($|\Delta_{23}^{G_{\mathrm{tot}}}|=5.65\times10^{12}$, band
 $6.84\times10^{9}$, $S_{\mathrm{rev}}\approx826$). All comparability gates pass (signatures and
 $H$-hash identical; $r_x,r_{y,\mathrm{surf}}\approx\sqrt2$).
-\honest{The controlled trio is \emph{genuinely non-monotone}, and this survived equalizing all three
+\honest{The archival controlled trio was \emph{genuinely non-monotone}, and this survived equalizing all three
 fixed points to $O(10^{-4})$ quality, so it cannot be dismissed as unequal convergence quality. A
 sign-changing trio does not support the assumed leading-order single-power Richardson model, so
 \textbf{extrapolation is suppressed}: no continuum $G_{ii}$ is inferred from this trio.
@@ -739,6 +757,45 @@ a finite-surface-slope $y$-law for a globally isotropic study. Physics-model cha
 impact-ionization rate, reconstructed doping) are \emph{important candidate sources} of the absolute
 gap --- but with no spatial-error bound established by this study they cannot be called its dominant cause --- and are
 deferred until the numerical characterization along further refinement paths is done.
+
+\subsection{Independent from-scratch reproduction and audit closeout}\label{sec:closeout}
+The controlled trio was regenerated end-to-end from a cold start (same frozen $H$-grid SHA1
+\texttt{b4319bb03303}, identical grading law, physics, solver settings and gates), to test
+reproducibility of the non-monotone verdict rather than re-use the archival fixed points. The
+reproduced trio and its numerical parity with the archival Rev.~6 reference are:
+\begin{center}\small
+\begin{tabular}{lccccc}
+\toprule
+node & reproduced $G_{ii,\max}$ & archival ref. & dev. & cum.\ spread ($G_{ii}$, $G_{\mathrm{tot}}$) & window (abs iters)\\
+ & (cm$^{-3}$s$^{-1}$) & (cm$^{-3}$s$^{-1}$) & & & \\
+\midrule
+$71\times58$  & $3.0756\times10^{25}$ & $2.990\times10^{25}$ & $+2.86\%$ & $0$,\ $0$ (4 distinct) & 359--362\\
+$100\times70$ & $2.1362\times10^{25}$ & $2.135\times10^{25}$ & $+0.06\%$ & $1.9{\times}10^{-4}$,\ $1.8{\times}10^{-4}$ & 57--60\\
+$141\times85$ & $2.3874\times10^{25}$ & $2.413\times10^{25}$ & $-1.06\%$ & $2.3{\times}10^{-4}$,\ $2.4{\times}10^{-4}$ & 57--60\\
+\bottomrule
+\end{tabular}
+\end{center}
+Both observables are again significantly non-monotone (down-then-up), with heuristic reversal ratios
+$S_{\mathrm{rev}}=736.9$ ($G_{ii}$) and $524.1$ ($G_{\mathrm{tot}}$) --- reproducing the archival shape
+($S_{\mathrm{rev}}\approx874$) --- so Richardson extrapolation stays suppressed and spatial convergence
+remains undemonstrated.
+\honest{\textbf{Plateau-measurement bookkeeping repair (why the classification is re-derived).} The
+original acceptance gate evaluated the last-4 spread on a single driver chunk. When the solver stopped
+a chunk early on its residual criterion, the ``last four'' could span a single iteration, whose spread
+is identically zero --- a degenerate false pass. The corrected gate accumulates the last four
+\emph{real} iterations of a node's cumulative trajectory across chunks, is not evaluable until four
+genuine samples exist, and keeps the residual stopping criterion strictly separate from observable
+acceptance; a fail-closed integrity check forbids duplicated or out-of-order iterations. Under this
+gate the $71{\times}58$ node was reclassified NEEDS\_RECHECK and re-certified on four genuine
+cumulative iterations (indices 359--362; its spread is now a \emph{legitimate} zero --- four distinct
+re-solves each re-confirming one fixed point, $R_\phi$ at floor), while $100{\times}70$ and
+$141{\times}85$ certified unchanged. The original one-iteration acceptance and the earlier
+auto-generated classification are preserved as superseded audit artifacts; nothing was overwritten.}
+\paragraph{Classification: YELLOW (re-derived).} Scientific reproduction and numerical parity are
+reported separately. The significant non-monotone verdict reproduces; two nodes ($100{\times}70$
+$+0.06\%$, $141{\times}85$ $-1.06\%$) fall within the $2\%$ archival tolerance, while the accepted
+$71{\times}58$ value differs by $+2.86\%$. Under the closed-campaign state machine this is a legitimate
+\textbf{YELLOW}: the verdict reproduces, but one accepted node lies outside the numerical band.
 
 \part{Assessment}
 \section{Conclusions, classified}\label{sec:concl}
@@ -765,7 +822,7 @@ $f_0$); the equal-energy secondary split and negligible scattering-in shape chan
 paper.
 \item \textbf{Self-consistency (converged in Rev.~5):} the damped Picard loop did \emph{not}
 converge $G_{ii}$ (monotone free-fall, \S\ref{sec:giiconv}); \textbf{Anderson acceleration on a
-frozen $H$-grid converges the fixed point} (\S\ref{sec:anderson}, Fig.~\ref{fig:anderson}) --- the
+frozen $H$-grid converged the fixed point} (\S\ref{sec:anderson}, Fig.~\ref{fig:anderson}) --- the
 residual reaches a $\sim$3--4~mV inner-solve floor and $G_{ii}$ settles to a residual-floor
 last-iterate value (last-4 spread 1.6--11\%; not the Rev.~6 observable plateau). $n$, $|v|$, $I_d$ are
 grid-stable; $T_e$ converges toward $\sim\!\SI{3200}{K}$.
@@ -791,11 +848,16 @@ $G_{ii}$ deficit: its ``$\sim$15$\times$ below Liang, a model gap not a numerica
 numerical/model split cannot be assigned from the tested refinements.
 \item \textbf{Spatial convergence of $G_{ii}$ (the headline of Rev.~6, \S\ref{sec:spatial}):} a
 \emph{controlled} self-similar trio $71{\times}58/100{\times}70/141{\times}85$ (fixed grading law,
-byte-identical frozen $H$-grid, $\sqrt2$ refinement, all nodes plateau-gated to $O(10^{-4})$) is
-\emph{significantly non-monotone}: $G_{ii,\max}=2.990/2.135/2.413\times10^{25}$, reversal
-$S_{\mathrm{rev}}\approx874$ ($826$ for $G_{\mathrm{tot}}$). The single-power Richardson model does
-not apply, so \emph{spatial convergence is not demonstrated and no continuum $G_{ii}$ is inferred from
-this trio} (not a proof that no limit exists). The earlier uniform sequence was itself
+byte-identical frozen $H$-grid, $\sqrt2$ refinement, all nodes certified on genuine four-real-iteration
+observable-plateau windows) is \emph{significantly non-monotone}. Reproduced from scratch,
+$G_{ii,\max}=3.0756/2.1362/2.3874\times10^{25}$, reversal $S_{\mathrm{rev}}=736.9$ ($524.1$ for
+$G_{\mathrm{tot}}$) --- reproducing the archival reference $2.990/2.135/2.413\times10^{25}$
+($S_{\mathrm{rev}}\approx874$) within $2\%$ on two nodes and $+2.86\%$ on $71{\times}58$. The
+single-power Richardson model does not apply, so \emph{spatial convergence is not demonstrated and no
+continuum $G_{ii}$ is inferred from this trio} (not a proof that no limit exists). The
+controlled-campaign classification is \textbf{YELLOW}, re-derived after a plateau-measurement
+bookkeeping repair (\S\ref{sec:closeout}): the non-monotone verdict reproduces, one accepted node
+lies outside the $2\%$ numerical band. The earlier uniform sequence was itself
 drain-under-resolved; and a 60-iteration budget produced materially biased fixed-point transients
 (up to $+18\%$), so the verdict rests on equalized, plateau-gated nodes.
 \item \textbf{$T_e$/$G_{ii}$ offset:} unresolved at present mesh resolution; \emph{no longer
@@ -806,7 +868,7 @@ replacing the earlier over-high \SI{1.64}{V}.
 (Fig.~\ref{fig:ivmoment}, Table~\ref{tab:f8}) --- terminal current from the SHE face flux, as in
 Liang, with source/drain conservation $\le10^{-3}$ --- upgrading Fig.~8 from a DD shape check to a
 demonstrated (if not yet self-consistent) reproduction of Liang's I-V method.
-\item \textbf{Open items.} (a) \emph{done in Rev.~5:} Anderson acceleration converges the coupled
+\item \textbf{Status and remaining work.} (a) \emph{done in Rev.~5:} Anderson acceleration converges the coupled
 fixed point (\S\ref{sec:anderson}); (b) \emph{done in Rev.~6:} the controlled spatial-convergence
 study (\S\ref{sec:spatial}) --- its outcome is that the drain $G_{ii}$ is \emph{significantly
 non-monotone} under controlled refinement, so a continuum spatial limit is not established along this
@@ -821,7 +883,11 @@ origin, since no spatial-error bound is established by this study).
 \appendix
 \section{Reproducibility package}\label{sec:specs}
 All values below are the literal code constants (\texttt{src/device.py}, \texttt{constants.py},
-\texttt{she2d.py}, \texttt{dd.py}); the simulation is fully specified by them plus the run commands.
+\texttt{she2d.py}, \texttt{dd.py}); the physical/numerical configuration is specified by them plus the
+run commands. The \emph{acceptance/evidence contract} --- the cumulative four-real-iteration plateau
+gate (\texttt{src/plateau\_gate.py}), the persisted per-node sidecar state, and the provenance/audit
+artifacts --- is specified separately in \S\ref{sec:closeout} and the current procedure of
+Appendix~\ref{sec:history}.
 
 \paragraph{Constants.} $T=\SI{300}{K}$; $\eps_{Si}=11.7$, $\eps_{ox}=3.9$;
 $n_i=1.45\times10^{10}\,\si{cm^{-3}}$; $m^*=0.32\,m_0$; $g_v=6$; $\alpha=\SI{0.5}{eV^{-1}}$.
@@ -901,8 +967,8 @@ maxouter [warm.npz]} runs \texttt{maxouter} outer iterations and saves
 \texttt{she2d\_richardson\_NxxNy.npz} with the full diagnostic vector (last-4
 $G_{ii,\max}$/$G_{\mathrm{tot}}$/$R_\phi$, $dx/dy$, $H$-hash, provenance).
 
-\emph{Exact reproduction procedure (this is essential --- a fixed budget does not converge these
-nodes).} The archival nodes were produced by ``continue unchanged until the plateau gate passes'':
+\textbf{Archival Rev-6 procedure (preserved for historical reproducibility; a fixed budget does not
+converge these nodes).} The archival nodes were produced by ``continue unchanged until the plateau gate passes'':
 run a node, then \emph{continue} it warm-started from its \emph{own} saved npz under byte-identical
 settings until $R_\phi$ is at its floor and the last-4 relative spreads are $\lesssim3\times10^{-4}$
 in \emph{both} $G_{ii}$ and $G_{\mathrm{tot}}$. Nodes are warm-start chained
@@ -918,7 +984,31 @@ $+$ $H$-hash, computes the reversal ratio $S_{\mathrm{rev}}$, and reports (or su
 extrapolation. The three converged nodes and their logs are archived under
 \texttt{data/she2d\_richardson\_*.npz} and \texttt{data/richardson\_*.log}.
 
-\paragraph{Runtime and a plateau-gate note.} On a single workstation the essential end-to-end rerun
+\emph{The archival gate above measures the last-4 spread on each single driver chunk; the audit
+(\S\ref{sec:closeout}) found this could accept a degenerate one-iteration window, so it is superseded
+by the current procedure below. A researcher reproducing the accepted result should follow the current
+procedure, not the archival chunk-local gate.}
+
+\textbf{Current corrected procedure (accepted closeout).} Acceptance is evaluated over the last four
+\emph{real} cumulative iterations of a node's trajectory, spanning driver chunks, not a single chunk's
+last-4. The gate module (\texttt{src/plateau\_gate.py}, authoritative single source of the thresholds)
+is not evaluable until four genuine samples exist; the residual stopping criterion \texttt{tol\_phi}
+never stands in for observable acceptance; a fail-closed integrity check rejects duplicated or
+out-of-order iteration indices on resume; and the rolling window is persisted in a per-node sidecar
+(\texttt{she2d\_richardson\_NxxNy.progress.json}) with a recorded \texttt{buffer\_origin}
+(\texttt{persisted\_sidecar} vs \texttt{npz\_terminal\_reconstruction}). The harness
+(\texttt{run\_richardson\_trio.py}) drives this gate and is idempotent/provenance-checked on resume;
+\texttt{gen\_run\_report.py} sources the certified windows from the sidecars. Under this procedure the
+accepted certification windows are absolute iterations $359$--$362$ ($71\times58$), $57$--$60$
+($100\times70$), $57$--$60$ ($141\times85$); the reproduced trio, parity, and re-derived YELLOW are in
+\S\ref{sec:closeout}. The immutable audit chain (defective parent NPZ, recheck manifest/verdict with
+SHA-256, malformed-CSV, superseded report) is preserved under \texttt{archival\_backup/} and
+\texttt{data/*recheck*}; nothing was overwritten.
+
+\paragraph{Archival runtime and a plateau-gate note.} These figures describe the archival from-scratch
+campaign; the clean closeout validation run (\S\ref{sec:closeout}) was an all-certified checkpoint pass
+(every node already plateau-gated, so it skips computation) and is therefore \emph{not} comparable as a
+from-scratch timing measurement. On a single workstation the essential end-to-end rerun
 is $\sim$26--27~h, dominated by the controlled trio ($\sim$23~h; the finest $141\times85$ node alone
 $\sim$12~h at $\sim$320~s/outer-iteration). The fine nodes run \emph{sequentially} --- at $\sim$5--6~GB
 each on a 26~GB machine, three at once leaves too little headroom for the sparse work arrays --- but
@@ -974,10 +1064,26 @@ values were materially biased fixed-point transients (up to $+18\%$), motivating
 observable-plateau validity gate. \emph{Threshold provenance:} an interim Rev.~5.1 draft stated the
 observable-plateau gate as ``sub-$10^{-4}$''; on review it was standardized to the final operational
 form $O(10^{-4})$, $\lesssim3\times10^{-4}$, applied identically to all three nodes and to both
-$G_{ii}$ and $G_{\mathrm{tot}}$ (this admits $G_2$'s $2.9\times10^{-4}$ $G_{ii}$ spread). The verdict
+$G_{ii}$ and $G_{\mathrm{tot}}$ (this admits $G_2$'s $2.9\times10^{-4}$ $G_{ii}$ spread). The archival verdict
 is insensitive to this distinction: $S_{\mathrm{rev}}\approx874$ exceeds any plateau-band choice in
-this range by orders of magnitude. This work was prepared on the local \texttt{claude/init-e9d010}
-working tree based on \texttt{676e74f}; it has no external audit round yet.
+this range by orders of magnitude.
+
+\paragraph{Audit closeout (2026-08-23).} A post-campaign audit found the archival $71\times58$ plateau
+acceptance defective (a degenerate one-iteration window; \S\ref{sec:closeout}). The node was
+reclassified \texttt{PASS}$\to$\texttt{NEEDS\_RECHECK} and recertified over four genuine cumulative
+iterations (indices 359--362) under a corrected cumulative-window gate with fail-closed buffer
+integrity, the residual stopping criterion decoupled from observable acceptance. The defective parent
+NPZ, the malformed metrics CSV, and the superseded auto-report were \emph{preserved} (not mutated) in
+\texttt{archival\_backup/}, alongside a recheck manifest and verdict record carrying SHA-256 digests.
+The trio was independently reproduced from scratch ($3.0756/2.1362/2.3874\times10^{25}$,
+$S_{\mathrm{rev}}=736.9$ for $G_{ii}$ / $524.1$ for $G_{\mathrm{tot}}$), reproducing the archival
+non-monotone shape; two nodes agree within $2\%$ and $71\times58$ differs by $+2.86\%$, giving a
+re-derived \textbf{YELLOW} classification. Supporting reproducibility fixes in the same closeout: a
+metrics-CSV schema-drift guard and a schema/magnitude-defensive report timing reader (which source
+cumulative iteration counts from the sidecars), and a native-batch logging fix (Stage~6/DONE stamps)
+validated by a clean \texttt{run\_from\_scratch.bat} pass (exit~0). This closeout is committed as
+\texttt{9fc32e9} on branch \texttt{richardson-trio-recheck-closeout}; the report reconciliation that
+records it (this document) sits on the same branch.
 
 \begin{thebibliography}{9}\small
 \bibitem{liang} W.~Liang, N.~Goldsman, I.~Mayergoyz, P.~J.~Oldiges, \emph{IEEE Trans.\ Electron

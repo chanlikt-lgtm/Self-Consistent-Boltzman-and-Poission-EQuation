@@ -1,0 +1,23 @@
+Liang 1997 SHE-BTE reproduction -- frozen closeout environment manifest
+=======================================================================
+git repo    : liang1997_she_bte_mosfet_repro
+git branch  : richardson-trio-recheck-closeout
+git commit  : 457a021f6c0fa00d6a420d6e07935b225c759d85
+git tag     : solver-frozen-2026-09-26-1-g457a021
+generated   : 2026-09-26
+
+Interpreter : C:\Users\User\AppData\Local\Programs\Python\Python313\python.exe
+Python 3.13.15
+NumPy 2.5.1
+SciPy 1.18.0
+OS          : Windows 11
+assembly backend at runtime : python (numba absent; SHE2D_DISABLE_NUMBA=1 to force)
+
+Trio node source: pre-freeze revision d30b471, validated numerically equivalent to
+tag solver-frozen-2026-09-26-1-g457a021 within the solver's ~4e-6 run-to-run noise and the 3e-4 certification gate.
+
+Runtime settings (Rev-6 controlled trio):
+  dH=0.0125 eV, eps_max=3.02 eV, common frozen H-span, N_H=591, she_tol=1e-8
+  Anderson depth=6 beta=0.50 step_cap=5.0 restart=6; chunk=60; MAX_ROUNDS=16
+  plateau gate: last-4 cumulative spread(Gii)&spread(Gtot)<=3e-4 AND R_phi<=1.5e-3
+  bias Vg=Vd=3 V, Vs=Vb=0, Phi_gate=-0.740 V; mesh ratio=6.0 W=0.09 X_C=0.60 um

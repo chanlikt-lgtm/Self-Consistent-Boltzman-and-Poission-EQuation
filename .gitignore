@@ -7,3 +7,8 @@ report/*.log
 report/*.out
 report/*.toc
 report/report_run_latest.tex
+
+# Closeout bundle: track the manifest/report, not the duplicated NPZ or the derived zip
+# (the trio NPZs are already tracked under data/; the zip is a delivered derived artifact).
+CLOSEOUT_solver-frozen-2026-09-26/*.npz
+CLOSEOUT_solver-frozen-2026-09-26.zip

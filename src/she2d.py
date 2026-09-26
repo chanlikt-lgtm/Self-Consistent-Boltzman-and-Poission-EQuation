@@ -31,7 +31,7 @@ import scipy.sparse.linalg as spla
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from constants import q, eV, kB, T
+from constants import q, eV, kB, T, hbar
 import bands
 import scattering as sc
 
@@ -40,6 +40,285 @@ EPS_MAX = 3.02 * eV
 E_OP_J = sc.E_OP * eV
 II_ETH_J = sc.II_ETH * eV
 UM = 1e-4                         # cm / um (device helper)
+
+# Optional JIT accelerator for the sparse finite-volume assembly.  The pure-Python
+# implementation is retained as a bit-for-bit-reference fallback (set
+# SHE2D_DISABLE_NUMBA=1 to force it).  Numba changes only how the same discrete
+# coefficients/triplets are generated; the equations and stencils are unchanged.
+try:
+    from numba import njit
+    _NUMBA_AVAILABLE = True
+except Exception:  # pragma: no cover - exercised only on installations without numba
+    njit = None
+    _NUMBA_AVAILABLE = False
+
+_DOS_PREF = (
+    bands.G_SV / (2.0 * np.pi ** 2)
+    * (2.0 * bands.MSTAR) ** 1.5
+    / (2.0 * hbar ** 3)
+)
+_DOS_ALPHA = float(bands.ALPHA)
+
+
+if _NUMBA_AVAILABLE:
+    @njit(cache=True, inline="always")
+    def _bern_scalar_numba(x):
+        if abs(x) < 1e-10:
+            return 1.0 - 0.5 * x
+        return x / np.expm1(x)
+
+
+    @njit(cache=True, inline="always")
+    def _dos_scalar_numba(eps_eV, dos_pref, dos_alpha, eV_const):
+        gamma_eV = eps_eV * (1.0 + dos_alpha * eps_eV)
+        gamma_J = gamma_eV * eV_const
+        if gamma_J < 0.0:
+            gamma_J = 0.0
+        return dos_pref * np.sqrt(gamma_J) * (1.0 + 2.0 * dos_alpha * eps_eV)
+
+
+    @njit(cache=True)
+    def _assemble_numba_kernel(
+            Ny, Nx, NH, m, dH, H0, KT_const, eV_const, eps_max, eop_J, ii_eth_J,
+            N_op, c_op, dos_pref, dos_alpha, include_ii, absorbing_top, ZD_top, ZA_top,
+            Z, D, Aac, eps, active, gid, ctype, n_eq, phi, ii_rate,
+            dxe, dyn, dxc, dyc, area,
+            rows, cols, vals, b, cutoff_spatial, cutoff_acoustic, cutoff_optical,
+            ii_event_coeff, link_ct, link_pint, link_pct, link_tf):
+        """Fill preallocated COO/diagnostic buffers with the original FV stencil."""
+        nnz = 0
+        nlinks = 0
+        delta = dH / KT_const
+        Bp = _bern_scalar_numba(delta)
+        Bm = _bern_scalar_numba(-delta)
+
+        for j in range(Ny):
+            for i in range(Nx):
+                ct = ctype[j, i]
+
+                # Original zint() evaluated once per Ohmic spatial cell.
+                Zc = 1.0
+                if ct == 1 or ct == 2 or ct == 3:
+                    zsum = 0.0
+                    if NH > 1:
+                        prev = 0.0
+                        if active[j, i, 0]:
+                            arg = eps[j, i, 0] / KT_const
+                            if arg < 0.0:
+                                arg = 0.0
+                            elif arg > 200.0:
+                                arg = 200.0
+                            prev = Z[j, i, 0] * np.exp(-arg)
+                        for kz in range(1, NH):
+                            cur = 0.0
+                            if active[j, i, kz]:
+                                arg = eps[j, i, kz] / KT_const
+                                if arg < 0.0:
+                                    arg = 0.0
+                                elif arg > 200.0:
+                                    arg = 200.0
+                                cur = Z[j, i, kz] * np.exp(-arg)
+                            zsum += 0.5 * (prev + cur) * dH
+                            prev = cur
+                    if zsum > 0.0:
+                        Zc = zsum
+
+                for k in range(NH):
+                    p = gid[j, i, k]
+                    if p < 0:
+                        continue
+
+                    # Ohmic contacts: prescribed Maxwellian distribution.
+                    if ct == 1 or ct == 2 or ct == 3:
+                        rows[nnz] = p
+                        cols[nnz] = p
+                        vals[nnz] = 1.0
+                        nnz += 1
+                        arg = eps[j, i, k] / KT_const
+                        if arg > 200.0:
+                            arg = 200.0
+                        b[p] = n_eq[j, i] * np.exp(-arg) / (Zc + 1e-300)
+                        continue
+
+                    diag = 0.0
+                    eps_k = eps[j, i, k]
+                    Zk = Z[j, i, k]
+                    Dik = D[j, i, k]
+
+                    # Spatial diffusion at fixed H.  Keep the original neighbor order:
+                    # +x, -x, +y, -y, preserving COO accumulation order as well.
+                    for idir in range(4):
+                        nj = j
+                        ni = i
+                        hcell = 0.0
+                        wface = 0.0
+                        if idir == 0:
+                            ni = i + 1
+                            if ni < Nx:
+                                hcell = dxe[i]
+                                wface = dyc[j]
+                        elif idir == 1:
+                            ni = i - 1
+                            if ni >= 0:
+                                hcell = dxe[i - 1]
+                                wface = dyc[j]
+                        elif idir == 2:
+                            nj = j + 1
+                            if nj < Ny:
+                                hcell = dyn[j]
+                                wface = dxc[i]
+                        else:
+                            nj = j - 1
+                            if nj >= 0:
+                                hcell = dyn[j - 1]
+                                wface = dxc[i]
+
+                        if hcell == 0.0 or nj < 0 or nj >= Ny or ni < 0 or ni >= Nx:
+                            continue
+                        q2 = gid[nj, ni, k]
+                        if q2 >= 0:
+                            ZDf = 0.5 * (Zk * Dik + Z[nj, ni, k] * D[nj, ni, k])
+                            Tf = dH * ZDf * wface / hcell
+                            diag += Tf
+                            rows[nnz] = p
+                            cols[nnz] = q2
+                            vals[nnz] = -Tf
+                            nnz += 1
+                            ct_nb = ctype[nj, ni]
+                            if ct_nb == 1 or ct_nb == 2 or ct_nb == 3:
+                                link_ct[nlinks] = ct_nb
+                                link_pint[nlinks] = p
+                                link_pct[nlinks] = q2
+                                link_tf[nlinks] = Tf
+                                nlinks += 1
+                            continue
+
+                        # Inactive neighbor: reflect below band edge, absorb above eps_max.
+                        eps_nb = eps[nj, ni, k]
+                        if absorbing_top and eps_nb >= eps_max and eps_k < eps_max:
+                            de = eps_nb - eps_k
+                            if de > 0.0:
+                                frac = (eps_max - eps_k) / de
+                                if frac < 1e-8:
+                                    frac = 1e-8
+                                elif frac > 1.0:
+                                    frac = 1.0
+                                dist = frac * hcell
+                                Kcur = Zk * Dik
+                                Kface = 0.5 * (Kcur + ZD_top)
+                                dmin = 1e-12 * hcell
+                                if dist < dmin:
+                                    dist = dmin
+                                Tf = dH * Kface * wface / dist
+                                diag += Tf
+                                cutoff_spatial[p] += Tf
+
+                    Aij = area[j, i]
+
+                    # Optical phonons.
+                    kd = k - m
+                    ku = k + m
+                    if kd >= 0 and active[j, i, kd]:
+                        Zd = Z[j, i, kd]
+                        diag += Aij * dH * c_op * Zk * (N_op + 1.0) * Zd
+                        rows[nnz] = p
+                        cols[nnz] = gid[j, i, kd]
+                        vals[nnz] = -Aij * dH * c_op * Zk * N_op * Zd
+                        nnz += 1
+
+                    eps_up = eps_k + eop_J
+                    if eps_up < eps_max and ku < NH and active[j, i, ku]:
+                        Zu = Z[j, i, ku]
+                        diag += Aij * dH * c_op * Zk * N_op * Zu
+                        rows[nnz] = p
+                        cols[nnz] = gid[j, i, ku]
+                        vals[nnz] = -Aij * dH * c_op * Zk * (N_op + 1.0) * Zu
+                        nnz += 1
+                    elif absorbing_top and eps_up >= eps_max:
+                        Zu = _dos_scalar_numba(eps_up / eV_const, dos_pref, dos_alpha, eV_const)
+                        ccut = Aij * dH * c_op * Zk * N_op * Zu
+                        diag += ccut
+                        cutoff_optical[p] += ccut
+
+                    # Conservative acoustic FP: upper then lower, matching original order.
+                    kk = k + 1
+                    if kk < NH and active[j, i, kk]:
+                        ZAf = 0.5 * (Zk * Aac[j, i, k] + Z[j, i, kk] * Aac[j, i, kk]) / dH
+                        diag += Aij * ZAf * Bp
+                        rows[nnz] = p
+                        cols[nnz] = gid[j, i, kk]
+                        vals[nnz] = -Aij * ZAf * Bm
+                        nnz += 1
+                    elif absorbing_top:
+                        if kk < NH:
+                            eps_nb = eps[j, i, kk]
+                        else:
+                            eps_nb = eps_k + dH
+                        if eps_nb >= eps_max:
+                            de_b = eps_max - eps_k
+                            if de_b > 0.0:
+                                ZAcur = Zk * Aac[j, i, k]
+                                ZAface = 0.5 * (ZAcur + ZA_top)
+                                db = de_b
+                                min_db = 1e-12 * dH
+                                if db < min_db:
+                                    db = min_db
+                                cb = ZAface / db
+                                Bpb = _bern_scalar_numba(db / KT_const)
+                                ccut = Aij * cb * Bpb
+                                diag += ccut
+                                cutoff_acoustic[p] += ccut
+
+                    kk = k - 1
+                    if kk >= 0 and active[j, i, kk]:
+                        ZAf = 0.5 * (Zk * Aac[j, i, k] + Z[j, i, kk] * Aac[j, i, kk]) / dH
+                        diag += Aij * ZAf * Bm
+                        rows[nnz] = p
+                        cols[nnz] = gid[j, i, kk]
+                        vals[nnz] = -Aij * ZAf * Bp
+                        nnz += 1
+
+                    # Impact ionization: same equal-split interpolation and renormalization.
+                    if include_ii and ii_rate[j, i, k] > 0.0:
+                        eps_tgt = 0.5 * (eps_k - ii_eth_J)
+                        if eps_tgt >= 0.0:
+                            H_tgt = eps_tgt - phi[j, i] * eV_const
+                            u = (H_tgt - H0) / dH
+                            k0 = int(np.floor(u))
+                            a = u - k0
+
+                            w0 = 1.0 - a
+                            w1 = a
+                            ok0 = (w0 > 0.0 and k0 >= 0 and k0 < NH and active[j, i, k0])
+                            k1 = k0 + 1
+                            ok1 = (w1 > 0.0 and k1 >= 0 and k1 < NH and active[j, i, k1])
+                            sw = 0.0
+                            if ok0:
+                                sw += w0
+                            if ok1:
+                                sw += w1
+
+                            if sw > 0.0:
+                                cii = Aij * dH * Zk * ii_rate[j, i, k]
+                                diag += cii
+                                ii_event_coeff[p] += cii
+                                if ok0:
+                                    rows[nnz] = gid[j, i, k0]
+                                    cols[nnz] = p
+                                    vals[nnz] = -2.0 * (w0 / sw) * cii
+                                    nnz += 1
+                                if ok1:
+                                    rows[nnz] = gid[j, i, k1]
+                                    cols[nnz] = p
+                                    vals[nnz] = -2.0 * (w1 / sw) * cii
+                                    nnz += 1
+
+                    rows[nnz] = p
+                    cols[nnz] = p
+                    vals[nnz] = diag
+                    nnz += 1
+
+        return nnz, nlinks
 
 
 class SHE2D:
@@ -117,6 +396,13 @@ class SHE2D:
         self.gid = -np.ones((self.Ny, self.Nx, self.NH), dtype=np.int64)
         self.gid[self.active] = np.arange(np.count_nonzero(self.active))
         self.Ndof = int(np.count_nonzero(self.active))
+        # Compact spatial-cell id per active DOF.  This is the block structure used by
+        # the split preconditioner; computing it from per-cell active counts avoids the
+        # large broadcasted 3-D temporary previously rebuilt on every solve.
+        active_counts = np.count_nonzero(self.active, axis=2).ravel()
+        self.dof_cell = np.repeat(
+            np.arange(self.Ny * self.Nx, dtype=np.int32), active_counts
+        )
 
         # Boundary values of kinetic-energy coefficients at eps_max.
         emax_eV = EPS_MAX / eV
@@ -143,7 +429,94 @@ class SHE2D:
         return [(kk, w / sw) for kk, w in valid]
 
     # ---------------------------------------------------------------- assembly
-    def assemble(self):
+    def assemble(self, backend="auto"):
+        """Assemble the unchanged finite-volume SHE matrix.
+
+        ``backend="auto"`` uses a Numba-compiled triplet fill when available and
+        falls back to the original Python assembler otherwise.  Set the environment
+        variable ``SHE2D_DISABLE_NUMBA=1`` or pass ``backend="python"`` to force
+        the reference implementation.
+        """
+        use_numba = (
+            backend in ("auto", "numba")
+            and _NUMBA_AVAILABLE
+            and os.environ.get("SHE2D_DISABLE_NUMBA", "0") not in ("1", "true", "TRUE")
+        )
+        if backend == "numba" and not _NUMBA_AVAILABLE:
+            raise RuntimeError("Numba assembly requested but numba is not installed")
+        if not use_numba:
+            return self._assemble_python()
+
+        # Each active source state contributes at most 4 spatial + 2 optical +
+        # 2 acoustic + 2 II + 1 diagonal triplets.  Preallocation avoids millions
+        # of Python list objects while retaining the exact COO stencil.
+        max_nnz = max(1, 11 * self.Ndof)
+        rows = np.empty(max_nnz, dtype=np.int64)
+        cols = np.empty(max_nnz, dtype=np.int64)
+        vals = np.empty(max_nnz, dtype=np.float64)
+        b = np.zeros(self.Ndof, dtype=np.float64)
+        cutoff_spatial = np.zeros(self.Ndof, dtype=np.float64)
+        cutoff_acoustic = np.zeros(self.Ndof, dtype=np.float64)
+        cutoff_optical = np.zeros(self.Ndof, dtype=np.float64)
+        ii_event_coeff = np.zeros(self.Ndof, dtype=np.float64)
+
+        is_ct = (self.ctype == 1) | (self.ctype == 2) | (self.ctype == 3)
+        nfaces = 0
+        if self.Nx > 1:
+            nfaces += int(np.count_nonzero(is_ct[:, 1:] ^ is_ct[:, :-1]))
+        if self.Ny > 1:
+            nfaces += int(np.count_nonzero(is_ct[1:, :] ^ is_ct[:-1, :]))
+        max_links = max(1, nfaces * self.NH)
+        link_ct = np.empty(max_links, dtype=np.int8)
+        link_pint = np.empty(max_links, dtype=np.int64)
+        link_pct = np.empty(max_links, dtype=np.int64)
+        link_tf = np.empty(max_links, dtype=np.float64)
+
+        N_op = 1.0 / np.expm1(E_OP_J / KT)
+        nnz, nlinks = _assemble_numba_kernel(
+            self.Ny, self.Nx, self.NH, self.m_op, self.dH, float(self.H[0]),
+            KT, eV, EPS_MAX, E_OP_J, II_ETH_J, N_op, sc.COP, _DOS_PREF, _DOS_ALPHA,
+            self.include_impact_ionization, self.absorbing_top, self._ZD_top, self._ZA_top,
+            self.Z, self.D, self.Aac, self.eps, self.active, self.gid, self.ctype,
+            self.n_eq, self.phi, self.ii_rate, self.dxe, self.dyn, self.dxc, self.dyc,
+            self.area, rows, cols, vals, b, cutoff_spatial, cutoff_acoustic,
+            cutoff_optical, ii_event_coeff, link_ct, link_pint, link_pct, link_tf,
+        )
+        if nnz > max_nnz or nlinks > max_links:
+            raise RuntimeError("internal SHE assembly preallocation bound exceeded")
+
+        A = sp.csr_matrix(
+            (vals[:nnz], (rows[:nnz], cols[:nnz])),
+            shape=(self.Ndof, self.Ndof),
+        )
+
+        # Same orphan-row safety as the reference assembler.
+        dvec = A.diagonal()
+        orphans = np.where(np.abs(dvec) < 1e-300)[0]
+        if len(orphans):
+            A = A.tolil()
+            for r in orphans:
+                A.rows[r] = [r]
+                A.data[r] = [1.0]
+                b[r] = 0.0
+            A = A.tocsr()
+
+        self.n_orphans = int(len(orphans))
+        self.cutoff_spatial_coeff = cutoff_spatial
+        self.cutoff_acoustic_coeff = cutoff_acoustic
+        self.cutoff_optical_coeff = cutoff_optical
+        self.ii_event_coeff = ii_event_coeff
+        self.contact_links = [
+            (int(link_ct[n]), int(link_pint[n]), int(link_pct[n]), float(link_tf[n]))
+            for n in range(nlinks)
+        ]
+        self.A, self.b = A, b
+        self.assembly_backend = "numba"
+        self.assembly_triplets = int(nnz)
+        return A, b
+
+    # ------------------------------------------------ reference Python assembly
+    def _assemble_python(self):
         Ny, Nx, NH, m = self.Ny, self.Nx, self.NH, self.m_op
         dH = self.dH
         Z, D, Aac, eps = self.Z, self.D, self.Aac, self.eps
@@ -318,10 +691,14 @@ class SHE2D:
         self.ii_event_coeff = ii_event_coeff
         self.contact_links = contact_links
         self.A, self.b = A, b
+        self.assembly_backend = "python"
+        self.assembly_triplets = len(vals)
         return A, b
 
     # -------------------------------------------------------------------- solve
-    def solve(self, tol=1e-10, method="auto"):
+    def solve(self, tol=1e-10, method="auto", x0=None,
+              preconditioner_cache=None, reuse_preconditioner=True,
+              preconditioner_max_age=3):
         """Solve the assembled SHE system.
 
         Large systems use a physics-split multiplicative preconditioner:
@@ -338,6 +715,11 @@ class SHE2D:
                  "direct"    : sparse direct solve
                  "split_ilu" : E-S-E ILU + LGMRES
                  "legacy_ilu": old shifted global-ILU path (comparison/fallback)
+
+        ``x0`` may be either the active-DOF vector or a full (Ny,Nx,NH) distribution.
+        ``preconditioner_cache`` may be the cache returned by a previous solve on the
+        same frozen H-grid/active pattern. Reuse affects only the Krylov preconditioner,
+        never A or b; a failed reused solve is automatically retried with fresh factors.
         """
         import time
 
@@ -348,9 +730,27 @@ class SHE2D:
         bs = b / D
 
         if method == "auto":
+            # Restored to the original certified cutoff (was temporarily 1500 in the
+            # optimization drop): keeps "same algorithm, faster execution" for every
+            # production mesh, all of which are >130k DOF -> split_ilu either way.
             method = "direct" if self.Ndof <= 130000 else "split_ilu"
 
-        stats = {"method": method}
+        x0_vec = None
+        if x0 is not None:
+            x0_arr = np.asarray(x0, dtype=float)
+            if x0_arr.shape == self.active.shape:
+                x0_vec = np.ascontiguousarray(x0_arr[self.active])
+            elif x0_arr.ndim == 1 and x0_arr.size == self.Ndof:
+                x0_vec = np.ascontiguousarray(x0_arr)
+            else:
+                raise ValueError(
+                    "x0 must have shape %s or (%d,), got %s"
+                    % (self.active.shape, self.Ndof, x0_arr.shape)
+                )
+            x0_vec = np.nan_to_num(x0_vec, copy=False)
+
+        stats = {"method": method, "used_x0": bool(x0_vec is not None)}
+        self.preconditioner_cache = None
 
         if method == "direct":
             t0 = time.time()
@@ -359,18 +759,6 @@ class SHE2D:
             stats["solve_s"] = time.time() - t0
 
         elif method == "split_ilu":
-            # DOFs were numbered with H fastest inside each (j,i), so same-cell
-            # entries form contiguous local energy blocks.  Build a cell id for each DOF.
-            cell3 = np.broadcast_to(
-                np.arange(self.Ny * self.Nx, dtype=np.int32).reshape(self.Ny, self.Nx, 1),
-                self.active.shape,
-            )
-            dof_cell = cell3[self.active]
-
-            coo = As.tocoo(copy=False)
-            same_cell = dof_cell[coo.row] == dof_cell[coo.col]
-            is_diag = coo.row == coo.col
-
             def factor_with_shifts(M, *, drop_tol, fill_factor, permc_spec):
                 last = None
                 for shift in (0.0, 1e-6, 1e-4, 1e-3, 1e-2):
@@ -385,63 +773,138 @@ class SHE2D:
                         last = exc
                 raise RuntimeError("split-ILU factorization failed") from last
 
-            # E preconditioner: all same-spatial-cell couplings.  This contains the
-            # complete acoustic/optical/II energy block plus the spatial diagonal.
-            t0 = time.time()
-            PE = sp.csc_matrix(
-                (coo.data[same_cell], (coo.row[same_cell], coo.col[same_cell])),
-                shape=As.shape,
-            )
-            Efac, Eshift = factor_with_shifts(
-                PE, drop_tol=1e-8, fill_factor=4, permc_spec="NATURAL"
-            )
-            stats["energy_setup_s"] = time.time() - t0
-            stats["energy_shift"] = Eshift
-            stats["energy_precond_nnz"] = int(Efac.L.nnz + Efac.U.nnz)
-            del PE
+            def cache_is_compatible(cache):
+                if not reuse_preconditioner or not isinstance(cache, dict):
+                    return False
+                if cache.get("shape") != As.shape:
+                    return False
+                if int(cache.get("age", preconditioner_max_age)) >= int(preconditioner_max_age):
+                    return False
+                old_H = cache.get("H")
+                old_dof_cell = cache.get("dof_cell")
+                if old_H is None or old_dof_cell is None:
+                    return False
+                return (
+                    old_H.shape == self.H.shape
+                    and np.array_equal(old_H, self.H)
+                    and old_dof_cell.shape == self.dof_cell.shape
+                    and np.array_equal(old_dof_cell, self.dof_cell)
+                    and cache.get("Efac") is not None
+                    and cache.get("Sfac") is not None
+                )
 
-            # S preconditioner: diagonal + cross-cell couplings only.  With local
-            # energy couplings removed this is the fixed-H real-space transport part.
-            t0 = time.time()
-            space_keep = is_diag | (~same_cell)
-            PS = sp.csc_matrix(
-                (coo.data[space_keep], (coo.row[space_keep], coo.col[space_keep])),
-                shape=As.shape,
-            )
-            Sfac, Sshift = factor_with_shifts(
-                PS, drop_tol=1e-4, fill_factor=5, permc_spec="COLAMD"
-            )
-            stats["space_setup_s"] = time.time() - t0
-            stats["space_shift"] = Sshift
-            stats["space_precond_nnz"] = int(Sfac.L.nnz + Sfac.U.nnz)
-            del PS, coo, same_cell, is_diag, dof_cell, cell3
+            def build_factors():
+                # DOFs are numbered with H fastest inside each (j,i).  Splitting the
+                # CURRENT scaled matrix is exactly the original preconditioner setup.
+                dof_cell = self.dof_cell
+                coo = As.tocoo(copy=False)
+                same_cell = dof_cell[coo.row] == dof_cell[coo.col]
+                is_diag = coo.row == coo.col
 
-            # Multiplicative E-S-E Schwarz/line relaxation.  Recomputing the residual
-            # between stages is important; a plain additive E+S preconditioner converges
-            # much more slowly on refined spatial grids.
-            def apply_prec(r):
-                z = Efac.solve(r)
-                rr = r - As.dot(z)
-                z += Sfac.solve(rr)
-                rr = r - As.dot(z)
-                z += Efac.solve(rr)
-                return z
+                t0 = time.time()
+                PE = sp.csc_matrix(
+                    (coo.data[same_cell], (coo.row[same_cell], coo.col[same_cell])),
+                    shape=As.shape,
+                )
+                Efac, Eshift = factor_with_shifts(
+                    PE, drop_tol=1e-8, fill_factor=4, permc_spec="NATURAL"
+                )
+                energy_setup_s = time.time() - t0
+                energy_nnz = int(Efac.L.nnz + Efac.U.nnz)
+                del PE
 
-            M = spla.LinearOperator(As.shape, matvec=apply_prec, dtype=As.dtype)
-            outer_iterations = [0]
+                t0 = time.time()
+                space_keep = is_diag | (~same_cell)
+                PS = sp.csc_matrix(
+                    (coo.data[space_keep], (coo.row[space_keep], coo.col[space_keep])),
+                    shape=As.shape,
+                )
+                Sfac, Sshift = factor_with_shifts(
+                    PS, drop_tol=1e-4, fill_factor=5, permc_spec="COLAMD"
+                )
+                space_setup_s = time.time() - t0
+                space_nnz = int(Sfac.L.nnz + Sfac.U.nnz)
+                del PS, coo, same_cell, is_diag
+                meta = dict(
+                    energy_setup_s=energy_setup_s, energy_shift=Eshift,
+                    energy_precond_nnz=energy_nnz, space_setup_s=space_setup_s,
+                    space_shift=Sshift, space_precond_nnz=space_nnz,
+                )
+                return Efac, Sfac, meta
 
-            def count_outer(_x):
-                outer_iterations[0] += 1
+            reused = cache_is_compatible(preconditioner_cache)
+            if reused:
+                Efac = preconditioner_cache["Efac"]
+                Sfac = preconditioner_cache["Sfac"]
+                meta = dict(preconditioner_cache.get("meta", {}))
+                stats.update(meta)
+                stats["energy_setup_s"] = 0.0
+                stats["space_setup_s"] = 0.0
+                cache_age = int(preconditioner_cache.get("age", 0)) + 1
+            else:
+                Efac, Sfac, meta = build_factors()
+                stats.update(meta)
+                cache_age = 0
+            stats["preconditioner_reused"] = bool(reused)
+            stats["preconditioner_age"] = int(cache_age)
 
-            t0 = time.time()
-            f_raw, info = spla.lgmres(
-                As, bs, M=M, rtol=tol, atol=0.0, maxiter=150,
-                inner_m=40, outer_k=5, callback=count_outer,
-            )
-            stats["solve_s"] = time.time() - t0
-            stats["outer_iterations"] = int(outer_iterations[0])
+            def run_krylov(Efac_use, Sfac_use):
+                # E-S-E multiplicative relaxation, but residuals are always formed with
+                # the CURRENT As. Thus cached factors are merely an approximate inverse.
+                def apply_prec(r):
+                    z = Efac_use.solve(r)
+                    rr = r - As.dot(z)
+                    z += Sfac_use.solve(rr)
+                    rr = r - As.dot(z)
+                    z += Efac_use.solve(rr)
+                    return z
+
+                M = spla.LinearOperator(As.shape, matvec=apply_prec, dtype=As.dtype)
+                outer_iterations = [0]
+
+                def count_outer(_x):
+                    outer_iterations[0] += 1
+
+                t0 = time.time()
+                sol, inf = spla.lgmres(
+                    As, bs, x0=x0_vec, M=M, rtol=tol, atol=0.0, maxiter=150,
+                    inner_m=40, outer_k=5, callback=count_outer,
+                )
+                return sol, inf, time.time() - t0, int(outer_iterations[0])
+
+            f_raw, info, solve_s, outer_it = run_krylov(Efac, Sfac)
+            stats["solve_s"] = solve_s
+            stats["outer_iterations"] = outer_it
+
+            # Stale factors are allowed only as an acceleration.  If they fail, rebuild
+            # from this exact matrix and retry, preserving the original robustness.
+            if info != 0 and reused:
+                Efac, Sfac, meta = build_factors()
+                stats.update(meta)
+                stats["preconditioner_reused"] = False
+                stats["preconditioner_rebuild_after_failure"] = True
+                cache_age = 0
+                f_raw, info, solve_s, outer_it = run_krylov(Efac, Sfac)
+                stats["solve_s"] += solve_s
+                stats["outer_iterations"] += outer_it
+
             if info != 0:
                 raise RuntimeError("SHE split-ILU solve failed to converge (info=%s)" % info)
+
+            self.preconditioner_cache = {
+                "shape": As.shape,
+                "H": self.H.copy(),
+                "dof_cell": self.dof_cell.copy(),
+                "Efac": Efac,
+                "Sfac": Sfac,
+                "age": int(cache_age),
+                "meta": {
+                    "energy_shift": stats.get("energy_shift", 0.0),
+                    "energy_precond_nnz": stats.get("energy_precond_nnz", 0),
+                    "space_shift": stats.get("space_shift", 0.0),
+                    "space_precond_nnz": stats.get("space_precond_nnz", 0),
+                },
+            }
 
         elif method == "legacy_ilu":
             # Retained only for regression comparisons.  It can be orders of magnitude
@@ -456,7 +919,7 @@ class SHE2D:
                 except Exception:
                     continue
                 M = spla.LinearOperator(As.shape, ilu.solve)
-                f_raw, info = spla.lgmres(As, bs, M=M, rtol=tol, atol=0.0, maxiter=800)
+                f_raw, info = spla.lgmres(As, bs, x0=x0_vec, M=M, rtol=tol, atol=0.0, maxiter=800)
                 if info == 0:
                     stats["legacy_shift"] = shift
                     break

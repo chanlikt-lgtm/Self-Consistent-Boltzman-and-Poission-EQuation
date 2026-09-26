@@ -28,7 +28,9 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                   accel="picard", aa_depth=6, aa_beta=0.5, freeze_H=False,
                   aa_restart=6, aa_rcond=1e-8, aa_step_cap=5.0,
                   x_mesh=None, y_mesh=None,
-                  phi_init=None, p_init=None, phi_span_H_override=None):
+                  phi_init=None, p_init=None, phi_span_H_override=None,
+                  reuse_she_state=False, reuse_she_preconditioner=False,
+                  she_preconditioner_max_age=3):
     """Coupled SHE<->Poisson<->hole outer iteration.
 
     accel="picard"   : damped Picard, phi <- phi + phi_damp*(G(phi)-phi)  (default; unchanged).
@@ -36,6 +38,14 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
                        contact) potential DOFs. The convergence measure is the TRUE fixed-point
                        residual max|G(phi)-phi| (not the damped step), so `max_dphi_V`/`tol_phi`
                        are on the raw residual in this mode.
+
+    reuse_she_state / reuse_she_preconditioner default OFF (certified path): the SHE solve
+    then runs cold each outer iteration (no Krylov x0, fresh split-ILU), byte-identical to the
+    original solver. Validation (2026-09-24) showed Krylov x0 perturbs G_ii,max by ~3e-4 --
+    comparable to the trio convergence gate -- for only ~1.07x, and preconditioner reuse never
+    activates under the reduced-mask formulation (dof_cell shifts every iteration). The DD-skip
+    (both phi_init and p_init supplied) is always on and is bit-identical. A mask-robust
+    (fixed-envelope) reuse that can actually fire is being prototyped on a separate branch.
     """
     pdev = DeviceParams()
     if x_mesh is not None:
@@ -49,16 +59,30 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
     ps = Poisson2D(x, y, Nnet, pdev, Phi_gate=Phi_gate)
     dd = DDSolver(ps)
 
-    # Drift-diffusion gives a robust initial electrostatic/hole state only.
-    phi, n_dd, p_h = dd.solve(Vs=Vs, Vd=Vd, Vg=Vg, Vb=Vb,
-                              max_gummel=90, tol=1e-5, verbose=False)
-    # Warm-start: override the DD initial guess with a previously converged (or near-converged)
-    # coupled state on the SAME mesh, so a continuation run finishes the slow plateau drift instead
-    # of retracing the whole trajectory. Contacts stay Dirichlet (set inside ps.solve each step).
-    if phi_init is not None:
+    # Drift-diffusion gives a robust initial electrostatic/hole state only.  When BOTH
+    # warm-start fields are supplied, DD would be computed and immediately overwritten; skip
+    # that work entirely. This changes no coupled equation or discretization.
+    if phi_init is not None and p_init is not None:
         phi = np.asarray(phi_init, dtype=float).copy()
-    if p_init is not None:
         p_h = np.asarray(p_init, dtype=float).copy()
+        if phi.shape != (Ny, Nx) or p_h.shape != (Ny, Nx):
+            raise ValueError(
+                "warm-start phi_init/p_init must both have shape (%d,%d); got %s / %s"
+                % (Ny, Nx, phi.shape, p_h.shape)
+            )
+    else:
+        phi, _n_dd, p_h = dd.solve(Vs=Vs, Vd=Vd, Vg=Vg, Vb=Vb,
+                                   max_gummel=90, tol=1e-5, verbose=False)
+        # Partial warm starts still need DD for the missing field. Contacts stay Dirichlet
+        # (set inside ps.solve each step).
+        if phi_init is not None:
+            phi = np.asarray(phi_init, dtype=float).copy()
+            if phi.shape != (Ny, Nx):
+                raise ValueError("phi_init must have shape (%d,%d)" % (Ny, Nx))
+        if p_init is not None:
+            p_h = np.asarray(p_init, dtype=float).copy()
+            if p_h.shape != (Ny, Nx):
+                raise ValueError("p_init must have shape (%d,%d)" % (Ny, Nx))
 
     # Finite-volume cell-area weights (um^2 -> cm^2) for the integrated generation G_tot = int Gii dA,
     # so G_tot is tracked every outer iteration (not just post-hoc) and its plateau can be audited.
@@ -92,13 +116,70 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
     else:
         phi_span_H = None
     conv = None                     # last in-loop SHE state (for internally-consistent return)
+    prev_F3d = None                 # Krylov warm start from the preceding SHE solve
+    prev_H = None
+    she_precond_cache = None        # split-ILU factors; safe only on identical H/active pattern
     for it in range(max_outer):
         t0 = time.time()
+
+        # Retain only the pieces useful to the next linear solve, then release the previous
+        # full SHE object before allocating the new matrix. This avoids holding two enormous
+        # sparse matrices/grid coefficient sets simultaneously during a coupled iteration.
+        x0_candidate = prev_F3d
+        H_candidate = prev_H
+        pc_candidate = she_precond_cache
+        if it > 0:
+            conv = None
+            she = None
+
         she = SHE2D(x, y, phi, ps.contact_type, dd.n_eq, dHi_eV=dH_eV,
                     include_impact_ionization=True, absorbing_top=True, phi_span_H=phi_span_H)
+
+        # A distribution indexed on a different H-grid is not a valid Krylov initial vector.
+        # Frozen-H continuation/Richardson runs satisfy this exact equality and benefit most.
+        use_x0 = (
+            reuse_she_state and x0_candidate is not None and H_candidate is not None
+            and x0_candidate.shape == she.active.shape
+            and H_candidate.shape == she.H.shape
+            and np.array_equal(H_candidate, she.H)
+        )
+
+        # If the split-preconditioner block structure changed, it cannot be reused. Drop
+        # the old SuperLU factors BEFORE building the new matrix/factors to reduce peak memory.
+        if pc_candidate is not None:
+            pc_ok = (
+                pc_candidate.get("shape") == (she.Ndof, she.Ndof)
+                and pc_candidate.get("H") is not None
+                and pc_candidate["H"].shape == she.H.shape
+                and np.array_equal(pc_candidate["H"], she.H)
+                and pc_candidate.get("dof_cell") is not None
+                and pc_candidate["dof_cell"].shape == she.dof_cell.shape
+                and np.array_equal(pc_candidate["dof_cell"], she.dof_cell)
+                and int(pc_candidate.get("age", she_preconditioner_max_age))
+                    < int(she_preconditioner_max_age)
+            )
+            if not pc_ok:
+                pc_candidate = None
+                she_precond_cache = None
+
+        ta = time.time()
         she.assemble()
-        she.solve(tol=she_tol)
+        assembly_s = time.time() - ta
+        ts = time.time()
+        she.solve(
+            tol=she_tol,
+            x0=(x0_candidate if use_x0 else None),
+            preconditioner_cache=(pc_candidate if reuse_she_preconditioner else None),
+            reuse_preconditioner=reuse_she_preconditioner,
+            preconditioner_max_age=she_preconditioner_max_age,
+        )
+        linear_s = time.time() - ts
         n_she, Te, Gii = she.moments()
+        prev_F3d = she.F3d if reuse_she_state else None
+        prev_H = she.H.copy() if reuse_she_state else None
+        she_precond_cache = (
+            she.preconditioner_cache if reuse_she_preconditioner else None
+        )
 
         # Pair generation drives holes.  n_SHE is fixed during this hole solve.
         p_h = dd.solve_holes(phi, n_she, p_init=p_h, generation=Gii,
@@ -174,15 +255,26 @@ def solve_coupled(Nx=40, Ny=34, Vg=3.0, Vd=3.0, Vs=0.0, Vb=0.0,
             "G_tot_cm1s": float(np.sum(Gii * _area_cm2)),
             "relative_number_balance": float(cons["relative_number_balance"]),
             "drain_current_A_per_um": float(cons["drain_current_A_per_um"]),
+            "she_assembly_s": float(assembly_s),
+            "she_linear_s": float(linear_s),
+            "she_used_x0": bool(she.preconditioner_stats.get("used_x0", False)),
+            "she_preconditioner_reused": bool(
+                she.preconditioner_stats.get("preconditioner_reused", False)
+            ),
+            "she_krylov_outer_iterations": int(
+                she.preconditioner_stats.get("outer_iterations", 0)
+            ),
             "seconds": float(time.time() - t0),
         }
         history.append(rec)
         if verbose:
             print("outer %2d  dphi=%.3e V  NH=%d  nmax=%.3e  pmax=%.3e  "
-                  "Temax=%.0f K  Gmax=%.3e  Id=%.3e A/um  bal=%.2e  (%.1fs)" %
+                  "Temax=%.0f K  Gmax=%.3e  Id=%.3e A/um  bal=%.2e  "
+                  "SHE[a=%.2fs,l=%.2fs,x0=%d,pc=%d]  (%.1fs)" %
                   (it, err, rec["NH"], rec["n_max_cm3"], rec["p_max_cm3"], rec["Te_max_K"],
                    rec["Gii_max_cm3s"], rec["drain_current_A_per_um"],
-                   rec["relative_number_balance"], rec["seconds"]))
+                   rec["relative_number_balance"], rec["she_assembly_s"], rec["she_linear_s"],
+                   int(rec["she_used_x0"]), int(rec["she_preconditioner_reused"]), rec["seconds"]))
         if err < tol_phi:
             break
 

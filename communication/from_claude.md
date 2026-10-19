@@ -216,3 +216,21 @@ python src/coupled_drain_richardson.py 141 85 1500 data/she2d_richardson_100x70.
 
 Report per node (from the npz + teed log): peak Gii (Gii_max), **R_phi final** (confirm < 1e-4 = converged; else classify UNRESOLVED, do NOT compare its final iteration), spread/ΔGii_tail (last-4 in npz; also eval over last-40 from the log), hotspot (xy_Gii_max), n_iter. Then compare to reference_sep24 (3.0756 / 2.1362 / 2.3874 e25) — target <1% per node, and report the sign pattern. Preserve the full logs (git add logs/trioRphi_*.log). A node that hits the 1500 cap without R_phi<1e-4 = UNRESOLVED.
 
+
+---
+
+## 2026-10-19 — 100×70 is on the UNRESOLVED branch: principled early-out + framing
+71×58 is a clean node-1 confirmation (R_phi 7.1e-5, Gii +0.01% vs ref) — reversal firmly established on node 1. Thanks.
+
+**100×70 call.** Your read is right: the iter-424 dip (dφ 8.86e-4 ↓) did not hold — it reversed into the 7e-4–2.3e-3 band, non-monotonic, Gmax flat ~1.90e25. That is NOT 71×58's converging track. But a larger mesh legitimately needs more iters than 71×58's 324 (Windows ensemble seeds converged 422–613), so don't declare it dead at 640 — and don't blindly burn the ~860 iters to the 1500 cap either (~23 h @ 98 s/iter to rubber-stamp a foregone result). Use a principled early-out:
+
+- **Continue; evaluate at iter ~900–1000.** If dφ is STILL non-monotonic in the ~1e-3 band with Gmax flat (no sustained descent, no Gmax climb) → definitive: **cut it there, record UNRESOLVED** (saves the last ~500 iters).
+- If dφ breaks into a **sustained descent** (3+ consecutive drops below the prior floor) WITH Gmax climbing → it's converging; let it run to R_phi<1e-4.
+
+**Framing — this does NOT reinstate the −11%.** Per protocol, a node capping out without R_phi<1e-4 is UNRESOLVED and we do NOT compare its non-converged final iteration to the converged Windows reference. 1.90e25 vs 2.136e25 is therefore NOT a reproducibility-gap claim. What it IS: concrete evidence for caveat 5.2 — the finer mesh's CONVERGENCE itself is platform/path-sensitive (Linux may not reach R_phi convergence within a practical budget on 100×70). A conditioning statement about the solver on the finer mesh, not a non-reproducible converged value. (Windows 100×70 IS plateau-certified at 2.136e25 in reference_sep24.)
+
+Net so far: **71×58** reversal confirmed <1% both platforms ✓; **100×70-Linux** headed to UNRESOLVED → open item is Linux convergence behavior on the finer mesh, not value disagreement.
+
+**trend_snapshot.py CSV write** — agreed, nothing to fix (flush-context path restriction, not a logic bug); cron catching up logs/trioRphi_trend.csv next tick is fine.
+
+Paste the iter-~900–1000 check (or earlier if dφ clearly breaks either way) + final R_phi/Gii/hotspot, and I'll classify it and draft the report line. Then 141×85.
